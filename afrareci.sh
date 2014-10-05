@@ -1,18 +1,23 @@
 #! /bin/bash
 
-TIEMPO_DORMIDO=20
+TIEMPO_DORMIDO=30
 ciclo=0
 
 # Graba en el log.
 function grabarEnLog (){
-	echo "*** LOG *** : ${1}"
-	#GRALOG "AFRARECI" ${1} ${2}
+	echo "*** LOG *** : AFRARECI ${1} ${2}"
+	$BINDIR/gralog.sh "AFRARECI" "${1}" "${2}"
 }
 
-#Mueve el archivo pasado por parametro a la direccion parasada por paramtro
+# Mueve el archivo pasado por parametro a la direccion parasada por paramtro
 function moverA (){
 	echo "Moviendo ${1} a ${2}..."
 	$BINDIR/mover.sh $1 $2
+}
+
+# Arranca el proceso pasado por parametro
+function arrancarProceso (){
+	$BINDIR/arrancar.sh $1
 }
 
 # Verifica si existen archivos en el directorio pasado por parametro.
@@ -149,6 +154,9 @@ function tieneFechaCorrecta (){
 }
 
 # Valida si el archivo pasado por parametro posee nombre correcto
+# 0: Archivo valido
+# 1: Archivo con fecha invalida
+# 2: Archivo con codigo invalido
 function tieneNombreCorrecto (){
 	
 	if tieneCodigoCorrecto $1;
@@ -159,8 +167,10 @@ function tieneNombreCorrecto (){
 			return 0
 		fi
 		# Archivo invalido -  Fecha Invalida
+		motivoRechazo="Fecha invalida"
 	fi
-	# Archivo invalido - Nombre incorrecto o no encontrado
+	# Archivo invalido - Codigo incorrecto o no encontrado
+	motivoRechazo="Central inexistente"
 	return 1
 }
 
@@ -195,14 +205,13 @@ function procesarArchivosNovedir (){
 					archivoRutaCompleta=$NOVEDIR/$archivo
                     moverA $archivoRutaCompleta $ACEPDIR
 					archivoCorrecto=true
-				else
-					motivoRechazo="${archivo} - Nombre incorrecto"
+					grabarEnLog "ACEPTADO" "${archivoRutaCompleta}"
 				fi
 			else
-				motivoRechazo="${archivo} - Formato incorrecto"
+				motivoRechazo="Formato incorrecto"
 			fi
 		else
-			motivoRechazo="${archivo} - Archivo no es de texto"
+			motivoRechazo="Tipo de archivo invalido"
 		fi
 	
 		#Paso 7: Rechazar archivos invalidos
@@ -212,7 +221,7 @@ function procesarArchivosNovedir (){
 		then
 			archivoRutaCompleta=$NOVEDIR/$archivo
 			moverA $archivoRutaCompleta $RECHDIR
-			grabarEnLog "Motivo de Rechazo: ${motivoRechazo}"
+			grabarEnLog "RECHAZADO" "${archivo}-${motivoRechazo}" 
 		fi
 		echo ""
 
@@ -226,7 +235,7 @@ while [[ true ]]
 do	
 	#Paso 1: Grabar en el log el numero de ciclo.
 	let ciclo++
-	grabarEnLog "AFRARECI ciclo nro. ${ciclo}"
+	grabarEnLog " " "ciclo nro. $ciclo"
 
 	#Paso 2: Chequear si hay archivos en el directorio NOVEDIR.	
 	if existenArchivos $NOVEDIR;
@@ -239,31 +248,26 @@ do
 	fi
 	
 	#Paso 8: Novedades Pendientes.
-	if ! existenArchivos $ACEPDIR;
-	#TODO: ATENCION! BORRAR ESTA CONDICION Y PONER LA DE ABAJO. if existenArchivos ACEPDIR
-	#if existenArchivos $ACEPDIR;
+	if existenArchivos $ACEPDIR;
 	then
-		echo "Existieron archivos en ACEPDIR"
 		afraumbrCorriendo=`ps -A | grep "afraumbr.sh"`
-		errorAfraumbr=false
 		idAfraumbr=`pgrep -o "afraumbr.sh"`
 		if [[ -z $afraumbrCorriendo ]]
 		then
-			# INVOCAR AFRAUMBR
-			./arrancar.sh afraumbr testarrancar
+			arrancarProceso afraumbr
 			idAfraumbr=`pgrep -o "afraumbr.sh"`
-			# SI SE PUEDO INVOCAR AFRAUMBR
-				grabarEnLog "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
-			# SINO
-			#grabarEnLog "HUBO UN ERROR EN INVOCAR"
+			if [ ! -z idAfraumbr ]
+			then
+				grabarEnLog "AFRAUMBR" "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
+			else
+				grabarEnLog "HUBO UN ERROR EN INVOCAR"
+			fi
 		else
-			# AFRAUMBR esta corriendo
-			echo "Corriendo con id: ${idAfraumbr}" 
-			grabarEnLog "Invocación de AFRAUMBR pospuesta para el siguiente ciclo"
+			# AFRAUMBR estaba corriendo
+			grabarEnLog " " "Invocación de AFRAUMBR pospuesta para el siguiente ciclo"
 		fi
 	fi
 	echo ""
 	sleep $TIEMPO_DORMIDO
+	
 done
-
-

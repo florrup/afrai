@@ -24,19 +24,14 @@ existeArchivo () {
 
 #PASO1
 verificarInstalacion(){
-	#SACAR
 	echo "Verificando instalacion..."
-	read x;
-	#**************************************
         existeArchivo $AFRACONFIG
         local resultado=$?
         if [ $resultado == 0 ];then
                 echo "Verificando instalacion completa..."
 		verificarInstalacionCompleta
-
-		#TODO:VERIFICAR INSTALACION COMPLETA PASO 2
         else
-                echo "******************* No esta instalado AFRA-l *****************"
+                echo "Afrai no esta instalado en su PC"
                 verificarPerl;
         fi
 }
@@ -58,8 +53,7 @@ verificarInstalacionCompleta(){
 	NOVEDIR=$(grep '^NOVEDIR' $AFRACONFIG | cut -d '=' -f 2)
 	LOGDIR=$(grep '^LOGDIR' $AFRACONFIG | cut -d '=' -f 2)
 	LOGSIZE=$(grep '^LOGSIZE' $AFRACONFIG | cut -d '=' -f 2)
-	
-	
+
 	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
 	verificarExistenciaDeDirectoriosYArchivos
 
@@ -192,73 +186,21 @@ estadoAfrai(){
 
 #PASO4
 verificarPerl(){
-	#SACAR
 	echo "Verificando instalacion de Perl..."
-	read x;
-	#**************************************
 	local datosPerl=`perl -v`
 	local version=$(echo "$datosPerl" | grep " perl [0-9]" | sed "s-.*\(perl\) \([0-9]*\).*-\2-")
 	if [ $version -ge 5 ];then
 		echo "Perl version: $datosPerl"
-		echo "##################################################################"
-		$posicionActual/$GRALOG "afrainst.sh" "$datosPerl" "INFO"
+		$posicionActual/$GRALOG "$0" "$datosPerl" "INFO"
 	else
-		#TODO: grabar en log
-		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior."
-		echo "Efectúe su instalación e inténtelo nuevamente."
+		local MENSAJE="Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior. Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado"
+		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior"
+		echo "Efectúe su instalación e inténtelo nuevamente"
 		echo "Proceso de Instalación Cancelado"
+		$posicionActual/$GRALOG "$0" "$MENSAJE" "ERR"
 		fin;
 	fi
 }
-
-#PASO21
-fin(){
-	#TODO:cerrar log
-	exit
-}
-
-#PASO9
- definirEspacioNovedades(){
-         #TODO: grabar en log
-         local estado=1;
-         while [ $estado == 1 ];do
-                 echo "Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100) : "
-                 read DATASIZE
-                 DATASIZE=`echo $DATASIZE | grep "^[0-9]*$"`
-                 if [ ! -z $DATASIZE ];then
-                         verificarEspacioDisco
-                         estado=$?;
-                 else
-                         echo "No pose caracteres numericos, intente nuevamente"
-                 fi
-         done
-}
-
-#PASO10
-verificarEspacioDisco(){
-	local espacioDisco=$(df -h | grep "/$" | sed "s-^/dev/sda. *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\).*-\3-");
-	tamanio=$(echo "$espacioDisco" | sed "s-^\([0-9]*\).*-\1-")
-	medida=$(echo "$espacioDisco" | sed "s-^\([0-9]*\)\([KMG]\).*-\2-")	
-	if [ $medida == "K" ];then
-		tamanio=`echo "scale=10;$tamanio/1024" | bc -l`
-	fi	
-	if [ $medida == "G" ];then 
-		let tamanio=tamanio*1024	
-	fi
-
-	if [ $tamanio -lt $DATASIZE ];then
-		echo "Insuficiente espacio en disco."
-		echo "Espacio disponible: $tamanio Mb."
-		echo "Espacio requerido $DATASIZE Mb"
-		echo "Inténtelo nuevamente."
-		return 1;
-	else
-		return 0;
-	fi
-}
-
-
-# ********************************************Acuerdo de Licencia de Software**********************************************************
 
 #PASO5
 definicionesInstalacion() {
@@ -266,7 +208,7 @@ definicionesInstalacion() {
 	clear;
 	local estado=0
 	while [ $estado -eq 0 ]
-	do
+	do	
 		estado=1
 		echo "*****************************************************************"
 		echo "*              Proceso de Instalacion de "AFRA-I"               *"
@@ -274,8 +216,10 @@ definicionesInstalacion() {
 		echo "*****************************************************************"
 		echo "A T E N C I O N: Al instalar UD. expresa aceptar los terminos y condiciones"
 		echo "del "ACUERDO DE LICENCIA DE SOFTWARE" incluido en este paquete."
-		echo "Acepta? (Si - No)"
+		echo "Acepta? (Si - No)"	
 		read respuesta
+		local MENSAJE="Proceso de Instalacion de \"AFRA-I\" Tema I Copyright  Grupo 07 - Segundo Cuatrimestre 2015 A T E N C I O N: Al instalar UD. expresa aceptar los terminos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\" incluido en este paquete. Acepta? (Si - No): ${respuesta^^}"
+		$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
 		if [ ${respuesta^^} = "NO" ];then
 			echo "Proceso Cancelado";
 			fin;
@@ -307,38 +251,6 @@ definicionesDir() {
 	definirRechDir
 	mostrarDefiniciones
 	return $?
-}
-# *************************************************************************************************************************************
-# ********************************************Print en Screen**************************************************************************
-
-#PASO18Y19
-mostrarDefiniciones () {
-	echo "Directorio de Ejecutables: ${BINDIR}"
-	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
-	echo "Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
-	echo "Espacio minimo libre para arribos: ${DATASIZE} Mb"
-	echo "Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
-	echo "Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
-	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
-	echo "Directorio de Archivos de Log: ${LOGDIR}"
-	echo "Extension para los archivos de log: ${LOGEXT}"
-	echo "Tamanio maximo para los archivos de log: ${LOGSIZE} Kb"
-	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
-	echo "Estado de la instalacion: LISTA"
-	echo "Desea continuar con la instalacion? (Si - No):"
-	read respuesta
-	if [ "${respuesta^^}" = "SI" ];then
-		echo "Iniciando Instalacion. Esta Ud. seguro? (Si - No):"
-		read respuesta2
-		if [ "${respuesta2^^}" = "SI" ];then
-			instalacion;
-		fi
-		fin;
-	else
-		clear
-		definicionesDir
-		#return "Si"
-	fi	
 }
 
 #PASO3.1
@@ -374,10 +286,12 @@ definirBinDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio de ejecutables ($GRUPO/bin):"
+		local MENSAJE="Defina el directorio de ejecutables ($GRUPO/bin):" 
+		echo "$MENSAJE"
 		read BINDIR
 		existeDir $BINDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $BINDIR" "INFO"
 	done
 }
 
@@ -386,10 +300,12 @@ definirMaeDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio para maestros y tablas ($GRUPO/mae):"
+		local MENSAJE="Defina el directorio para maestros y tablas ($GRUPO/mae):"
+		echo "$MENSAJE"
 		read MAEDIR
 		existeDir $MAEDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $MAEDIR" "INFO"
 	done
 }
 
@@ -398,22 +314,71 @@ definirNoveDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio de recepcion de archivos de llamadas ($GRUPO/novedades):"
+		local MENSAJE="Defina el directorio de recepción de archivos de llamadas ($GRUPO/novedades):"
+		echo "$MENSAJE"
 		read NOVEDIR
 		existeDir $NOVEDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $NOVEDIR" "INFO"
 	done
 }
+
+#PASO9
+ definirEspacioNovedades(){
+         local estado=1;
+         while [ $estado == 1 ];do
+		 local MENSAJE="Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100) : "
+                 echo "$MENSAJE"
+                 read DATASIZE
+                 DATASIZE=`echo $DATASIZE | grep "^[0-9]*$"`
+                 if [ ! -z $DATASIZE ];then
+			 $posicionActual/$GRALOG "$0" "$MENSAJE $DATASIZE" "INFO"
+                         verificarEspacioDisco
+                         estado=$?;
+                 else
+                         echo "No pose caracteres numericos, intente nuevamente"
+                 fi
+         done
+}
+
+#PASO10
+verificarEspacioDisco(){
+	local espacioDisco=$(df -h | grep "/$" | sed "s-^/dev/sda. *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\).*-\3-");
+	tamanio=$(echo "$espacioDisco" | sed "s-^\([0-9]*\).*-\1-")
+	medida=$(echo "$espacioDisco" | sed "s-^\([0-9]*\)\([KMG]\).*-\2-")	
+	if [ $medida == "K" ];then
+		tamanio=`echo "scale=10;$tamanio/1024" | bc -l`
+	fi	
+	if [ $medida == "G" ];then 
+		let tamanio=tamanio*1024	
+	fi
+
+	if [ $tamanio -lt $DATASIZE ];then
+		local MENSAJE="Insuficiente espacio en disco. Espacio disponible: $tamanio Mb. Espacio requerido $DATASIZE Mb. Inténtelo nuevamente."
+		echo "Insuficiente espacio en disco."
+		echo "Espacio disponible: $tamanio Mb."
+		echo "Espacio requerido $DATASIZE Mb"
+		echo "Inténtelo nuevamente."
+		$posicionActual/$GRALOG "$0" "$MENSAJE" "ERR"
+		return 1;
+	else
+		return 0;
+	fi
+}
+
+
 
 #PASO11
 definirAcepDir () {	
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio de grabacion de los archivos de llamadas aceptadas ($GRUPO/aceptadas):"
+		local MENSAJE="Defina el directorio de grabacion de los archivos de llamadas aceptadas ($GRUPO/aceptadas):"
+		echo "$MENSAJE"
 		read ACEPDIR
 		existeDir $ACEPDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $ACEPDIR" "INFO"
 	done
 }
 
@@ -422,10 +387,12 @@ definirProcDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio de grabacion de los registros de llamadas sospechosas ($GRUPO/sospechosas):"
+		local MENSAJE="Defina el directorio de grabacion de los registros de llamadas sospechosas ($GRUPO/sospechosas):"
+		echo "$MENSAJE"
 		read PROCDIR
 		existeDir $PROCDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $PROCDIR" "INFO"
 	done
 }
 
@@ -434,10 +401,12 @@ definirRepoDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio de grabacion de los reportes ($GRUPO/reportes):"
+		local MENSAJE="Defina el directorio de grabacion de los reportes ($GRUPO/reportes):"
+		echo "$MENSAJE"
 		read REPODIR
 		existeDir $REPODIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $REPODIR" "INFO"
 	done
 }
 
@@ -446,30 +415,45 @@ definirLogDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		echo "Defina el directorio para los archivos de log ($GRUPO/log):"
+		local MENSAJE="Defina el directorio para los archivos de log ($GRUPO/log):"
+		echo "$MENSAJE"
 		read LOGDIR
 		existeDir $LOGDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $LOGDIR" "INFO"
 	done
 }
 
 #PASO15
 definirLogExt () {
-	echo "Defina nombre para la extension de los archivos de log (log):"
-	read LOGEXT
-	#Falta verificar que la longitud sea menor o igual a 5
+	local estado=1 
+	while [ $estado == 1 ];do
+		local MENSAJE="Defina nombre para la extension de los archivos de log (log):"
+		echo "$MENSAJE"
+		read LOGEXT
+		#TODO VER REGEX DE CANTIDAD DE CARACTERES		
+		#LONGITUD=`echo $LOGEXT | grep "^.{1,5}$"`
+        	#        if [ ! -z $LONGITUD ];then
+				 $posicionActual/$GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
+				 estado=0
+        	#         else
+        	#                 echo "Debe ingresar una extensión con un máximo de 5 caracteres"
+        	#         fi
+	done
 }
 
 #PASO16
 definirLogSize () {
          local estado=1;
+	 local MENSAJE="Defina el tamanio maximo para cada archivo de log en Kbytes (400):"
          while [ $estado == 1 ];do
-		echo "Defina el tamanio maximo para cada archivo de log en Kbytes (400):"
+		echo "$MENSAJE"
 		read LOGSIZE
                 LOGSIZE=`echo $LOGSIZE | grep "^[0-9]*$"`
                 if [ -z $LOGSIZE ];then
                         echo "No pose caracteres numericos, intente nuevamente"
 		else	
+			$posicionActual/$GRALOG "$0" "$MENSAJE $LOGSIZE" "INFO"
 			estado=0; 
 		fi
          done
@@ -477,17 +461,75 @@ definirLogSize () {
 #PASO17
 definirRechDir () {
 	local estado=1
+	local MENSAJE="Defina el directorio de grabacion de Archivos rechazados ($GRUPO/rechazadas):"
 	while [ $estado -eq 1 ]
-	do
-		echo "Defina el directorio de grabacion de Archivos rechazados ($GRUPO/rechazadas):"
+	do	
+		echo "$MENSAJE"
 		read RECHDIR
 		existeDir $RECHDIR
 		estado=$?
+		$posicionActual/$GRALOG "$0" "$MENSAJE $RECHDIR" "INFO"
 	done
 }
-# **********************************************************************************************************************************
-# ***********************************************Creando las Estructuras************************************************************
 
+#PASO18Y19
+mostrarDefiniciones () {
+	local MENSAJE="Directorio de Ejecutables: ${BINDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de Maestros y Tablas: ${MAEDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Espacio minimo libre para arribos: ${DATASIZE} Mb"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de Archivos de Log: ${LOGDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Extension para los archivos de log: ${LOGEXT}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Tamanio maximo para los archivos de log: ${LOGSIZE} Kb"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Directorio de Archvios Rechazados: ${RECHDIR}"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Estado de la instalacion: LISTA"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	MENSAJE="Desea continuar con la instalacion? (Si - No):"
+	echo "$MENSAJE"
+	read respuesta
+	$posicionActual/$GRALOG "$0" "$MENSAJE $respuesta" "INFO"
+	if [ "${respuesta^^}" = "SI" ];then
+		MENSAJE="Iniciando Instalacion. Esta Ud. seguro? (Si - No):"
+		echo "$MENSAJE"
+		read respuesta2
+		$posicionActual/$GRALOG "$0" "$MENSAJE $respuesta2" "INFO"
+		if [ "${respuesta2^^}" = "SI" ];then
+			instalacion;
+		fi
+		fin;
+	else
+		clear
+		definicionesDir
+		#TODO QUE ES ESTO
+		#return "Si"
+	fi	
+}
 
 #PASO20
 instalacion () {
@@ -501,19 +543,19 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 		mkdir $GRUPO/$index
 
 	done
-
+	local MENSAJE="Actualizando la configuracion del sistema"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
 	escribirConfig;
 	moverArchivos;
-	
-	echo "Actualizando la configuracion del sistema"
-	#	escribirLog   
 	#Borrar archivos temporarios si es q los hay
-	echo "Instalacion CONCLUIDA"
+	MENSAJE="Instalacion CONCLUIDA"
+	echo "$MENSAJE"
+	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
 }
 
 moverArchivos (){
 	posicionActual=`pwd`
-
 	moverEjecutablesYFunciones
 	moverMaestrosYTablas
 }
@@ -545,8 +587,6 @@ moverMaestrosYTablas () {
 
 #PASO20.4
 escribirConfig () {
-	#grabar
-
 	WHEN=`date +%T-%d-%m-%Y`
 	WHO=${USER}
 
@@ -576,16 +616,19 @@ escribirConfig () {
 	echo "RECHDIR=$GRUPO/$RECHDIR=$WHO=$WHEN" >> $AFRACONFIG
 }
 
+#PASO21
+fin(){
+	$posicionActual/$GRALOG "$0" "Fin de Instalacion" "INFO"
+	exit
+}
+
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
-verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
+verificarInstalacion; #PASO 1 - 4
 definicionesInstalacion; #PASO 5 - 20
 fin #PASO 21
 
-#instalacion
-#definirLogSize
-
-
-
 #  BUGS Y MEJORAS #
-# - Ver como grabar el LOG
+# - Ver entrada de max 5 caracteres en extension del log
 # - Verificar que los nombres de los directorios no se dupliquen
+
+
