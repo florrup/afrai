@@ -1,0 +1,9 @@
+ACEPDIR=~/Grupo07/ACEPDIR
+RECHDIR=~/Grupo07/RECHDIR
+MAEDIR=~/Grupo07/MAEDIR
+
+export ACEPDIR
+export RECHDIR
+export MAEDIR
+
+./afraumbr.sh
