@@ -3,10 +3,14 @@
 # $1 archivo a mover
 # $2 directorio destino
 
+GRALOG="./gralog.sh"
+
 #Revisa que se reciban si o si dos parametros
 if [ $# -lt 2 ]; then
-  echo "Se deben ingresar al menos dos parametros"
-  # salir
+  MOUT="Se deben ingresar al menos dos parametros para Mover"
+  echo "$MOUT"
+  $GRALOG "$0" "$MOUT" "ERR"  
+  exit 1
 fi
 
 FILE=$1
@@ -16,47 +20,38 @@ ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
 
 # ??? falta tomar los restantes parametros
 
-echo         #
-echo "Valores de prueba"
-echo "$FILE" #
-echo "$DEST" #
-echo "$ORIG" #
-echo         #
-
 # Revisa que el archivo a mover exista
 if [ ! -f "$FILE" ]; then
-  echo "El archivo a mover \"${FILE}\" no existe"
-  # no muevo el archivo
-  # registro en log
-  # salir
+  MOUT="El archivo a mover \"${FILE}\" no existe"
+  echo "$MOUT"
+  $GRALOG "$0" "$MOUT" "ERR"
+  exit 1
 fi
 
 # Revisa que el directorio destino exista
 if [ ! -d "$DEST" ]; then
-  echo "El destino \"${DEST}\" no existe"
-  # no muevo el archivo
-  # registro en log
-  # salir
+  MOUT="El destino \"${DEST}\" no existe"
+  echo "$MOUT"
+  $GRALOG "$0" "$MOUT" "ERR"
+  exit 1
 fi
 
 # Revisa si el path de origen y el de destino son iguales
 if [ "$ORIG" = "$DEST" ]; then
-  echo "Paths de origen y destino son iguales"
-  # no muevo el archivo
-  # registro en log
-  # salir
+  MOUT="Paths de origen y destino son iguales"
+  echo "$MOUT"
+  $GRALOG "$0" "$MOUT" "ERR"
+  exit 1
 fi
 
 # Revisa si ya existe un archivo con el mismo nombre
 FILEDEST=$DEST/$FILE
-echo $FILEDEST
-
 DUPLI=$DEST/duplicados
-echo $DUPLI
 
 if [ -f "$FILEDEST" ]; then
-  echo "Ya existe un archivo con ese nombre en \"${DEST}\""
-
+  MOUT="Ya existe un archivo con ese nombre en \"${DEST}\""
+  echo "$MOUT"
+  $GRALOG "$0" "$MOUT" "WAR"
   # Si no existe DUPLICADOS, lo crea
   if [ ! -d ${DUPLI} ]
   then
@@ -70,6 +65,8 @@ if [ -f "$FILEDEST" ]; then
 
 else
   mv $FILE $DEST
-  echo "El archivo \"${FILE}\" ha sido movido al directorio \"${DEST}\""
-  # salir
+  MOUT="El archivo \"${FILE}\" ha sido movido al directorio \"${DEST}\""
+  echo "$MOUT"
+  $GRALOG "$0" "$MOUT" "INFO"
+  exit 0
 fi
