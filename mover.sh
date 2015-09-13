@@ -5,11 +5,17 @@
 
 GRALOG="./gralog.sh"
 
+function msjLog() {
+  local MOUT=$1
+  local TIPO=$2
+  echo "${MOUT}" 
+  $GRALOG "$0" "$MOUT" "$TIPO"
+}
+
 #Revisa que se reciban si o si dos parametros
 if [ $# -lt 2 ]; then
   MOUT="Se deben ingresar al menos dos parametros para Mover"
-  echo "$MOUT"
-  $GRALOG "$0" "$MOUT" "ERR"  
+  msjLog "${MOUT}" "ERR"  
   exit 1
 fi
 
@@ -23,24 +29,21 @@ ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
 # Revisa que el archivo a mover exista
 if [ ! -f "$FILE" ]; then
   MOUT="El archivo a mover \"${FILE}\" no existe"
-  echo "$MOUT"
-  $GRALOG "$0" "$MOUT" "ERR"
+  msjLog "$MOUT" "ERR"
   exit 1
 fi
 
 # Revisa que el directorio destino exista
 if [ ! -d "$DEST" ]; then
   MOUT="El destino \"${DEST}\" no existe"
-  echo "$MOUT"
-  $GRALOG "$0" "$MOUT" "ERR"
+  msjLog "$MOUT" "ERR"
   exit 1
 fi
 
 # Revisa si el path de origen y el de destino son iguales
 if [ "$ORIG" = "$DEST" ]; then
   MOUT="Paths de origen y destino son iguales"
-  echo "$MOUT"
-  $GRALOG "$0" "$MOUT" "ERR"
+  msjLog "$MOUT" "ERR"
   exit 1
 fi
 
@@ -50,8 +53,7 @@ DUPLI=$DEST/duplicados
 
 if [ -f "$FILEDEST" ]; then
   MOUT="Ya existe un archivo con ese nombre en \"${DEST}\""
-  echo "$MOUT"
-  $GRALOG "$0" "$MOUT" "WAR"
+  msjLog "$MOUT" "WAR"
   # Si no existe DUPLICADOS, lo crea
   if [ ! -d ${DUPLI} ]
   then
@@ -59,14 +61,31 @@ if [ -f "$FILEDEST" ]; then
     echo "El directorio \"${DUPLI}\" ha sido creado"
   fi
   
-  # Ya existe DUPLICADOS 
-  # tengo que depositarlo con secuencia nnn
-  # salir
+  # Ya existe DUPLICADOS
+  if [ ! -f "$DUPLI"/"$FILE" ]; then
+     mv $FILE $DUPLI
+     echo "El archivo \"${FILE}\" ha sido movido a \"${DUPLI}\""
+     exit 0
+  else
+    # tengo que depositarlo con secuencia nnn si ya se encuentra
+    # ??? obligatorio usar tres digitos para esto?
+    NNN=0 
+
+    for ARCH in "${DUPLI}"/*    
+    do
+       if [ "${ARCH%%.*}" = "${DUPLI}"/"${FILE%%.*}" ]; then
+        NNN=$((NNN+1))
+      fi
+    done
+ 
+    NEWFILE="${DUPLI}"/"${FILE}"."${NNN}"
+    mv "${FILE}" "${NEWFILE}"
+    exit 0
+  fi
 
 else
   mv $FILE $DEST
   MOUT="El archivo \"${FILE}\" ha sido movido al directorio \"${DEST}\""
-  echo "$MOUT"
-  $GRALOG "$0" "$MOUT" "INFO"
+  msjLog "$MOUT" "INFO"
   exit 0
 fi
