@@ -12,6 +12,9 @@ fi
 FILE=$1
 DEST=$2
 ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
+# ??? de esto ^ no estoy segura
+
+# ??? falta tomar los restantes parametros
 
 echo         #
 echo "Valores de prueba"
@@ -44,9 +47,10 @@ if [ "$ORIG" = "$DEST" ]; then
   # salir
 fi
 
-# Si ya existe un archivo con el mismo nombre
+# Revisa si ya existe un archivo con el mismo nombre
 FILEDEST=$DEST/$FILE
 echo $FILEDEST
+
 DUPLI=$DEST/duplicados
 echo $DUPLI
 
@@ -62,4 +66,10 @@ if [ -f "$FILEDEST" ]; then
   
   # Ya existe DUPLICADOS 
   # tengo que depositarlo con secuencia nnn
+  # salir
+
+else
+  mv $FILE $DEST
+  echo "El archivo \"${FILE}\" ha sido movido al directorio \"${DEST}\""
+  # salir
 fi
