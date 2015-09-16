@@ -3,6 +3,15 @@
 
 GRALOG="./gralog.sh"
 
+CNF="CONFDIR"
+BIN="BINDIR"
+NOV="NOVEDIR"
+ACP="ACEPDIR"
+PRO="PROCDIR"
+REP="REPODIR"
+LOG="LOGDIR"
+REC="RECHDIR"
+
 MAE="MAEDIR" # utilizar el path correspondiente
 CDP="${MAE}"/"CdP.mae"
 CDA="${MAE}"/"CdA.mae"
@@ -61,14 +70,62 @@ function verificarInstalacion() {
 
 # Verifica los permisos
 function verificarPermisos() {
-  # a los de lectura se los seteo automaticamente?
+  archivos=("$CDP" "$CDA" "$CDC" "$AGE" "$TLL" "$UMB")
+  for ARCH in "${archivos[@]}"
+  do
+    chmod +r "$ARCH"
+  done
+}
+
+# Pregunta si arranca demonio
+function deseaArrancar() {
+  echo "¿Desea efectuar la activación de AFRARECI? si - no"
+  read respuesta
+  respuesta=${respuesta,,} # lo paso a lowercase
+  case $respuesta in
+    "no")
+      echo "NOOO"
+      ;;
+    "si")
+      echo "SIIII"
+      ;;
+    *)
+      echo "La respuesta debe ser \"si\" o \"no\""
+      ;;
+  esac
+}
+
+function mostrarYgrabar() {
+  variables=("$CNF" "$BIN" "$MAE" "$NOV" "$ACP" "$PRO" "$REP" "$LOG" "$REC")
+  mensajes=("Configuración" "Ejecutables" "Maestros y Tablas" "Recepción de archivos de llamadas" "Archivos de llamadas Aceptadas" "Archivos de llamadas Sospechosas" "Archivos de Reportes de llamadas" "Archivos de Log" "Archivos Rechazados")
+  i=0
+  for VAR in "${variables[@]}"
+  do
+    MSJ="Directorio de ""${mensajes[${i}]}":" $VAR"
+    msjLog "$MSJ" "INFO"
+    ((i+=1))
+  done  
 }
 
 ##############################
 
-verificarInstalacion
-instalacionRtado=$?
-if [ "$instalacionRtado" == 1 ]; then
-  echo "La instalacion no esta completa"
-  exit 1
-fi
+# 1. Verifica ambiente inicializado
+
+# 2. Verifica instalacion completa
+#verificarInstalacion
+#instalacionRtado=$?
+#if [ "$instalacionRtado" == 1 ]; then
+#  echo "La instalacion no esta completa"
+#  exit 1
+#fi
+
+# 3. Verifica permisos
+#verificarPermisos
+
+# 4. Inicializa el ambiente
+
+# 5. Muestra y graba en el log
+mostrarYgrabar
+
+# 6. Pregunta si se desea arrancar
+#deseaArrancar

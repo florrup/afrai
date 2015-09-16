@@ -2,6 +2,7 @@
 # Mueve un archivo desde el origen al destino
 # $1 archivo a mover
 # $2 directorio destino
+# $3 comando que lo invoca (opcional)
 
 GRALOG="./gralog.sh"
 
