@@ -3,7 +3,7 @@
 
 MOVER="./mover.sh"
 
-function tieneParametros() {
+function noTieneParametros() {
   $MOVER
   if [ "$?" == 1 ]
   then
@@ -13,7 +13,7 @@ function tieneParametros() {
   fi
 }
 
-function existeFile() {
+function noExisteFile() {
   $MOVER "$1" "$2"
   if [ "$?" == 1 ]
   then
@@ -23,7 +23,7 @@ function existeFile() {
   fi
 }
 
-function existeDirectorio() {
+function noExisteDirectorio() {
   $MOVER "$1" "$2"
   if [ "$?" == 1 ]
   then
@@ -67,6 +67,22 @@ function crearDirectorio() {
   mkdir "$1"
 }
 
+function estaFile() {  
+  if [ -f "$1" ]; then
+    echo -e "\n\t - El archivo ${1} esta en el directorio \n"
+  else
+    echo -e "\n\t - El archivo ${1} NO esta en el directorio \n"
+  fi
+}
+
+function estaDirectorio() {
+  if [ -d "$1" ]; then
+    echo -e "\n\t - El directorio ${1} esta \n"
+  else
+    echo -e "\n\t - El directorio ${1} NO esta \n"
+  fi
+}
+
 #####   MOVER   #####
 
 echo "### Pruebas para MOVER.SH ###"
@@ -80,19 +96,32 @@ borrarDirectorio "$DIREC"
 borrarArchivo "log.txt"
 
 # No le paso parametros
-tieneParametros
+noTieneParametros
 
 # No existe FILE. Lo creo.
-existeFile $FILE $DIREC
+estaFile $FILE
+noExisteFile $FILE $DIREC
 crearArchivo "$FILE"
-existeFile $FILE $DIREC
+estaFile $FILE
 
 # No existe DIREC. Lo creo.
-existeDirectorio $FILE $DIREC
-crearDirectorio ${DIREC}
+estaDirectorio $DIREC
+noExisteDirectorio $FILE $DIREC
+crearDirectorio $DIREC
+estaDirectorio $DIREC
 
 # Origen y Destino son iguales
-# de este no estoy segura
-origenIgualDestino $FILE $PWD
+origenIgualDestino $FILE $PWD # de este no estoy segura
 
 # falta probar DUPLICADOS
+estaFile "$DIREC"/"$FILE"
+$MOVER "$FILE" "$DIREC"
+estaFile "$DIREC"/"$FILE"
+estaDirectorio "$DIREC"/duplicados
+crearArchivo "$FILE"
+$MOVER "$FILE" "$DIREC"
+estaDirectorio "$DIREC"/duplicados
+estaFile $DIREC/duplicados/$FILE
+crearArchivo "$FILE"
+$MOVER "$FILE" "$DIREC"
+

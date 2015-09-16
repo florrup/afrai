@@ -81,6 +81,7 @@ if [ -f "$FILEDEST" ]; then
  
     NEWFILE="${DUPLI}"/"${FILE}"."${NNN}"
     mv "${FILE}" "${NEWFILE}"
+    echo "El archivo \"$FILE\" ha sido movido con secuencia $NNN a duplicados"
     exit 0
   fi
 

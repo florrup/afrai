@@ -44,10 +44,6 @@ function noPermisos() {
   msjLog "$MOUT" "ERR"
 }
 
-function setPermisosLectura() {
-  chmod +r "$1"
-}
-
 # Verifica que la instalacion esta completa
 # Devuelve 0 si esta completa, 1 si no
 function verificarInstalacion() {
@@ -74,7 +70,15 @@ function verificarPermisos() {
   for ARCH in "${archivos[@]}"
   do
     chmod +r "$ARCH"
+    if [ "$?" = -1  ]; then
+      noPermisos "$ARCH"
+    fi
   done
+}
+
+# Inicializa el ambiente
+function inicializarAmbiente() {
+ # echo "FLORRR"
 }
 
 # Pregunta si arranca demonio
@@ -123,9 +127,10 @@ function mostrarYgrabar() {
 #verificarPermisos
 
 # 4. Inicializa el ambiente
+#inicializarAmbiente
 
 # 5. Muestra y graba en el log
-mostrarYgrabar
+#mostrarYgrabar
 
 # 6. Pregunta si se desea arrancar
 #deseaArrancar
