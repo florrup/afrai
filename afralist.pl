@@ -1,8 +1,10 @@
 #! /usr/bin/perl
 
 use Getopt::Long;
+use List::MoreUtils;
+
 GetOptions('r' => \$consultar, 'w' => \$grabar,'s' => \$estadistica,'h' => \$ayuda,);
-$dir = 'PROCDIR/'; #direccion donde esten los archivos a consultar
+$dir = ' '; #direccion donde esten los archivos a consultar
 
 # Lee el ingreso validando que sea S o N
 sub respSN {
@@ -30,25 +32,77 @@ chomp($codString);
 $codString;
 }
 
-# Pendiente
-sub filtrar {
-my ($line) = $_[0];
-print $line;
-}	 
+sub unirCodigos{
+@tokens = @_;
+$codUni = ".*";
+if($#tokens != -1){
+	$codUni = "(";
+	foreach $token (@tokens){
+		$codUni .= $token."|";
+	}
+	chop($codUni);
+	$codUni .= ")";
+}
+$codUni;
+}
+
+sub validarOficina{
+
+$bool = (($_[0] !~ /^[[:alnum:]]{3}$/)&&($_[0] ne "0"));
+
+}
+
+#sub validarAnioMes{
+#$bool = 1;
+
+#foreach $am (@_){
+#	if($am !~ /[0-9]{4}[0-1][0-9]/){
+#		print "El anio mes: $am es invalido\n";
+#		$bool = 0;
+#	}
+#	if($bool == 0){
+#		print "Desea reingresar los valores anio mes? (S/N): ";
+#		if(&respSN eq 'S'){
+#			$bool = 0;
+#		}
+#		else{
+#			$bool = 1;
+#		}
+#	}
+#}
+#$bool;
+#
+#}
+
+sub borrarDuplicados {
+my %unique = ();
+foreach my $item (@_)
+{
+    $unique{$item} ++;
+}
+@myuniquearray = keys %unique;
+
+}
+	 
 	
 if($consultar){
 	
 	do{
 		print "Ingrese oficina (0 para terminar): ";
 		$oficina = &respSimple;
-		if($oficina ne "0"){
-			print "Ingrese anio mes separados por espacio: ";
+		if(&validarOficina ($oficina)){
+			print "Oficina invalida\n";
+			$oficina = "-1";
+		}
+		if($oficina ne "0" && $oficina ne "-1"){
+			print "Ingrese anio mes separados por espacio de la forma (AAAAMM): ";
 			@aniomes = &respToken;
-			foreach $aniomes (@aniomes){
-				push(@archivos,$oficina."_".$aniomes);
+			foreach $am (@aniomes){
+				push(@archivos, $oficina."_".$am);
 			}
 		}
 	}until($oficina eq "0");
+	
 	
 
 	if(opendir(DIR,"$dir")){
@@ -64,34 +118,42 @@ if($consultar){
 		}
 	}
 
-	if($#nombreArchivos == -1){
+	@nombreArchSinDup = &borrarDuplicados(@nombreArchivos);
+
+	if($#nombreArchSinDup == -1){
 		print "No se han encontrado archivos esa descripcion\n";
 		die;
 	}
 
+	$regex = "^";
+	
 	print "Desea filtrar centrales? (S/N): ";	
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de centrales (separados por espacios): ";
-		@centrales = &respToken;
+		@centrales = &respToken;	
 	}
+
+	$codigosunidos = &unirCodigos (@centrales);
+	$regex .= $codigosunidos;
 
 	print "Desea filtrar por agentes? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de agentes (separados por espacios): ";
 		@agentes = &respToken;
-		foreach $cod (@agentes){
-			print "$cod\n";
-		}
 	}
+
+	$codigosunidos = &unirCodigos (@agentes);
+	$regex .= ";".$codigosunidos;
+
 
 	print "Desea filtrar por umbrales? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de umbrales (separados por espacios): ";
 		@umbrales = &respToken;
-		foreach $cod (@umbrales){
-		print "$cod\n";
-		}
 	}
+
+	$codigosunidos = &unirCodigos (@umbrales);
+	$regex .= ";".$codigosunidos;
 
 	print "Desea filtrar por tipo de llamada? (S/N): ";
 	if(&respSN eq 'S'){
@@ -102,7 +164,14 @@ if($consultar){
 		}
 	}
 
+	$codigosunidos = &unirCodigos (@tipo);
+	$regex .= ";".$codigosunidos;
+
+	$regex .= ";.*"  #Hora de llamada no se aplica filtro
+
 	print "Desea filtrar por tiempo de conversacion? (S/N): ";
+	$codigosunidos = ".*";
+
 	if(&respSN eq 'S'){
 
 		print "Ingrese tiempo minimo: ";
@@ -111,28 +180,29 @@ if($consultar){
 		print "Ingrese tiempo maximo: ";
 		$Tmax = <STDIN>;
 		chomp($Tmax);
+		$codigosunidos = "[".$Tmin."-".$Tmax."]";
 	}
+	$regex .= ";".$codigosunidos;
 
 	print "Desea filtrar por numero A? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese los numeros (separados por espacios): ";
 		@numA = &respToken;
-		foreach $cod (@numA){
-			print "$cod\n";
-		}
 	}
+
+	$codigosunidos = &unirCodigos (@numA);
+	$regex .= ";".$codigosunidos;
 
 	print "Desea filtrar por numero B? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese los numeros (separados por espacios): ";
 		@numB = &respToken;
-		foreach $cod (@numB){
-			print "$cod\n";
-		}
 	}
 
+	$codigosunidos = &unirCodigos (@numB);
+	$regex .= ";".$codigosunidos."\$";
 	
-
+	print $regex;
 }
 
 if($grabar){
@@ -144,5 +214,5 @@ if($estadistica){
 }
 
 if($ayuda){
-	print "ayuda gato\n";
+	print "ayuda \n";
 }
