@@ -1,12 +1,12 @@
 #! /bin/bash
 GRUPO="~/grupo07";
 CONFDIR="$GRUPO/CONF";
-CONFIG="AFRAINST.conf";
+AFRACONFIG="AFRAINST.conf";
 DATASIZE=100;
 NOVEDIR="/home/ramon/desa/";
 
-existeConfiguracion () {
-        local configuracion="$CONFDIR/$CONFIG"
+existeArchivo () {
+        local configuracion=$1;
         if [ -f "${configuracion}" ];then
                 return 0;
         else
@@ -16,7 +16,12 @@ existeConfiguracion () {
 
 #PASO 1
 verificarInstalacion(){
-        existeConfiguracion
+	#SACAR
+	echo "Verificando instalacion..."
+	read x;
+	#**************************************
+	local config="$CONFIG/$AFRACONFIG"
+        existeArchivo $config
         local resultado=$?
         if [ $resultado == 0 ];then
                 echo "puede estar instalado"
@@ -31,6 +36,10 @@ verificarInstalacion(){
 
 #PASO 4
 verificarPerl(){
+	#SACAR
+	echo "Verificando instalacion de Perl..."
+	read x;
+	#**************************************
 	local datosPerl=`perl -v`
 	local version=$(echo "$datosPerl" | grep " perl [0-9]" | sed "s-.*\(perl\) \([0-9]*\).*-\2-")
 	if [ $version -ge 5 ];then
@@ -93,7 +102,9 @@ verificarEspacioDisco(){
 # ********************************************Acuerdo de Licencia de Software**********************************************************
 
 #PASO5
-definicionesIntalacion () {
+definicionesInstalacion() {
+	read x
+	clear;
 	local estado=0
 	while [ $estado -eq 0 ]
 	do
@@ -106,25 +117,37 @@ definicionesIntalacion () {
 		echo "del "ACUERDO DE LICENCIA DE SOFTWARE" incluido en este paquete."
 		echo "Acepta? (Si - No)"
 		read respuesta
-		while [ "$respuesta" = "Si" ]
-		do
-			definirBinDir
-			definirMaeDir
-			definirNoveDir
-			definirEspacioNovedades
-			definirAcepDir
-			definirProcDir
-			definirRepoDir
-			definirLogDir
-			definirLogExt
-			definirLogSize
-			definirRechDir
-			mostrarDefiniciones
-			respuesta=$?
-		done		
+		#TODO: verificar si la respuesta es Si o No y no otra respuesta.
+		if [ $respuesta = "No" ];then
+			echo "Proceso Cancelado";
+			fin;
+		elif [ $respuesta = "Si" ];then
+			while [ $respuesta = "Si" ]
+			do
+				definicionesDir
+				respuesta=$?
+			done
+		else
+			estado=0;
+		fi		
 	done
 }
 
+definicionesDir() {
+	definirBinDir
+	definirMaeDir
+	definirNoveDir
+	definirEspacioNovedades
+	definirAcepDir
+	definirProcDir
+	definirRepoDir
+	definirLogDir
+	definirLogExt
+	definirLogSize
+	definirRechDir
+	mostrarDefiniciones
+	return $?
+}
 # *************************************************************************************************************************************
 # ********************************************Print en Screen**************************************************************************
 
@@ -152,7 +175,8 @@ mostrarDefiniciones () {
 		fi
 	else
 		clear
-		#volver a definirBinDir. Todavia no vuelve!!!!!!!!!!!!
+		definicionesDir
+		#Ya vuelve pero no entiendo porque en el paso 5 hay respuesta=$? si no se devuelve nada (agrege un return por las dudas)
 	fi	
 }
 
@@ -297,14 +321,30 @@ definirRechDir () {
 
 #PASO20
 instalacion () {
-	mkdir "${BINDIR}"
-	mkdir "${MAEDIR}"
-	mkdir "${NOVEDIR}"
-	mkdir "${ACEPDIR}"
-	mkdir "${PROCDIR}"
-	mkdir "${REPODIR}"
-	mkdir "${LOGDIR}"
-	mkdir "${RECHDIR}"
+	echo "Completando instación"
+#	local DIRE
+#	DIRE="${GRUPO}"
+#	echo "$DIRE"
+#	mkdir $DIRE
+#	mkdir "${GRUPO}/"
+#	mkdir "${GRUPO}/${BINDIR}/"
+#	mkdir "$DIR"
+#	DIR="${GRUPO}/${MAEDIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${NOVEDIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${ACEPDIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${PROCDIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${REPODIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${LOGDIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${CONFDIR}"
+#	mkdir $DIR
+#	DIR="${GRUPO}/${RECHDIR}"
+#	mkdir $DIR
 }
 
 
@@ -312,5 +352,13 @@ instalacion () {
 verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
 definicionesInstalacion; #PASO 5 - 20
 fin #PASO 21
+#instalacion
 
-#verifInstalacion
+#  BUGS Y MEJORAS #
+# - Chequear las entradas de los reads (Si y No; los valores numericos;etc)
+# - Creacion de carpetas (antes las creaba pero en la carpeta del repo, hay qe redireccionar la creacion)
+# - Ver como se guarda todos los datos de configuracion para los demas scripts
+# - Ver como grabar el LOG
+# - Ver que grabar en el afrainst.config
+# - completar paso 2 y 20
+
