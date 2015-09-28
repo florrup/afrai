@@ -173,13 +173,12 @@ mostrarDefiniciones () {
 		read respuesta2
 		if [ "$respuesta2" = "Si" ];then
 			instalacion;
-		else
-			fin;
 		fi
+		fin;
 	else
 		clear
 		definicionesDir
-		#Ya vuelve pero no entiendo porque en el paso 5 hay respuesta=$? si no se devuelve nada (agrege un return por las dudas)
+		return "Si"
 	fi	
 }
 
@@ -353,11 +352,10 @@ instalacion () {
 
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
-#verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
-#definicionesInstalacion; #PASO 5 - 20
-#fin #PASO 21
-instalacion
-
+verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
+definicionesInstalacion; #PASO 5 - 20
+fin #PASO 21
+#instalacion
 
 
 #  BUGS Y MEJORAS #
