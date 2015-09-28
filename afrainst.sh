@@ -323,7 +323,7 @@ definirRechDir () {
 
 #PASO20
 instalacion () {
-	echo "Completando instación"
+	echo "Creando Estructuras de directorio"
 	mkdir "${CONFDIR}"
 #	local DIRE
 #	DIRE="${GRUPO}"
@@ -348,8 +348,21 @@ instalacion () {
 #	mkdir $DIR
 #	DIR="${GRUPO}/${RECHDIR}"
 #	mkdir $DIR
+	echo "Instalando Archivos Maestros y Tablas"
+	#Mover los archivos maestros y las tablas 
+	echo "Actualizando la configuracion del sistema"
+	escribirLog   
+	#Hay q almacenar la informacion de configuracion del sistema en el archivo afrainst.conf en confdir grabando un registro para cada
+	#una de las variables indicadas durante este proceso
+	#Borrar archivos temporarios si es q los hay
+	echo "Instalacion CONCLUIDA"
 }
 
+#PASO20.4
+escribirLog () {
+	
+
+}
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
 verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
