@@ -173,13 +173,12 @@ mostrarDefiniciones () {
 		read respuesta2
 		if [ "$respuesta2" = "Si" ];then
 			instalacion;
-		else
-			fin;
 		fi
+		fin;
 	else
 		clear
 		definicionesDir
-		#Ya vuelve pero no entiendo porque en el paso 5 hay respuesta=$? si no se devuelve nada (agrege un return por las dudas)
+		return "Si"
 	fi	
 }
 
@@ -324,7 +323,7 @@ definirRechDir () {
 
 #PASO20
 instalacion () {
-	echo "Completando instación"
+	echo "Creando Estructuras de directorio"
 	mkdir "${CONFDIR}"
 #	local DIRE
 #	DIRE="${GRUPO}"
@@ -349,15 +348,27 @@ instalacion () {
 #	mkdir $DIR
 #	DIR="${GRUPO}/${RECHDIR}"
 #	mkdir $DIR
+	echo "Instalando Archivos Maestros y Tablas"
+	#Mover los archivos maestros y las tablas 
+	echo "Actualizando la configuracion del sistema"
+	escribirLog   
+	#Hay q almacenar la informacion de configuracion del sistema en el archivo afrainst.conf en confdir grabando un registro para cada
+	#una de las variables indicadas durante este proceso
+	#Borrar archivos temporarios si es q los hay
+	echo "Instalacion CONCLUIDA"
 }
 
+#PASO20.4
+escribirLog () {
+	
+
+}
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
-#verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
-#definicionesInstalacion; #PASO 5 - 20
-#fin #PASO 21
-instalacion
-
+verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
+definicionesInstalacion; #PASO 5 - 20
+fin #PASO 21
+#instalacion
 
 
 #  BUGS Y MEJORAS #
