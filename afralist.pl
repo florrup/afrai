@@ -1,10 +1,9 @@
 #! /usr/bin/perl
 
 use Getopt::Long;
-use List::MoreUtils;
 
 GetOptions('r' => \$consultar, 'w' => \$grabar,'s' => \$estadistica,'h' => \$ayuda,);
-$dir = ' '; #direccion donde esten los archivos a consultar
+$dir = 'archivos_locos'; #direccion donde esten los archivos a consultar
 
 # Lee el ingreso validando que sea S o N
 sub respSN {
@@ -48,31 +47,32 @@ $codUni;
 
 sub validarOficina{
 
-$bool = (($_[0] !~ /^[[:alnum:]]{3}$/)&&($_[0] ne "0"));
+
+$bool = (($_[0] !~ /^[[:alnum:]]{3}$/)&&($_[0] ne "0")&&($_[0] ne "-a"));
 
 }
 
-#sub validarAnioMes{
-#$bool = 1;
+sub validarAnioMes{
 
-#foreach $am (@_){
-#	if($am !~ /[0-9]{4}[0-1][0-9]/){
-#		print "El anio mes: $am es invalido\n";
-#		$bool = 0;
-#	}
-#	if($bool == 0){
-#		print "Desea reingresar los valores anio mes? (S/N): ";
-#		if(&respSN eq 'S'){
-#			$bool = 0;
-#		}
-#		else{
-#			$bool = 1;
-#		}
-#	}
-#}
-#$bool;
-#
-#}
+foreach $am (@_){
+	if($am !~ /^[0-9]{4}[0-1][0-9]$/){
+		print "El anio mes: $am es invalido y no sera tenido en cuenta\n";
+	}
+	else{
+		push(@aniomesValido, $am);
+	}
+}
+
+if($#aniomesValido == -1){
+	$aniomesValido[0] = "[0-9]{4}[0-1][0-9]\$";
+	print "Se consultaran todos los anio mes del directorio\n";
+}
+
+@aniomesValido;
+}
+
+
+
 
 sub borrarDuplicados {
 my %unique = ();
@@ -84,48 +84,77 @@ foreach my $item (@_)
 
 }
 	 
+#Se selecciono la opcion de consultar	
+if($consultar){ 
+
+	#Abre el directorio, y almacena en @archSort los archivos validos
+	if(opendir(DIR,"$dir")){ 
+		@aD=readdir(DIR);
+		close(DIR);
+		foreach $ad (@aD){
+			next unless ($ad =~ /^[0-9]{3}_[0-9]{4}[0-1][0-9]$/);
+			push (@aDir, $ad);
+			@archSort = sort(@aDir);
+		}
+	}
 	
-if($consultar){
+	#Muestra los archivos disponibles y validos
+	print "Archivos disponibles en \"$dir\"\n";
+	$i = 0;
+	foreach $aD (@archSort){
+		print $aD;
+		if($i<3){
+			$i++;
+			print "\t";
+		}
+		else{
+			$i=0;
+			print "\n";
+		}
+	}
 	
+	#Pregunta las oficinas y los anio mes al usuario validando ambos ingresos
 	do{
-		print "Ingrese oficina (0 para terminar): ";
+		print "\nIngrese oficina (0 para terminar): ";
 		$oficina = &respSimple;
 		if(&validarOficina ($oficina)){
 			print "Oficina invalida\n";
 			$oficina = "-1";
 		}
+		if($oficina eq "-a"){
+			$oficina = /^[[:alnum:]]{3}\$/;
+			print "Se consultaran todas las oficinas del directorio\n";
+		}
 		if($oficina ne "0" && $oficina ne "-1"){
 			print "Ingrese anio mes separados por espacio de la forma (AAAAMM): ";
 			@aniomes = &respToken;
-			foreach $am (@aniomes){
+			@aniomesValido = &validarAnioMes (@aniomes);
+			foreach $am (@aniomesValido){
 				push(@archivos, $oficina."_".$am);
 			}
 		}
-	}until($oficina eq "0");
+	}until($oficina eq "0" || $oficina eq  /^[[:alnum:]]{3}\$/);
 	
-	
-
-	if(opendir(DIR,"$dir")){
-		@archivosDir=readdir(DIR);
-		close(DIR);
-	}
-
-	foreach $archDir (@archivosDir){
+	#Genera una lista con el nombre completo del archivo si el archivo existe en el directorio
+	foreach $archDir (@archSort){
 		foreach $arch (@archivos){
-			if($arch eq $archDir){
-				push(@nombreArchivos, $dir."/".$arch);
+			if($archDir =~ $arch){
+				push(@nombreArchivos, $dir."/".$archDir);
 			}
 		}
 	}
-
 	@nombreArchSinDup = &borrarDuplicados(@nombreArchivos);
+	print "@nombreArchSinDup\n";
 
+	#No se encontraron archivos para abrir
 	if($#nombreArchSinDup == -1){
-		print "No se han encontrado archivos esa descripcion\n";
+		print "No se han encontrado archivos con ese nombre\n";
 		die;
 	}
 
-	$regex = "^";
+
+	#Comienza a preguntar sobre los filtros al usuario
+	$regex = "^";#Va generando la expresion regular segun los filtros
 	
 	print "Desea filtrar centrales? (S/N): ";	
 	if(&respSN eq 'S'){
@@ -159,15 +188,12 @@ if($consultar){
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de llamada (separados por espacios): ";
 		@tipo = &respToken;
-		foreach $cod (@tipo){
-			print "$cod\n";
-		}
 	}
 
 	$codigosunidos = &unirCodigos (@tipo);
 	$regex .= ";".$codigosunidos;
 
-	$regex .= ";.*"  #Hora de llamada no se aplica filtro
+	$regex .= ";.*";  #Hora de llamada no se aplica filtro
 
 	print "Desea filtrar por tiempo de conversacion? (S/N): ";
 	$codigosunidos = ".*";
