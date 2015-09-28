@@ -133,6 +133,7 @@ definicionesInstalacion() {
 	done
 }
 
+
 definicionesDir() {
 	definirBinDir
 	definirMaeDir
@@ -171,7 +172,9 @@ mostrarDefiniciones () {
 		echo "Iniciando Instalacion. Esta Ud. seguro? (Si - No):"
 		read respuesta2
 		if [ "$respuesta2" = "Si" ];then
-			instalacion
+			instalacion;
+		else
+			fin;
 		fi
 	else
 		clear
@@ -354,6 +357,8 @@ definicionesInstalacion; #PASO 5 - 20
 fin #PASO 21
 #instalacion
 
+
+
 #  BUGS Y MEJORAS #
 # - Chequear las entradas de los reads (Si y No; los valores numericos;etc)
 # - Creacion de carpetas (antes las creaba pero en la carpeta del repo, hay qe redireccionar la creacion)
@@ -361,4 +366,5 @@ fin #PASO 21
 # - Ver como grabar el LOG
 # - Ver que grabar en el afrainst.config
 # - completar paso 2 y 20
+
 
