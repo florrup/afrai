@@ -1,6 +1,6 @@
 #! /bin/bash
-GRUPO="~/grupo07";
-CONFDIR="$GRUPO/CONF";
+GRUPO=~/grupo07;
+CONFDIR=${GRUPO}/CONF;
 AFRACONFIG="AFRAINST.conf";
 DATASIZE=100;
 NOVEDIR="/home/ramon/desa/";
@@ -322,6 +322,7 @@ definirRechDir () {
 #PASO20
 instalacion () {
 	echo "Completando instación"
+	mkdir "${CONFDIR}"
 #	local DIRE
 #	DIRE="${GRUPO}"
 #	echo "$DIRE"
@@ -349,10 +350,10 @@ instalacion () {
 
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
-verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
-definicionesInstalacion; #PASO 5 - 20
-fin #PASO 21
-#instalacion
+#verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
+#definicionesInstalacion; #PASO 5 - 20
+#fin #PASO 21
+instalacion
 
 #  BUGS Y MEJORAS #
 # - Chequear las entradas de los reads (Si y No; los valores numericos;etc)
