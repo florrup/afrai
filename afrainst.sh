@@ -121,13 +121,13 @@ definicionesInstalacion() {
 		if [ $respuesta = "No" ];then
 			echo "Proceso Cancelado";
 			fin;
-		elif [ $respuesta = "Si" ];then
+		else 
 			while [ $respuesta = "Si" ]
 			do
 				definicionesDir
 				respuesta=$?
 			done
-		else
+		
 			estado=0;
 		fi		
 	done
