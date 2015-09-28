@@ -4,7 +4,7 @@ TIEMPO_DORMIDO=15
 EXTENSION_TEXTO=*.txt
 FORMATO_CORRECTO="<"*">_<"*">".txt
 #GET_CODIGO=ls -1 *.txt | grep -E "<(...)>"
-DIR_CENTRALES="/home/gonzalo/Escritorio/Tp/Cosas_del_Mail/Datos/centrales.csv"
+DIR_CENTRALES="/home/ramon/dev/Datos/centrales.csv"
 
 ciclo=0
 
@@ -109,9 +109,10 @@ function tieneFechaCorrecta (){
 	fecha=`echo ${fechaParte2:1:8}`
 #	echo "FECHA: ${fecha}"
 	
-	
+	esNumerico=`echo $fecha | grep "^[0-9]\{8\}$"`
 	# Valida que la fecha sea numerica
-	if [[ $fecha == *[0-9] ]]
+echo $esNumerico
+	if [ -z $esNumerico ]
 	then
 		echo "NO ES NUMERICA"
 		return 1
