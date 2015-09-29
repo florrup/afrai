@@ -1,5 +1,5 @@
 #! /bin/bash
-GRUPO=~/grupo07;
+GRUPO=/grupo07;
 CONFDIR=${GRUPO}/CONF;
 AFRACONFIG="AFRAINST.conf";
 DATASIZE=100;
@@ -118,16 +118,17 @@ definicionesInstalacion() {
 		echo "Acepta? (Si - No)"
 		read respuesta
 		#TODO: verificar si la respuesta es Si o No y no otra respuesta.
-		if [ $respuesta = "No" ];then
+		if [ ${respuesta^^} = "NO" ];then
 			echo "Proceso Cancelado";
 			fin;
-		else 
-			while [ $respuesta = "Si" ]
+		elif [ ${respuesta^^} = "SI" ];then		
+			while [ ${respuesta^^} = "SI" ]
 			do
 				definicionesDir
 				respuesta=$?
 			done
-		
+		else	
+			clear	
 			estado=0;
 		fi		
 	done
@@ -168,17 +169,17 @@ mostrarDefiniciones () {
 	echo "Estado de la instalacion: LISTA"
 	echo "Desea continuar con la instalacion? (Si - No):"
 	read respuesta
-	if [ "$respuesta" = "Si" ];then
+	if [ "${respuesta^^}" = "SI" ];then
 		echo "Iniciando Instalacion. Esta Ud. seguro? (Si - No):"
 		read respuesta2
-		if [ "$respuesta2" = "Si" ];then
+		if [ "${respuesta2^^}" = "SI" ];then
 			instalacion;
 		fi
 		fin;
 	else
 		clear
 		definicionesDir
-		return "Si"
+		#return "Si"
 	fi	
 }
 
@@ -303,10 +304,18 @@ definirLogExt () {
 
 #PASO16
 definirLogSize () {
-	echo "Defina el tamanio maximo para cada archivo de log en Kbytes (400):"
-	read LOGSIZE
+         local estado=1;
+         while [ $estado == 1 ];do
+		echo "Defina el tamanio maximo para cada archivo de log en Kbytes (400):"
+		read LOGSIZE
+                LOGSIZE=`echo $LOGSIZE | grep "^[0-9]*$"`
+                if [ -z $LOGSIZE ];then
+                        echo "No pose caracteres numericos, intente nuevamente"
+		else	
+			estado=0; 
+		fi
+         done
 }
-
 #PASO17
 definirRechDir () {
 	local estado=1
@@ -325,6 +334,10 @@ definirRechDir () {
 instalacion () {
 	echo "Creando Estructuras de directorio"
 	mkdir "${CONFDIR}"
+
+# AGREGAR HOMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+
 #	local DIRE
 #	DIRE="${GRUPO}"
 #	echo "$DIRE"
@@ -357,26 +370,54 @@ instalacion () {
 	#Borrar archivos temporarios si es q los hay
 	echo "Instalacion CONCLUIDA"
 }
+#PASO20.2
+moverEjecutablesYFunciones () {
+	echo "Hacer"
+}
+
+#PASO20.3
+moverMaestrosYTablas () {
+
+	echo "Hacer"
+}
 
 #PASO20.4
-escribirLog () {
+escribirConfig () {
+	#grabar
+	#CONFDIR
+	echo "CONFDIR=$CONFDIR" >> afrainst.config
+	#BINDIR
+	echo "BINDIR=$BINDIR" >> afrainst.config
+	#MAEDIR
+	echo "MAEDIR=$MAEDIR" >> afrainst.config
+	#NOVEDIR
+	echo "NOVEDIR=$NOVEDIR" >> afrainst.config
+	#ACEPDIR
+	echo "ACEPDIR=$ACEPDIR" >> afrainst.config
+	#PROCDIR
+	echo "PROCDIR=$PROCDIR" >> afrainst.config
+	#PROCDIR/proc	
 	
-
+	#REPODIR
+	echo "REPODIR=$REPODIR" >> afrainst.config
+	#LOGDIR
+	echo "LOGDIR=$LOGDIR" >> afrainst.config
+	#RECHDIR
+	echo "RECHDIR=$RECHDIR" >> afrainst.config
+	#RECHDIR/llamadas	
 }
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
 verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
 definicionesInstalacion; #PASO 5 - 20
-fin #PASO 21
+#fin #PASO 21
 #instalacion
 
+#definirLogSize
 
 #  BUGS Y MEJORAS #
-# - Chequear las entradas de los reads (Si y No; los valores numericos;etc)
-# - Creacion de carpetas (antes las creaba pero en la carpeta del repo, hay qe redireccionar la creacion)
-# - Ver como se guarda todos los datos de configuracion para los demas scripts
+#RAMON - Creacion de carpetas (antes las creaba pero en la carpeta del repo, hay qe redireccionar la creacion)
 # - Ver como grabar el LOG
-# - Ver que grabar en el afrainst.config
 # - completar paso 2 y 20
 
 
