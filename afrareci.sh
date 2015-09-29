@@ -1,11 +1,11 @@
 #! /bin/bash
 
-TIEMPO_DORMIDO=15
+TIEMPO_DORMIDO=2
 EXTENSION_TEXTO=*.txt
 FORMATO_CORRECTO="<"*">_<"*">".txt
-#GET_CODIGO=ls -1 *.txt | grep -E "<(...)>"
 DIR_CENTRALES="/home/gonzalo/Escritorio/Tp/Cosas_del_Mail/Datos/centrales.csv"
-
+NOVEDIR=/home/gonzalo/Escritorio/Tp/Archivos/NOVEDIR
+ACEPDIR=/home/gonzalo/Escritorio/Tp/Archivos/ACEPDIR
 ciclo=0
 
 
@@ -18,25 +18,6 @@ function grabarEnLog (){
 function moverA (){
 	echo "Moviendo archivo..."
 }
-
-# Verifica si existen archivos en el directorio pasado por parametro.
-#function existenArchivos (){
-#	echo "Verificando existencia de archivos..."
-#	if [ "$(ls $1)" ]
-#	then
-#		for directorio in $1
-#		do		
-#			cantidadArchivos=`find $directorio -type f | wc -l`
-#			if [ ! $cantidadArchivos -eq 0 ]
-#	    		then
-#				# Existe archivo
-#		    		return 0
-#	    		fi
-#   		done
-#  	fi
-	# No existe archivo
-#  	return 1	
-#}
 
 # Verifica si existen archivos en el directorio pasado por parametro.
 function existenArchivos (){
@@ -54,36 +35,17 @@ function existenArchivos (){
 function esDeTexto (){
 	if [[ $1 == $EXTENSION_TEXTO ]]
 	then
-#		echo "          ${archivo} es de TEXTO"
 		return 0
 	fi
-#	echo "          ${1} NO es de TEXTO"
 	return 1
 }
-
-#function esDeTexto2 (){
-#	
-#	local tipe=`file $1`
-#	local tipo=`echo $tipe | sed 's/^\(.*\):\(.*\)/\2/g'`	
-#
-#	if !(echo $tipo | grep '^.*text.*$' &>/dev/null) 
-#		then 
-#			echo "Rechazado  ${1##*/}  - Tipo invalido : $tipo"
-#			return 1
-#		else
-#			echo "          ${1} es de TEXTO"
-#			return 0
-#	fi
-#}
 
 # Valida si el archivo pasado por parametro tiene formato correcto
 function tieneFormatoCorrecto (){
 	if [[ $1 == $FORMATO_CORRECTO ]]
 	then
-#		echo "          ${1} con FORMATO CORRECTO"
 		return 0
 	fi
-#	echo "		${1} NO tiene FORMATO correcto"
 	return 1
 }
 
@@ -103,23 +65,62 @@ function tieneCodigoCorrecto (){
 	return 1
 }
 
+# Valida si la fecha es valida
+function fechaValida (){
+	local fecha=$1
+	local mes=`echo ${fecha:4:2}`
+	local dia=`echo ${fecha:6:2}`
+	local diaMaximo=31
+	local mesMaximo=12
+	
+	# Valida que el dia y el mes esten dentro de rangos validos.
+	if [ $mes -gt $mesMaximo -o $dia -gt $diaMaximo -o $mes -lt 01 -o $dia -lt 01 ]
+	then	
+		return 1
+	fi
+	
+	# Si el mes es febrero, el dia maximo es 28
+	# Si el mes es Abril, Mayo, Septiembre o Noviembre, el dia maximo es 30	
+	# Cualquier otro mes, el dia maximo es 31
+	if [ $mes -eq 02 ]
+	then
+		let diaMaximo=$diaMaximo-3
+	
+	elif [ $mes -eq 04 -o $mes -eq 06 -o $mes -eq 09 -o $mes -eq 11 ]
+	then
+		let diaMaximo--
+	fi
+	
+	# Valida que el dia no supere el dia maximo, segun el mes
+	if [ $dia -gt $diaMaximo ]
+	then
+		return 1
+	fi
+	
+	# Fecha valida
+	return 0
+}
+
 # Valida si el archivo pasado por parametro posee la fecha correcta
 function tieneFechaCorrecta (){
 	fechaParte2=`echo $1 | cut -d'_' -f 2`
 	fecha=`echo ${fechaParte2:1:8}`
-#	echo "FECHA: ${fecha}"
-	
-	
+
 	# Valida que la fecha sea numerica
-	if [[ $fecha == *[0-9] ]]
+	esNumerico=`echo $fecha | grep "^[0-9]\{8\}$"`
+	if [ -z $esNumerico ]
 	then
-		echo "NO ES NUMERICA"
+		echo "Fecha no numerica"
+		return 1
+	fi
+	
+	if ! fechaValida $fecha;
+	then
+		echo "Fecha fuera de rango"
 		return 1
 	fi
 
-
 	fechaActual=`date +'%Y%m%d'`
-#	echo "FECHA ACTUAL: ${fechaActual}"
 	let diferencia=$fechaActual-$fecha
 	echo "DIFERENCIA: ${diferencia}"
 	
@@ -164,8 +165,7 @@ function procesarArchivosNovedir (){
 	archivoNombreCorrecto=false
 	
 	motivoRechazo=""
-#	archivo="name_archivo"
-	listadoArchivos=`ls -1 "NOVEDIR"`	
+	listadoArchivos=`ls -1 ${NOVEDIR}`	
 
 	for archivo in $listadoArchivos 
 	do
@@ -212,15 +212,15 @@ function procesarArchivosNovedir (){
 
 
 ############################  AFRARECI  ################################
-while [[ true ]]
+#while [[ true ]]
+while [ $ciclo -eq 0 ]
 do	
 	#Paso 1: Grabar en el log el numero de ciclo.
 	let ciclo++
 	grabarEnLog "AFRARECI ciclo nro. ${ciclo}"
 
-
 	#Paso 2: Chequear si hay archivos en el directorio NOVEDIR.	
-	if existenArchivos "NOVEDIR";
+	if existenArchivos $NOVEDIR;
 	then
 		echo "Existieron archivos en novedir"
 		#Paso 3 al 7: Procesar los archivos dentro de la carpeta NOVEDIR.
@@ -230,7 +230,7 @@ do
 	fi
 	
 	#Paso 8: Novedades Pendientes.
-	if existenArchivos "ACEPDIR";
+	if existenArchivos $ACEPDIR;
 	then
 		echo "Existieron archivos en ACEPDIR"
 		seInvocoAfraumbr=false

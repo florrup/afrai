@@ -18,3 +18,8 @@
 * Donde va a estar la carpeta CONFDIR para buscar el archivo afrainst.config (asi vemos si esta instalado o no)
 * Ver qe archivos hay qe mover a las carpetas en el final de la instalacion
 
+## afrareci.sh
+* De donde o como se carga la carpeta NOVEDIR de archivos.
+* Definir el formato de los archivos en NOVEDIR
+* Bloqueante hasta tener la funcionalidad MoverA
+
