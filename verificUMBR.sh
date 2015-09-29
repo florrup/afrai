@@ -1,6 +1,81 @@
 #!/bin/bash
 # Verificaciones para afraumbr
 
+
+SCRIPT = `basename "$0"`
+
+GRALOG="./gralog.sh"
+MOVER="./mover.sh"
+
+#Calculo la cantidad de coincidencias en los archivos de ACEPDIR
+
+
+function msjLog() {
+  local MOUT=$1
+  local TIPO=$2
+  echo "${MOUT}"
+  $GRALOG "$0" "$MOUT" "$TIPO"
+}
+
+function inicio(){
+  MSJ="Inicio de AFRAUMBR"
+  msLog MSJ "INFO"
+  cd $ACEPDIR
+  #Calculo la cantidad de coincidencias en los archivos de ACEPDIR
+  cantArchivos=`ls -l csv* | wc -l`
+    
+  MSJ="Cantidad de archivos a procesar: $cantArchivos"
+  msJLog MSJ "INFO"
+    
+  #Parsea por fechas y lista ordenado cronologicamente
+  inputFiles=$(ls -1 |grep '[0-9]*[0-9]' | sort -k1.4)
+
+  for fileName in $inputFiles; do
+      ProcesarArchivo $fileName
+  done  
+}
+
+##########################################################################################
+
+#2. Procesar un Archivo
+
+#2.1. Verificar que no sea un archivo duplicado
+
+function ProcesarArchivo(){
+
+  
+  #Verifica si el archivo existe en el directorio y si el tamanio es mayor a 0
+  if [ -s $1 ]; then
+    MSJ="Se rechaza el archivo por estar DUPLICADO"
+    msjLog MSJ "ERR"  
+    $MOVER $ACEPDIR/$fileName $RECHDIR
+  fi
+  
+  #3 Archivo se puede procesar  
+  msjLog "Archivo a procesar: $fileName" "INFO"
+}
+
+##########################################################################################
+
+#2.2 Verificar la cantidad de campos del primer registro
+
+function validarPrimerRegistro(){
+  cantidadDeCampos=$(sed 's/;/\n/g' $fileName | wc -l)
+
+  #Revisar
+  cantidad=2
+
+  #Aca se deberia comprobar que la cantidad de campos del primer registro coincida con el formato establecido  
+  if (($cantidadDeCampos != $cantidad))
+  then
+      MSJ="Se rechaza el archivo porque su estructura no se corresponde con el formato esperado"
+      msjLog MSJ "ERR"
+      $MOVER $ACEPDIR/$fileName $RECHDIR
+  fi
+  
+  done
+}
+
 #4. Procesar un registro
 
 #4.1 Validar los campos del registro
