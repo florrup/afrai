@@ -17,6 +17,7 @@ MOVER="./mover.sh"
 
 ACEPDIR="ACEPDIR" 	# deben ser las variables de configuracion
 RECHDIR="RECHDIR"
+PROCDIR="PROCDIR"
 
 function msjLog() {
   local MOUT=$1
@@ -26,7 +27,7 @@ function msjLog() {
 }
 
 
-#1. Procesar todos los archivos
+# 1. Procesar todos los archivos
 function inicio() {
   MSJ="Inicio de AFRAUMBR"
   msjLog "${MSJ}" "INFO"
@@ -37,52 +38,60 @@ function inicio() {
   MSJ="Cantidad de archivos a procesar: $cantArchivos"
   msjLog "${MSJ}" "INFO"
     
-  # Parsea por fechas y lista ordenando cronologicamente
+  # Parseo por fechas y lista ordenando cronologicamente
   # Desde el antiguo al mas reciente 
   inputFiles=$(ls $ACEPDIR | grep '[0-9]*[0-9]' | sort -k1.4)
 
   for fileName in $inputFiles;
   do
     echo $fileName
-    validarPrimerRegistro $fileName
     procesarArchivo $fileName
+    if [ "$?" = 0 ]; then	# si no fue procesado, sigo
+      validarPrimerRegistro $fileName
+      if [ "$?" = 0 ]; then
+        # 3. Si se puede procesar el archivo
+        msjLog "Archivo a procesar: $fileName" "INFO"
+
+	# Empiezo a procesar cada registro
+	procesarRegistro $fileName
+
+      fi
+    fi
   done  
 }
 
 ##########################################################################################
 
-#2. Procesar un Archivo
+# 2. Procesar un Archivo
 
-#2.1. Verificar que no sea un archivo duplicado
+# 2.1. Verificar que no sea un archivo duplicado
+# Devuelve 1 si ya fue procesado, 0 en caso contrario
 function procesarArchivo() {
-  
-  
-  #Verifica si el archivo existe en el directorio y si el tamanio es mayor a 0
-#  if [ -s $1 ]; then
-#    MSJ="Se rechaza el archivo por estar DUPLICADO"
-#    msjLog MSJ "ERR"  
-#    $MOVER $ACEPDIR/$fileName $RECHDIR
-#  fi
-    
-##########################################################################################
+  local ARCH=$1
 
-#3. Mostrar mensaje 
-  #msjLog "Archivo a procesar: $fileName" "INFO"
+  # Verifico si el archivo ya fue procesado
+  if [ -s $PROCDIR/$ARCH ]; then
+    MSJ="Se rechaza el archivo por estar DUPLICADO"
+    msjLog "$MSJ" "ERR" 
+    $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
+    return 1
+  fi
+  return 0
 }
 
 ##########################################################################################
 
-#2.2 Verificar la cantidad de campos del primer registro
+# 2.2 Verificar la cantidad de campos del primer registro
+# Devuelve 1 si no es valido, 0 en caso contrario
 function validarPrimerRegistro() {
-  ARCH=$1
+  local ARCH=$1
 
   # Leo la primera linea y calculo la cantidad de campos
   read -r primeraLinea < $ACEPDIR/$ARCH
-  cantidadDeCampos=$(echo "$primeraLinea" | sed 's/[^;]//g' | wc -c)
-  echo $cantidadDeCampos
+  local cantidadDeCampos=$(echo "$primeraLinea" | sed 's/[^;]//g' | wc -c)
 
   # Los archivos en ACEPDIR deben tener ocho campos
-  cantidad=8
+  local cantidad=8
 
   # Compruebo que la cantidad de campos del primer registro coincida con el formato establecido, sino lo muevo
   if (($cantidadDeCampos != $cantidad))
@@ -91,15 +100,28 @@ function validarPrimerRegistro() {
       msjLog "$MSJ" "ERR"
       echo $ACEPDIR/$ARCH
       $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
+      return 1
   fi
-  
+  return 0
 }
 
 ##########################################################################################
 
-#4. Procesar un registro
+# 4. Procesar un registro
 
-#4.1 Validar los campos del registro
+procesarRegistro() {
+  local ARCH=$1
+  # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
+  IFS=";"
+  while read f1 f2 f3 f4 f5 f6 f7 f8
+  do
+    validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    #determinarTipoDeLlamada "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    #verificarLlamadaSospechosa 
+  done < $ACEPDIR/$ARCH
+}
+
+# 4.1 Validar los campos del registro
 
 # Valida el id de agente 
 # Devuelve 1 si no fue encontrado, 0 en caso contrario
@@ -325,7 +347,7 @@ validarCamposRegistro() {
   return 0
 } 
 
-#4.2 Determinar el tipo de llamada
+# 4.2 Determinar el tipo de llamada
 function determinarTipoDeLlamada(){
   local ID=$1
   local FECHA=$2
@@ -335,8 +357,6 @@ function determinarTipoDeLlamada(){
   local DPAIS=$6
   local DAREA=$7
   local DNUM=$8
-
-
 
   #Falta hacer pruebas 
   re='^[0-9]+$'
@@ -377,7 +397,7 @@ function determinarTipoDeLlamada(){
 ##########################################################################################
 
 
-#4.3 Determinar si la llamada debe ser considerada como sospechosa.
+# 4.3 Determinar si la llamada debe ser considerada como sospechosa.
 
 cantidadSinUmbral=0
 cantidadConUmbral=0
@@ -414,10 +434,10 @@ function verificarLlamadaSospechosa(){
 
 inicio
 
-ARCH="BEL_20150703.csv" 
-AGENTES="agentes.csv"
-CDP="CdP.csv"
-CDA="CdA.csv"
+#ARCH="BEL_20150703.csv" 
+#AGENTES="agentes.csv"
+#CDP="CdP.csv"
+#CDA="CdA.csv"
 
 # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
 #IFS=";"
