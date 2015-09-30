@@ -1,13 +1,18 @@
 #! /bin/bash
-GRUPO=/grupo07;
-CONFDIR=${GRUPO}/CONF;
-AFRACONFIG="AFRAINST.conf";
+
+#########################################################
+# AFRAINST.SH Ejecuta la instalacion del programa afrai #
+#########################################################
+
+#  Variables definidas por default
+
+GRUPO=~/grupo07;
+CONFDIR=CONF;
+AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
-NOVEDIR="/home/ramon/desa/";
 
 existeArchivo () {
-        local configuracion=$1;
-        if [ -f "${configuracion}" ];then
+        if [ -f "$1" ];then
                 return 0;
         else
                 return 1;
@@ -20,15 +25,13 @@ verificarInstalacion(){
 	echo "Verificando instalacion..."
 	read x;
 	#**************************************
-	local config="$CONFIG/$AFRACONFIG"
-        existeArchivo $config
+        existeArchivo $AFRACONFIG
         local resultado=$?
         if [ $resultado == 0 ];then
                 echo "puede estar instalado"
                 #TODO:VERIFICAR INSTALACION COMPLETA PASO 2
         else
                 echo "******************* No esta instalado AFRA-l *****************"
-                #TODO:VERIFICO SI PERL ESTA INSTALADO
                 verificarPerl;
         fi
 }
@@ -81,7 +84,7 @@ fin(){
 #PASO 10
 verificarEspacioDisco(){
 	local espacioDisco=$(df -h /dev/sda5 | grep "/dev/sda5" | sed "s-^/dev/sda5 *\([0-9]*.\) *\([0-9]*.\) *\([0-9]*.\).*-\3-");
-	#echo "$espacioDisco"
+	#TODO:ARREGLAR 
 	tamanio=$(echo "$espacioDisco" | sed "s-^\([0-9]*\).*-\1-")
 	let tamanio=tamanio*100;
 
@@ -117,7 +120,6 @@ definicionesInstalacion() {
 		echo "del "ACUERDO DE LICENCIA DE SOFTWARE" incluido en este paquete."
 		echo "Acepta? (Si - No)"
 		read respuesta
-		#TODO: verificar si la respuesta es Si o No y no otra respuesta.
 		if [ ${respuesta^^} = "NO" ];then
 			echo "Proceso Cancelado";
 			fin;
@@ -158,7 +160,7 @@ mostrarDefiniciones () {
 	echo "Directorio de Ejecutables: ${BINDIR}"
 	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
 	echo "Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
-	#echo "Espacio minimo libre para arribos: ${DATASIZE} Mb"
+	echo "Espacio minimo libre para arribos: ${DATASIZE} Mb"
 	echo "Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
 	echo "Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
 	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
@@ -330,41 +332,24 @@ definirRechDir () {
 # **********************************************************************************************************************************
 # ***********************************************Creando las Estructuras************************************************************
 
+
 #PASO20
 instalacion () {
+
+variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PROCDIR}/proc ${REPODIR} ${LOGDIR} ${RECHDIR} ${RECHDIR}/llamadas)
 	echo "Creando Estructuras de directorio"
-	mkdir "${CONFDIR}"
+	mkdir $GRUPO	
+	for index in ${variables[*]}
+	do
+    		echo "Creando $index"
+		mkdir $GRUPO/$index
 
-# AGREGAR HOMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-
-
-#	local DIRE
-#	DIRE="${GRUPO}"
-#	echo "$DIRE"
-#	mkdir $DIRE
-#	mkdir "${GRUPO}/"
-#	mkdir "${GRUPO}/${BINDIR}/"
-#	mkdir "$DIR"
-#	DIR="${GRUPO}/${MAEDIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${NOVEDIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${ACEPDIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${PROCDIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${REPODIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${LOGDIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${CONFDIR}"
-#	mkdir $DIR
-#	DIR="${GRUPO}/${RECHDIR}"
-#	mkdir $DIR
+	done
+	escribirConfig;
 	echo "Instalando Archivos Maestros y Tablas"
 	#Mover los archivos maestros y las tablas 
 	echo "Actualizando la configuracion del sistema"
-	escribirLog   
+	#	escribirLog   
 	#Hay q almacenar la informacion de configuracion del sistema en el archivo afrainst.conf en confdir grabando un registro para cada
 	#una de las variables indicadas durante este proceso
 	#Borrar archivos temporarios si es q los hay
@@ -384,40 +369,44 @@ moverMaestrosYTablas () {
 #PASO20.4
 escribirConfig () {
 	#grabar
+	#GRUPO
+	echo "GRUPO=$GRUPO" >> $AFRACONFIG
 	#CONFDIR
-	echo "CONFDIR=$CONFDIR" >> afrainst.config
+	echo "CONFDIR=$GRUPO/$CONFDIR" >> $AFRACONFIG
 	#BINDIR
-	echo "BINDIR=$BINDIR" >> afrainst.config
+	echo "BINDIR=$GRUPO/$BINDIR" >> $AFRACONFIG
 	#MAEDIR
-	echo "MAEDIR=$MAEDIR" >> afrainst.config
+	echo "MAEDIR=$GRUPO/$MAEDIR" >> $AFRACONFIG
 	#NOVEDIR
-	echo "NOVEDIR=$NOVEDIR" >> afrainst.config
+	echo "NOVEDIR=$GRUPO/$NOVEDIR" >> $AFRACONFIG
 	#ACEPDIR
-	echo "ACEPDIR=$ACEPDIR" >> afrainst.config
+	echo "ACEPDIR=$GRUPO/$ACEPDIR" >> $AFRACONFIG
 	#PROCDIR
-	echo "PROCDIR=$PROCDIR" >> afrainst.config
+	echo "PROCDIR=$GRUPO/$PROCDIR" >> $AFRACONFIG
 	#PROCDIR/proc	
 	
 	#REPODIR
-	echo "REPODIR=$REPODIR" >> afrainst.config
+	echo "REPODIR=$GRUPO/$REPODIR" >> $AFRACONFIG
 	#LOGDIR
-	echo "LOGDIR=$LOGDIR" >> afrainst.config
+	echo "LOGDIR=$GRUPO/$LOGDIR" >> $AFRACONFIG
 	#RECHDIR
-	echo "RECHDIR=$RECHDIR" >> afrainst.config
+	echo "RECHDIR=$GRUPO/$RECHDIR" >> $AFRACONFIG
 	#RECHDIR/llamadas	
 }
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
 verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
 definicionesInstalacion; #PASO 5 - 20
-#fin #PASO 21
+fin #PASO 21
 #instalacion
 
 #definirLogSize
 
 #  BUGS Y MEJORAS #
-#RAMON - Creacion de carpetas (antes las creaba pero en la carpeta del repo, hay qe redireccionar la creacion)
 # - Ver como grabar el LOG
-# - completar paso 2 y 20
+# - completar paso 2/3/20
+# - Verificar que los nombres de los directorios no se dupliquen
+
+
 
 
