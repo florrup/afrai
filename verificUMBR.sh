@@ -10,14 +10,16 @@
 #tllama.tab
 #umbral.tab
 
-SCRIPT=`basename "$0"`
-
 GRALOG="./gralog.sh"
 MOVER="./mover.sh"
 
 ACEPDIR="ACEPDIR" 	# deben ser las variables de configuracion
 RECHDIR="RECHDIR"
 PROCDIR="PROCDIR"
+
+AGENTES="agentes.csv"
+CDP="CdP.csv"
+CDA="CdA.csv"
 
 function msjLog() {
   local MOUT=$1
@@ -33,7 +35,7 @@ function inicio() {
   msjLog "${MSJ}" "INFO"
 
   # Calculo la cantidad de archivos en ACEPDIR
-  cantArchivos=$(ls "$ACEPDIR"/*csv | wc -l)
+  local cantArchivos=$(ls "$ACEPDIR"/*csv | wc -l)
 
   MSJ="Cantidad de archivos a procesar: $cantArchivos"
   msjLog "${MSJ}" "INFO"
@@ -112,12 +114,23 @@ function validarPrimerRegistro() {
 procesarRegistro() {
   local ARCH=$1
   # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
-  IFS=";"
+  local IFS=";"
   while read f1 f2 f3 f4 f5 f6 f7 f8
   do
     validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
-    #determinarTipoDeLlamada "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    if [ "$?" = "true" ]; then
+      #TODO
+      echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
+    fi
+    
+    determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8"
+    if [ "$?" = 1 ]; then
+      #TODO
+      echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
+    fi
+
     #verificarLlamadaSospechosa 
+
   done < $ACEPDIR/$ARCH
 }
 
@@ -126,8 +139,8 @@ procesarRegistro() {
 # Valida el id de agente 
 # Devuelve 1 si no fue encontrado, 0 en caso contrario
 idAgente() {
-  ARCH=$1 # agentes.csv
-  ID=$2
+  local ARCH=$1 # agentes.csv
+  local ID=$2
   if grep -q ";${ID};" $ARCH;
   then
     #echo "Encontrado"
@@ -142,8 +155,8 @@ idAgente() {
 # Valida el codigo de area 
 # Devuelve 1 si no fue encontrado, 0 en caso contrario
 codigoAreaA() {
-  ARCH=$1 #CdA.csv
-  AREA=$2
+  local ARCH=$1 #CdA.csv
+  local AREA=$2
   if grep -q $";${AREA}" $ARCH;
   then
     #echo "Encontrado en CDA"
@@ -190,12 +203,12 @@ codigoPaisB() {
     DDI="false"
   else
     DDI="true"  # es DDI cuando contiene el codigo
-    if grep -q "^${CODPAIS};" $CDP;
+    if ! grep -q "^${CODPAIS};" $CDP;
     then
-      echo "Encontrado"
+      #echo "Encontrado"
       #echo "$(grep "^${CODPAIS};" $CDP)"
       #return 0  # fue encontrado
-    else
+   # else
       #echo "No encontrado\n\n"
       return 1 # no fue encontrado
     fi
@@ -205,9 +218,6 @@ codigoPaisB() {
   rtaArea=$?
   if [ "${rtaArea}" = 1 ]; then
     return 1
-  else
-    #return 0
-    echo "Continuo verificando"
   fi
 
   numeroLineaB "${NUM}" "${DDI}" "${CODAREA}"
@@ -244,6 +254,7 @@ codigoArea() {
     fi
   fi
   #echo -e "DDI es true\n\n"
+  return 1
 }
 
 # Verifica numero de linea B
@@ -305,71 +316,56 @@ validarCamposRegistro() {
   RECHAZO="false"
   idAgente "${AGENTES}" "${ID}"
   if [ "$?" = 1 ]; then
-    #echo "Se rechaza"
     RECHAZO="true"
-  else
-    echo -e "\tNo se rechaza por idAgente"
   fi
 
   codigoAreaA "${CDA}" "${OAREA}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
-  else
-    echo -e "\tNo se rechaza por codigoAreaA"
   fi
 
   numeroLineaA "${OAREA}" "${ONUM}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
-  else
-    echo -e "\tNo se rechaza por numeroLineaA"
   fi
 
   codigoPaisB "${CDP}" "${DPAIS}" "${CDA}" "${DAREA}" "${DNUM}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
-  else
-    echo -e "\tNo se rechaza por codigoPaisB"
   fi
 
   tiempo "${TIEMPO}"
-   if [ "$?" = 1 ]; then
+  if [ "$?" = 1 ]; then
     RECHAZO="true"
-  else
-    echo -e "\tNo se rechaza por tiempo"
   fi
 
   if [ "$RECHAZO" = "true" ]; then
-    echo -e "\t\tSe rechaza\n\n"
     return 1
   fi
-  echo -e "\t\tNo se rechaza\n\n"
+
   return 0
 } 
 
 # 4.2 Determinar el tipo de llamada
-function determinarTipoDeLlamada(){
-  local ID=$1
-  local FECHA=$2
-  local TIEMPO=$3
-  local OAREA=$4
-  local ONUM=$5
-  local DPAIS=$6
-  local DAREA=$7
-  local DNUM=$8
+# Devuelve 1 si se rechaza el registro
+function determinarTipoDeLlamada() {
+  local OAREA=$1
+  local DPAIS=$2
+  local DAREA=$3
+  local DNUM=$4
 
   #Falta hacer pruebas 
   re='^[0-9]+$'
 
-  #Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
-  if [ "$DAREA"="" -a ![ $DNUM=~$re ] ]; then
+  # Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
+  if [[ "$DAREA"="" ||  ! -z $DNUM  ]]; then
     tipoLlamada="DDI"
   else
     #Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
     #línea con la cantidad adecuada de dígitos, la llamada es DDN.
 
     #Comprueba cantidad de digitos
-    numeroLineaA  "${OAREA}" "${ONUM}"
+    numeroLineaB "${DNUM}" "false" "${DAREA}"
 
     if [ $DAREA != $OAREA -a "$?" = 0 ]; then
        tipoLlamada="DDN"
@@ -385,19 +381,17 @@ function determinarTipoDeLlamada(){
          echo -e "\t\tSe rechaza registro\n\n"
          return 1
        fi
-
     fi
   fi
-
-  echo -e "\t\tNo se rechaza\n\n" 
+  #echo $tipoLlamada
+  #echo -e "\t\tNo se rechaza\n\n" 
   return 0
 
 }
 
 ##########################################################################################
 
-
-# 4.3 Determinar si la llamada debe ser considerada como sospechosa.
+# 4.3 Determinar si la llamada debe ser considerada como sospechosa
 
 cantidadSinUmbral=0
 cantidadConUmbral=0
@@ -434,16 +428,3 @@ function verificarLlamadaSospechosa(){
 
 inicio
 
-#ARCH="BEL_20150703.csv" 
-#AGENTES="agentes.csv"
-#CDP="CdP.csv"
-#CDA="CdA.csv"
-
-# id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
-#IFS=";"
-#while read f1 f2 f3 f4 f5 f6 f7 f8
-#do
-  #validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
-  #determinarTipoDeLlamada "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
-  #verificarLlamadaSospechosa 
-#done < $ARCH
