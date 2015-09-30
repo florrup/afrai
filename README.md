@@ -2,6 +2,7 @@
 
 ## mover.sh
 * HIPÓTESIS: Se pasa el path completo del file a mover.
+* RESPUESTA: si, vamos a pasarte la ruta entera ya que las variables de ambiente como acepdir, novedir ya van a estar con el path completo
 * HIPÓTESIS: Estoy usando la secuencia NNN por cada directorio.
 
 ## gralog.sh
