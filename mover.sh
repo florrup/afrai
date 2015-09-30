@@ -13,6 +13,12 @@ function msjLog() {
   $GRALOG "$0" "$MOUT" "$TIPO"
 }
 
+#Si mover.sh es invocada por un comando que graba en un archivo de log, registrar el resultado de su uso en el log del comando
+if [ "$3" == "./afrainst.sh" ] || [ "$3" == "./afrainic.sh" ] || [ "$3" == "./afrareci.sh" ] || [ "$3" == "./afraumbr.sh" ] ; then
+  MOUT="Se ha invocado al script mover.sh"
+  $GRALOG "$3" "$MOUT" "INFO"
+fi
+
 #Revisa que se reciban si o si dos parametros
 if [ $# -lt 2 ]; then
   MOUT="Se deben ingresar al menos dos parametros para Mover"
@@ -24,8 +30,6 @@ FILE=$1
 DEST=$2
 ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
 # ??? de esto ^ no estoy segura
-
-# ??? falta tomar los restantes parametros
 
 # Revisa que el archivo a mover exista
 if [ ! -f "$FILE" ]; then
@@ -69,13 +73,12 @@ if [ -f "$FILEDEST" ]; then
      exit 0
   else
     # tengo que depositarlo con secuencia nnn si ya se encuentra
-    # ??? obligatorio usar tres digitos para esto?
     NNN=0 
 
     for ARCH in "${DUPLI}"/*    
     do
        if [ "${ARCH%%.*}" = "${DUPLI}"/"${FILE%%.*}" ]; then
-        NNN=$((NNN+1))
+        NNN=$(printf "%03d" $((NNN+1)))
       fi
     done
  

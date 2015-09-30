@@ -12,7 +12,7 @@ fi
 
 CMDO=$1
 MSJE=$2
-TIPO=$3
+TIPO=$3        # INFO, WAR, ERR
 
 LOGSIZE=3      # longitud maxima
 LOGDIR="logs/" # directorio de logs ES LA $LOGDIR DE CONFIGURACION
@@ -28,6 +28,6 @@ if [ $LOGDIR = "inst" ]; then
   # directorio de instalacion
 fi
 
-echo $WHEN , $WHO , $CMDO, $TIPO, $MSJE >> $TEMP # reemplazar aca por FILE
+echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $TEMP # reemplazar aca por FILE
 
 

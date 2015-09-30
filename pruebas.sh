@@ -113,7 +113,6 @@ estaDirectorio $DIREC
 # Origen y Destino son iguales
 origenIgualDestino $FILE $PWD # de este no estoy segura
 
-# falta probar DUPLICADOS
 estaFile "$DIREC"/"$FILE"
 $MOVER "$FILE" "$DIREC"
 estaFile "$DIREC"/"$FILE"
@@ -122,6 +121,12 @@ crearArchivo "$FILE"
 $MOVER "$FILE" "$DIREC"
 estaDirectorio "$DIREC"/duplicados
 estaFile $DIREC/duplicados/$FILE
+
+# Pruebo la secuencia NNN en duplicados
+crearArchivo "$FILE"
+$MOVER "$FILE" "$DIREC"
+crearArchivo "$FILE"
+$MOVER "$FILE" "$DIREC"
 crearArchivo "$FILE"
 $MOVER "$FILE" "$DIREC"
 
