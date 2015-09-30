@@ -2,21 +2,33 @@
 # Mueve un archivo desde el origen al destino
 # $1 archivo a mover
 # $2 directorio destino
-# $3 comando que lo invoca (opcional)
+# $3 comando que lo invoca (opcional), se pasa como $0
 
 GRALOG="./gralog.sh"
+
+FILE=$1
+DEST=$2
+ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
+# ??? de esto ^ no estoy segura
+CMD=$3
+
+CMDGRABA="false"
 
 function msjLog() {
   local MOUT=$1
   local TIPO=$2
-  echo "${MOUT}" 
-  $GRALOG "$0" "$MOUT" "$TIPO"
+  echo "${MOUT}"
+  # solo graba si se invoca por un comando que registre en su log
+  if [[ ( ! -z $CMD ) && ( $CMDGRABA = "true" ) ]]; then
+    $GRALOG "$CMD" "$MOUT" "$TIPO"
+  fi
 }
 
 #Si mover.sh es invocada por un comando que graba en un archivo de log, registrar el resultado de su uso en el log del comando
-if [ "$3" == "./afrainst.sh" ] || [ "$3" == "./afrainic.sh" ] || [ "$3" == "./afrareci.sh" ] || [ "$3" == "./afraumbr.sh" ] ; then
+if [ "$CMD" == "./afrainst.sh" ] || [ "$CMD" == "./afrainic.sh" ] || [ "$CMD" == "./afrareci.sh" ] || [ "$CMD" == "./afraumbr.sh" ] ; then
+  CMDGRABA="true"
   MOUT="Se ha invocado al script mover.sh"
-  $GRALOG "$3" "$MOUT" "INFO"
+  $GRALOG "$CMD" "$MOUT" "INFO"
 fi
 
 #Revisa que se reciban si o si dos parametros
@@ -25,11 +37,6 @@ if [ $# -lt 2 ]; then
   msjLog "${MOUT}" "ERR"  
   exit 1
 fi
-
-FILE=$1
-DEST=$2
-ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
-# ??? de esto ^ no estoy segura
 
 # Revisa que el archivo a mover exista
 if [ ! -f "$FILE" ]; then

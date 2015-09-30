@@ -93,7 +93,7 @@ DIREC="prueba"
 echo "### Limpio para empezar pruebas ###"
 borrarArchivo "$FILE"
 borrarDirectorio "$DIREC"
-borrarArchivo "log.txt"
+#borrarArchivo "log.txt"
 
 # No le paso parametros
 noTieneParametros
@@ -114,7 +114,7 @@ estaDirectorio $DIREC
 origenIgualDestino $FILE $PWD # de este no estoy segura
 
 estaFile "$DIREC"/"$FILE"
-$MOVER "$FILE" "$DIREC"
+$MOVER "$FILE" "$DIREC" "./afrainst.sh"	# solo se graba en el log si el comando que invoca registra en log
 estaFile "$DIREC"/"$FILE"
 estaDirectorio "$DIREC"/duplicados
 crearArchivo "$FILE"

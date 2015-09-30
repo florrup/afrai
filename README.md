@@ -6,7 +6,6 @@
 * HIPÓTESIS: Estoy usando la secuencia NNN por cada directorio.
 
 ## gralog.sh
-* Falta crecimiento indiscriminado
 * Falta setear variables de configuracion
 
 ## afrainic.sh
