@@ -40,13 +40,13 @@
 
 
 
-* Para hacer un ejemplo, en la terminal hacer ACEPDIR="hola" , o sino agregar en ./verificUMBR.sh 
+  Para hacer un ejemplo, en la terminal hacer ACEPDIR="hola" , o sino agregar en ./verificUMBR.sh 
 
     ls -1 $ACEPDIR
 
 y luego ejecutar ./INICIAR.sh
 
-*Como resultado va a quedar se deberian listar los archivos, en mi caso:
+Como resultado va a quedar se deberian listar los archivos, en mi caso:
 
 agentes.csv
 BEL_20150703.csv
@@ -71,4 +71,4 @@ SIS_20150803.csv
 SIS_20150810.csv
 umbrales.csv
 
-
+Y si se agregaba echo "$ACEPDIR" imprimia un "hola"
