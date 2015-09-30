@@ -111,7 +111,7 @@ crearDirectorio $DIREC
 estaDirectorio $DIREC
 
 # Origen y Destino son iguales
-origenIgualDestino $FILE $PWD # de este no estoy segura
+origenIgualDestino $FILE `direc ${0}` # de este no estoy segura
 
 estaFile "$DIREC"/"$FILE"
 $MOVER "$FILE" "$DIREC" "./afrainst.sh"	# solo se graba en el log si el comando que invoca registra en log

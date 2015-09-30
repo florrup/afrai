@@ -10,13 +10,13 @@
 #tllama.tab
 #umbral.tab
 
-SCRIPT = `basename "$0"`
+SCRIPT=`basename "$0"`
 
 GRALOG="./gralog.sh"
 MOVER="./mover.sh"
 
-#Calculo la cantidad de coincidencias en los archivos de ACEPDIR
-
+ACEPDIR="ACEPDIR" 	# deben ser las variables de configuracion
+RECHDIR="RECHDIR"
 
 function msjLog() {
   local MOUT=$1
@@ -25,22 +25,27 @@ function msjLog() {
   $GRALOG "$0" "$MOUT" "$TIPO"
 }
 
-function inicio(){
-  MSJ="Inicio de AFRAUMBR"
-  msLog MSJ "INFO"
-  cd $ACEPDIR
-  #Calculo la cantidad de coincidencias en los archivos de ACEPDIR
-  cantArchivos=`ls -l csv* | wc -l`
-    
-  MSJ="Cantidad de archivos a procesar: $cantArchivos"
-  msJLog MSJ "INFO"
-    
-  #Parsea por fechas y lista ordenado cronologicamente
-  inputFiles=$(ls -1 |grep '[0-9]*[0-9]' | sort -k1.4)
 
-  for fileName in $inputFiles; do
-      validarPrimerRegistro $fileName
-      ProcesarArchivo $fileName
+#1. Procesar todos los archivos
+function inicio() {
+  MSJ="Inicio de AFRAUMBR"
+  msjLog "${MSJ}" "INFO"
+
+  # Calculo la cantidad de archivos en ACEPDIR
+  cantArchivos=$(ls "$ACEPDIR"/*csv | wc -l)
+
+  MSJ="Cantidad de archivos a procesar: $cantArchivos"
+  msjLog "${MSJ}" "INFO"
+    
+  # Parsea por fechas y lista ordenando cronologicamente
+  # Desde el antiguo al mas reciente 
+  inputFiles=$(ls $ACEPDIR | grep '[0-9]*[0-9]' | sort -k1.4)
+
+  for fileName in $inputFiles;
+  do
+    echo $fileName
+    validarPrimerRegistro $fileName
+    procesarArchivo $fileName
   done  
 }
 
@@ -49,45 +54,48 @@ function inicio(){
 #2. Procesar un Archivo
 
 #2.1. Verificar que no sea un archivo duplicado
-
-function ProcesarArchivo(){
+function procesarArchivo() {
   
   
   #Verifica si el archivo existe en el directorio y si el tamanio es mayor a 0
-  if [ -s $1 ]; then
-    MSJ="Se rechaza el archivo por estar DUPLICADO"
-    msjLog MSJ "ERR"  
-    $MOVER $ACEPDIR/$fileName $RECHDIR
-  fi
+#  if [ -s $1 ]; then
+#    MSJ="Se rechaza el archivo por estar DUPLICADO"
+#    msjLog MSJ "ERR"  
+#    $MOVER $ACEPDIR/$fileName $RECHDIR
+#  fi
     
 ##########################################################################################
 
 #3. Mostrar mensaje 
-  msjLog "Archivo a procesar: $fileName" "INFO"
+  #msjLog "Archivo a procesar: $fileName" "INFO"
 }
 
 ##########################################################################################
 
 #2.2 Verificar la cantidad de campos del primer registro
+function validarPrimerRegistro() {
+  ARCH=$1
 
-function validarPrimerRegistro(){
-  $fileName=$1
-  cantidadDeCampos=$(sed 's/;/\n/g' $fileName | wc -l)
+  # Leo la primera linea y calculo la cantidad de campos
+  read -r primeraLinea < $ACEPDIR/$ARCH
+  cantidadDeCampos=$(echo "$primeraLinea" | sed 's/[^;]//g' | wc -c)
+  echo $cantidadDeCampos
 
-  #Revisar
-  cantidad=2
+  # Los archivos en ACEPDIR deben tener ocho campos
+  cantidad=8
 
-  #Aca se deberia comprobar que la cantidad de campos del primer registro coincida con el formato establecido  
+  # Compruebo que la cantidad de campos del primer registro coincida con el formato establecido, sino lo muevo
   if (($cantidadDeCampos != $cantidad))
   then
       MSJ="Se rechaza el archivo porque su estructura no se corresponde con el formato esperado"
-      msjLog MSJ "ERR"
-      $MOVER $ACEPDIR/$fileName $RECHDIR
+      msjLog "$MSJ" "ERR"
+      echo $ACEPDIR/$ARCH
+      $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
   fi
   
-  done
 }
 
+##########################################################################################
 
 #4. Procesar un registro
 
@@ -366,7 +374,7 @@ function determinarTipoDeLlamada(){
 
 }
 
-########################################################################################################
+##########################################################################################
 
 
 #4.3 Determinar si la llamada debe ser considerada como sospechosa.
@@ -392,7 +400,7 @@ function verificarLlamadaSospechosa(){
   cantidadCampoSeleccionado=ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" umbrales.csv | wc -l
   campoSeleccionado=ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" umbrales.csv 
   
-  if [ "$cantidadCampoSeleccionado"= 0]
+  if [[ $cantidadCampoSeleccionado == 0 ]]; then
      cantidadSinUmbral=$((cantidadSinUmbral+1))
   else
      #Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
@@ -402,7 +410,9 @@ function verificarLlamadaSospechosa(){
 
 
 
-########
+##########################################################################################
+
+inicio
 
 ARCH="BEL_20150703.csv" 
 AGENTES="agentes.csv"
@@ -410,10 +420,10 @@ CDP="CdP.csv"
 CDA="CdA.csv"
 
 # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
-IFS=";"
-while read f1 f2 f3 f4 f5 f6 f7 f8
-do
-  validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
-  determinarTipoDeLlamada "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
-  verificarLlamadaSospechosa 
-done < $ARCH
+#IFS=";"
+#while read f1 f2 f3 f4 f5 f6 f7 f8
+#do
+  #validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+  #determinarTipoDeLlamada "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+  #verificarLlamadaSospechosa 
+#done < $ARCH

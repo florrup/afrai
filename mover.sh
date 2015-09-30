@@ -1,15 +1,14 @@
 #!/bin/bash
 # Mueve un archivo desde el origen al destino
-# $1 archivo a mover
+# $1 path del archivo a mover
 # $2 directorio destino
 # $3 comando que lo invoca (opcional), se pasa como $0
 
 GRALOG="./gralog.sh"
 
-FILE=$1
+FILE=`basename $1`
 DEST=$2
-ORIG=${PWD} # para mover el archivo hay que estar parados en su directorio
-# ??? de esto ^ no estoy segura
+ORIG=`dirname $1`
 CMD=$3
 
 CMDGRABA="false"
@@ -39,7 +38,7 @@ if [ $# -lt 2 ]; then
 fi
 
 # Revisa que el archivo a mover exista
-if [ ! -f "$FILE" ]; then
+if [ ! -f "$1" ]; then
   MOUT="El archivo a mover \"${FILE}\" no existe"
   msjLog "$MOUT" "ERR"
   exit 1
@@ -75,7 +74,7 @@ if [ -f "$FILEDEST" ]; then
   
   # Ya existe DUPLICADOS
   if [ ! -f "$DUPLI"/"$FILE" ]; then
-     mv $FILE $DUPLI
+     mv $1 $DUPLI
      echo "El archivo \"${FILE}\" ha sido movido a \"${DUPLI}\""
      exit 0
   else
@@ -90,13 +89,13 @@ if [ -f "$FILEDEST" ]; then
     done
  
     NEWFILE="${DUPLI}"/"${FILE}"."${NNN}"
-    mv "${FILE}" "${NEWFILE}"
+    mv "${1}" "${NEWFILE}"
     echo "El archivo \"$FILE\" ha sido movido con secuencia $NNN a duplicados"
     exit 0
   fi
 
 else
-  mv $FILE $DEST
+  mv $1 $DEST
   MOUT="El archivo \"${FILE}\" ha sido movido al directorio \"${DEST}\""
   msjLog "$MOUT" "INFO"
   exit 0
