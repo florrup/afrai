@@ -23,3 +23,7 @@
 * Definir el formato de los archivos en NOVEDIR
 * Bloqueante hasta tener la funcionalidad MoverA
 
+## verificUMBR.sh
+* Falta hacer pruebas con la carpeta ACEPDIR
+* Falta la grabacion de llamadas sospechosas y llamadas rechazadas
+* Falta realizar pruebas con Afralist.sh

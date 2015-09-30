@@ -1,6 +1,14 @@
-#!/bin/bash
-# Verificaciones para afraumbr
-
+#! /bin/bash
+# ******************************************************************
+# Verificacion de umbrales
+#
+# ******************************************************************
+#Cdp.mae
+#cdA.mae
+#CdC.mae
+#agentes.mae
+#tllama.tab
+#umbral.tab
 
 SCRIPT = `basename "$0"`
 
@@ -31,6 +39,7 @@ function inicio(){
   inputFiles=$(ls -1 |grep '[0-9]*[0-9]' | sort -k1.4)
 
   for fileName in $inputFiles; do
+      validarPrimerRegistro $fileName
       ProcesarArchivo $fileName
   done  
 }
@@ -42,7 +51,7 @@ function inicio(){
 #2.1. Verificar que no sea un archivo duplicado
 
 function ProcesarArchivo(){
-
+  
   
   #Verifica si el archivo existe en el directorio y si el tamanio es mayor a 0
   if [ -s $1 ]; then
@@ -50,8 +59,10 @@ function ProcesarArchivo(){
     msjLog MSJ "ERR"  
     $MOVER $ACEPDIR/$fileName $RECHDIR
   fi
-  
-  #3 Archivo se puede procesar  
+    
+##########################################################################################
+
+#3. Mostrar mensaje 
   msjLog "Archivo a procesar: $fileName" "INFO"
 }
 
@@ -60,6 +71,7 @@ function ProcesarArchivo(){
 #2.2 Verificar la cantidad de campos del primer registro
 
 function validarPrimerRegistro(){
+  $fileName=$1
   cantidadDeCampos=$(sed 's/;/\n/g' $fileName | wc -l)
 
   #Revisar
@@ -75,6 +87,7 @@ function validarPrimerRegistro(){
   
   done
 }
+
 
 #4. Procesar un registro
 
@@ -304,6 +317,91 @@ validarCamposRegistro() {
   return 0
 } 
 
+#4.2 Determinar el tipo de llamada
+function determinarTipoDeLlamada(){
+  local ID=$1
+  local FECHA=$2
+  local TIEMPO=$3
+  local OAREA=$4
+  local ONUM=$5
+  local DPAIS=$6
+  local DAREA=$7
+  local DNUM=$8
+
+
+
+  #Falta hacer pruebas 
+  re='^[0-9]+$'
+
+  #Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
+  if [ "$DAREA"="" -a ![ $DNUM=~$re ] ]; then
+    tipoLlamada="DDI"
+  else
+    #Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
+    #línea con la cantidad adecuada de dígitos, la llamada es DDN.
+
+    #Comprueba cantidad de digitos
+    numeroLineaA  "${OAREA}" "${ONUM}"
+
+    if [ $DAREA != $OAREA -a "$?" = 0 ]; then
+       tipoLlamada="DDN"
+    else
+       #Si el Numero B llamado tiene código de área igual al código de área de origen y un número de línea
+       #con la cantidad adecuada de dígitos, la llamada es LOC
+       
+       if [$DAREA = $OAREA -a "$?" = 0]; then
+         tipoLlamada="LOC"
+       else
+	 #4.2.1
+	 #Cualquier otra combinación ir a RECHAZAR REGISTRO, sino continuar
+         echo -e "\t\tSe rechaza registro\n\n"
+         return 1
+       fi
+
+    fi
+  fi
+
+  echo -e "\t\tNo se rechaza\n\n" 
+  return 0
+
+}
+
+########################################################################################################
+
+
+#4.3 Determinar si la llamada debe ser considerada como sospechosa.
+
+cantidadSinUmbral=0
+cantidadConUmbral=0
+
+#Campos de umbral.tab (umbrales.csv) separados por ;
+#id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
+
+function verificarLlamadaSospechosa(){
+  local ID=$1
+  local FECHA=$2
+  local TIEMPO=$3
+  local OAREA=$4
+  local ONUM=$5
+  local DPAIS=$6
+  local DAREA=$7
+  local DNUM=$8
+
+
+  #Se selecciona los campos que cumplen
+  cantidadCampoSeleccionado=ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" umbrales.csv | wc -l
+  campoSeleccionado=ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" umbrales.csv 
+  
+  if [ "$cantidadCampoSeleccionado"= 0]
+     cantidadSinUmbral=$((cantidadSinUmbral+1))
+  else
+     #Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
+     cantidadConUmbral=$((cantidadSinUmbral+1))
+  fi
+}
+
+
+
 ########
 
 ARCH="BEL_20150703.csv" 
@@ -316,9 +414,6 @@ IFS=";"
 while read f1 f2 f3 f4 f5 f6 f7 f8
 do
   validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+  determinarTipoDeLlamada "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+  verificarLlamadaSospechosa 
 done < $ARCH
-
-
-
-
-
