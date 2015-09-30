@@ -345,16 +345,42 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 		mkdir $GRUPO/$index
 
 	done
+
 	escribirConfig;
-	echo "Instalando Archivos Maestros y Tablas"
-	#Mover los archivos maestros y las tablas 
+	moverArchivos;
+	
 	echo "Actualizando la configuracion del sistema"
+
+
 	#	escribirLog   
-	#Hay q almacenar la informacion de configuracion del sistema en el archivo afrainst.conf en confdir grabando un registro para cada
-	#una de las variables indicadas durante este proceso
 	#Borrar archivos temporarios si es q los hay
 	echo "Instalacion CONCLUIDA"
 }
+
+moverArchivos (){
+	local posicionActual=`pwd`
+	local ejecutables=`ls "$posicionActual/afrai/ejecutables"`
+	local maestros=`ls "$posicionActual/afrai/maestros"`
+	posicionActual=$posicionActual/afrai
+
+	echo "Instalando Programas y Funciones"
+	for archivoejec in ${ejecutables[*]}
+	do
+    		echo "moviendo $archivoejec"
+		$posicionActual/mover.sh $posicionActual/ejecutables/$archivoejec $GRUPO/$BINDIR 
+	done
+	read x
+
+	echo "Instalando Archivos Maestros y Tablas"
+	#Mover los archivos maestros y las tablas
+	for archivomae in ${maestros[*]}
+	do
+    		echo "moviendo $archivomae"
+		$posicionActual/mover.sh $posicionActual/maestros/$archivomae $GRUPO/$MAEDIR 
+	done
+
+}
+
 #PASO20.2
 moverEjecutablesYFunciones () {
 	echo "Hacer"
