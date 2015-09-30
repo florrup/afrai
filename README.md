@@ -28,7 +28,7 @@
 
 ##Como setear las variables de ambiente
 
-*Crear un ejemplo de .sh. Para este caso INICIAR.sh y como ejemplo agrego lo siguiente adentro, siendo verificUMBR.sh un script del TP:
+* Crear un ejemplo de .sh. Para este caso INICIAR.sh y como ejemplo agrego lo siguiente adentro, siendo verificUMBR.sh un script del TP:
 
   ACEPDIR=~/Grupo07/ACEPDIR
 
@@ -36,11 +36,11 @@
 
  ./verificUMBR.sh
 
-*En la carpeta Grupo07/ACEPDIR (ubicada en home/<nombre_de_usuario>/Grupo07..../) estan los archivos de prueba. Ahora usando $ACEPDIR en el script verificUMBR.sh se accede a los archivos de esa carpeta
+* En la carpeta Grupo07/ACEPDIR (ubicada en home/<nombre_de_usuario>/Grupo07..../) estan los archivos de prueba. Ahora usando $ACEPDIR en el script verificUMBR.sh se accede a los archivos de esa carpeta
 
 
 
-*Para hacer un ejemplo, en la terminal hacer ACEPDIR="hola" , o sino agregar en ./verificUMBR.sh 
+* Para hacer un ejemplo, en la terminal hacer ACEPDIR="hola" , o sino agregar en ./verificUMBR.sh 
 
     ls -1 $ACEPDIR
 
