@@ -11,7 +11,6 @@
 
 
 ## afrainst.sh
-* Definir que va dentro del archivo Afrainst.config
 * Donde va a estar la carpeta CONFDIR para buscar el archivo afrainst.config (asi vemos si esta instalado o no)
 * Ver qe archivos hay qe mover a las carpetas en el final de la instalacion
 
