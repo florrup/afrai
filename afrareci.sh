@@ -1,9 +1,7 @@
 #! /bin/bash
 
 TIEMPO_DORMIDO=2
-EXTENSION_TEXTO=*.txt
-FORMATO_CORRECTO="<"*">_<"*">".txt
-DIR_CENTRALES="/home/gonzalo/Escritorio/Tp/Cosas_del_Mail/Datos/centrales.csv"
+DIR_CENTRALES=/home/gonzalo/Escritorio/Tp/Cosas_del_Mail/Datos/centrales.csv
 NOVEDIR=/home/gonzalo/Escritorio/Tp/Archivos/NOVEDIR
 ACEPDIR=/home/gonzalo/Escritorio/Tp/Archivos/ACEPDIR
 ciclo=0
@@ -33,7 +31,7 @@ function existenArchivos (){
 
 # Valida si el archivo pasado por parametro es de texto
 function esDeTexto (){
-	if [[ $1 == $EXTENSION_TEXTO ]]
+	if [[ $1 == *.csv ]]
 	then
 		return 0
 	fi
@@ -42,7 +40,9 @@ function esDeTexto (){
 
 # Valida si el archivo pasado por parametro tiene formato correcto
 function tieneFormatoCorrecto (){
-	if [[ $1 == $FORMATO_CORRECTO ]]
+	formatoCorrecto=`echo $1 | grep "^[A-Z]\{3\}_[0-9]\{8\}"`
+	
+	if [[ ! -z $formatoCorrecto ]]
 	then
 		return 0
 	fi
@@ -52,8 +52,9 @@ function tieneFormatoCorrecto (){
 # Valida si el archivo pasado por parametro posee el codigo central correcto
 # y además existen en el archivo centrales.csv
 function tieneCodigoCorrecto (){
-	codigoParte1=`echo $1 | cut -d'_' -f 1`
-	codigo=`echo ${codigoParte1:1:3}`
+	#codigoParte1=`echo $1 | cut -d'_' -f 1`
+	#codigo=`echo ${codigoParte1:1:3}`
+	codigo=`echo $1 | cut -d'_' -f 1`
 	cantidadEnCentrales=`echo ls | grep ^${codigo}'\;' ${DIR_CENTRALES} | wc -l`
 	echo "SE ENCONTRARON: ${cantidadEnCentrales} RESULTADOS DE MATCHEO"
 	if [ $cantidadEnCentrales -gt 0 ]
@@ -104,7 +105,7 @@ function fechaValida (){
 # Valida si el archivo pasado por parametro posee la fecha correcta
 function tieneFechaCorrecta (){
 	fechaParte2=`echo $1 | cut -d'_' -f 2`
-	fecha=`echo ${fechaParte2:1:8}`
+	fecha=`echo ${fechaParte2:0:8}`
 
 	# Valida que la fecha sea numerica
 	esNumerico=`echo $fecha | grep "^[0-9]\{8\}$"`
