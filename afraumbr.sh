@@ -20,6 +20,7 @@ PROCDIR="PROCDIR"
 AGENTES="agentes.csv"
 CDP="CdP.csv"
 CDA="CdA.csv"
+UMBRALES="umbrales.csv"
 
 function msjLog() {
   local MOUT=$1
@@ -35,7 +36,7 @@ function inicio() {
   msjLog "${MSJ}" "INFO"
 
   # Calculo la cantidad de archivos en ACEPDIR
-  local cantArchivos=$(ls "$ACEPDIR"/*csv | wc -l)
+  cantArchivos=$(ls "$ACEPDIR"/*csv | wc -l)
 
   MSJ="Cantidad de archivos a procesar: $cantArchivos"
   msjLog "${MSJ}" "INFO"
@@ -47,6 +48,7 @@ function inicio() {
   for fileName in $inputFiles;
   do
     echo $fileName
+    cantidadRegistrosRechazados=0
     procesarArchivo $fileName
     if [ "$?" = 0 ]; then	# si no fue procesado, sigo
       validarPrimerRegistro $fileName
@@ -115,21 +117,27 @@ procesarRegistro() {
   local ARCH=$1
   # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
   local IFS=";"
+  cantRegistrosLeidos=0
   while read f1 f2 f3 f4 f5 f6 f7 f8
   do
-    validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    # Incremento en uno la cantidad de registros leidos
+    cantRegistrosLeidos=$((cantidadRegistrosLeidos+1))
+    validarCamposRegistro #"$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
     if [ "$?" = "true" ]; then
       #TODO
       echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
+      rechazarRegistro $ARCH "El registro no supera las validaciones"
     fi
     
-    determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8"
+    determinarTipoDeLlamada #"$f4" "$f6" "$f7" "$f8"
     if [ "$?" = 1 ]; then
       #TODO
       echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
+      rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
     fi
 
-    #verificarLlamadaSospechosa 
+    # Esto no esta hecho
+    #verificarLlamadaSospechosa #"$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
 
   done < $ACEPDIR/$ARCH
 }
@@ -304,14 +312,14 @@ tiempo() {
 # Determina si un registro cumple con las verificaciones
 # Devuelve 0 si todo OK
 validarCamposRegistro() {
-  local ID=$1
-  local FECHA=$2
-  local TIEMPO=$3
-  local OAREA=$4
-  local ONUM=$5
-  local DPAIS=$6
-  local DAREA=$7
-  local DNUM=$8
+  local ID=$f1
+  local FECHA=$f2
+  local TIEMPO=$f3
+  local OAREA=$f4
+  local ONUM=$f5
+  local DPAIS=$f6
+  local DAREA=$f7
+  local DNUM=$f8
 
   RECHAZO="false"
   idAgente "${AGENTES}" "${ID}"
@@ -340,6 +348,7 @@ validarCamposRegistro() {
   fi
 
   if [ "$RECHAZO" = "true" ]; then
+    echo "Se rechaza el registro"
     return 1
   fi
 
@@ -349,35 +358,35 @@ validarCamposRegistro() {
 # 4.2 Determinar el tipo de llamada
 # Devuelve 1 si se rechaza el registro
 function determinarTipoDeLlamada() {
-  local OAREA=$1
-  local DPAIS=$2
-  local DAREA=$3
-  local DNUM=$4
+  local OAREA=$f4
+  local DPAIS=$f6
+  local DAREA=$f7
+  local DNUM=$f8
 
-  #Falta hacer pruebas 
+  # Falta hacer pruebas 
   re='^[0-9]+$'
 
   # Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
   if [[ "$DAREA"="" ||  ! -z $DNUM  ]]; then
     tipoLlamada="DDI"
   else
-    #Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
-    #línea con la cantidad adecuada de dígitos, la llamada es DDN.
+    # Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
+    # línea con la cantidad adecuada de dígitos, la llamada es DDN.
 
-    #Comprueba cantidad de digitos
+    # Comprueba cantidad de digitos
     numeroLineaB "${DNUM}" "false" "${DAREA}"
 
     if [ $DAREA != $OAREA -a "$?" = 0 ]; then
        tipoLlamada="DDN"
     else
-       #Si el Numero B llamado tiene código de área igual al código de área de origen y un número de línea
-       #con la cantidad adecuada de dígitos, la llamada es LOC
+       # Si el Numero B llamado tiene código de área igual al código de área de origen y un número de línea
+       # con la cantidad adecuada de dígitos, la llamada es LOC
        
        if [$DAREA = $OAREA -a "$?" = 0]; then
          tipoLlamada="LOC"
        else
-	 #4.2.1
-	 #Cualquier otra combinación ir a RECHAZAR REGISTRO, sino continuar
+	 # 4.2.1
+	 # Cualquier otra combinación ir a RECHAZAR REGISTRO, sino continuar
          echo -e "\t\tSe rechaza registro\n\n"
          return 1
        fi
@@ -396,33 +405,60 @@ function determinarTipoDeLlamada() {
 cantidadSinUmbral=0
 cantidadConUmbral=0
 
-#Campos de umbral.tab (umbrales.csv) separados por ;
-#id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
+# Campos de umbral.tab (umbrales.csv) separados por ;
+# id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
 
-function verificarLlamadaSospechosa(){
-  local ID=$1
-  local FECHA=$2
-  local TIEMPO=$3
-  local OAREA=$4
-  local ONUM=$5
-  local DPAIS=$6
-  local DAREA=$7
-  local DNUM=$8
+function verificarLlamadaSospechosa() {
+  local ID=$f1
+  local FECHA=$f2
+  local TIEMPO=$f3
+  local OAREA=$f4
+  local ONUM=$f5
+  local DPAIS=$f6
+  local DAREA=$f7
+  local DNUM=$f8
 
-
-  #Se selecciona los campos que cumplen
-  cantidadCampoSeleccionado=ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" umbrales.csv | wc -l
-  campoSeleccionado=ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" umbrales.csv 
+  # Se selecciona los campos que cumplen
+  cantidadCampoSeleccionado=$(ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" $UMBRALES | wc -l)
+  #echo $cantidadCampoSeleccionado
+  campoSeleccionado=$(ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" $UMBRALES )
   
   if [[ $cantidadCampoSeleccionado == 0 ]]; then
      cantidadSinUmbral=$((cantidadSinUmbral+1))
   else
-     #Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
+     # Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
      cantidadConUmbral=$((cantidadSinUmbral+1))
   fi
 }
 
+##########################################################################################
 
+# 4.5 Rechazar registro
+
+function rechazarRegistro() {
+  # Aumento en uno el contador
+  cantidadRegistrosRechazados=$((cantidadRegistrosRechazados+1))
+  local CODCENTRAL=$(echo $1 | cut -c 1-3)
+  local PATH=$RECHDIR/llamadas/$CODCENTRAL.rech
+
+  local FUENTE=$1
+  local MOTIVO=$2
+  # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
+
+  echo $FUENTE ; $MOTIVO ; $f1 ; $f2 ; $f3 ; $f4 ; $f5 ; $f6 ; $f7 ; $f8 >> $PATH 
+}
+
+##########################################################################################
+
+# 6. Fin de archivo
+
+function finDeArchivo() {
+  local ARCH=$1
+  $MOVER "$ACEPDIR/$ARCH" "$PROCDIR"/proc "${0}"
+  echo "Cantidad de llamadas: $cantRegistrosLeidos"
+  echo "Rechazadas: $cantidadRegistrosRechazados, Con umbral $cantidadConUmbral, Sin umbral $cantidadSinUmbral"
+  echo "Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $((cantidadConUmbral-cantLlamadasSospechosas))"
+}
 
 ##########################################################################################
 
