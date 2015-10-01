@@ -24,12 +24,11 @@ verificarInstalacion(){
 	#SACAR
 	echo "Verificando instalacion..."
 	read x;
-	
 	#**************************************
         existeArchivo $AFRACONFIG
         local resultado=$?
         if [ $resultado == 0 ];then
-                echo "puede estar instalado"
+                echo "Verificando instalacion completa..."
 		verificarInstalacionCompleta
 
 		#TODO:VERIFICAR INSTALACION COMPLETA PASO 2
@@ -103,10 +102,11 @@ estadoAfrai(){
 		fin;
 	else
 		# listar componentes faltantes
-		echo "Desea completar la instalacion? (Si - No)
+		echo "Desea completar la instalacion? (Si - No)"
 		read respuesta
 		if [ ${respuesta^^} == "SI" ] 
 		then
+			echo "instalando faltantes"			
 			#instalar faltantes
 		else
 			fin;
@@ -147,7 +147,7 @@ fin(){
          #TODO: grabar en log
          local estado=1;
          while [ $estado == 1 ];do
-                 echo "Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100):"
+                 echo "Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100) : "
                  read DATASIZE
                  DATASIZE=`echo $DATASIZE | grep "^[0-9]*$"`
                  if [ ! -z $DATASIZE ];then
@@ -436,18 +436,27 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 }
 
 moverArchivos (){
-	local posicionActual=`pwd`
-	local ejecutables=`ls "$posicionActual/afrai/ejecutables"`
-	local maestros=`ls "$posicionActual/afrai/maestros"`
-	posicionActual=$posicionActual/afrai
+	posicionActual=`pwd`/afrai
 
+	moverEjecutablesYFunciones
+	moverMaestrosYTablas
+}
+
+#PASO20.2
+moverEjecutablesYFunciones () {
+	local ejecutables=`ls "$posicionActual/ejecutables"`
+	
 	echo "Instalando Programas y Funciones"
 	for archivoejec in ${ejecutables[*]}
 	do
-    		echo "moviendo $archivoejec"
 		$posicionActual/mover.sh $posicionActual/ejecutables/$archivoejec $GRUPO/$BINDIR 
 	done
 	read x
+}
+
+#PASO20.3
+moverMaestrosYTablas () {
+	local maestros=`ls "$posicionActual/maestros"`
 
 	echo "Instalando Archivos Maestros y Tablas"
 	#Mover los archivos maestros y las tablas
@@ -456,18 +465,6 @@ moverArchivos (){
     		echo "moviendo $archivomae"
 		$posicionActual/mover.sh $posicionActual/maestros/$archivomae $GRUPO/$MAEDIR 
 	done
-
-}
-
-#PASO20.2
-moverEjecutablesYFunciones () {
-	echo "Hacer"
-}
-
-#PASO20.3
-moverMaestrosYTablas () {
-
-	echo "Hacer"
 }
 
 #PASO20.4
@@ -482,7 +479,7 @@ escribirConfig () {
 	#MAEDIR
 	echo "MAEDIR=$GRUPO/$MAEDIR" >> $AFRACONFIG
 	#NOVEDIR
-	echo "DATASIZE	=$DATASIZE" >> $AFRACONFIG
+	echo "DATASIZE=$DATASIZE" >> $AFRACONFIG
 	#NOVEDIR
 	echo "NOVEDIR=$GRUPO/$NOVEDIR" >> $AFRACONFIG
 	#ACEPDIR
