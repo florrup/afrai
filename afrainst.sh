@@ -19,25 +19,103 @@ existeArchivo () {
 	fi
 }
 
-#PASO 1
+#PASO1
 verificarInstalacion(){
 	#SACAR
 	echo "Verificando instalacion..."
 	read x;
+	
 	#**************************************
         existeArchivo $AFRACONFIG
         local resultado=$?
         if [ $resultado == 0 ];then
                 echo "puede estar instalado"
-                #TODO:VERIFICAR INSTALACION COMPLETA PASO 2
+		verificarInstalacionCompleta
+
+		#TODO:VERIFICAR INSTALACION COMPLETA PASO 2
         else
                 echo "******************* No esta instalado AFRA-l *****************"
                 verificarPerl;
         fi
 }
 
+#PASO2
+verificarInstalacionCompleta(){
+	local estado;
+	
+	#traer variables del afrainst.config
+	GRUPO=$(grep '^GRUPO' $AFRACONFIG | cut -d '=' -f 2)
+	CONFDIR=$(grep '^CONFDIR' $AFRACONFIG | cut -d '=' -f 2)
+	BINDIR=$(grep '^BINDIR' $AFRACONFIG | cut -d '=' -f 2)
+	MAEDIR=$(grep '^MAEDIR' $AFRACONFIG | cut -d '=' -f 2)
+	DATASIZE=$(grep '^DATASIZE' $AFRACONFIG | cut -d '=' -f 2)
+	ACEPDIR=$(grep '^ACEPDIR' $AFRACONFIG | cut -d '=' -f 2)
+	RECHDIR=$(grep '^RECHDIR' $AFRACONFIG | cut -d '=' -f 2)
+	PROCDIR=$(grep '^PROCDIR' $AFRACONFIG | cut -d '=' -f 2)
+	REPODIR=$(grep '^REPODIR' $AFRACONFIG | cut -d '=' -f 2)
+	NOVEDIR=$(grep '^NOVEDIR' $AFRACONFIG | cut -d '=' -f 2)
+	LOGDIR=$(grep '^LOGDIR' $AFRACONFIG | cut -d '=' -f 2)
+	LOGSIZE=$(grep '^LOGSIZE' $AFRACONFIG | cut -d '=' -f 2)
+	
+	
+	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
+	verificarExistenciaDeDirectorios
 
-#PASO 4
+
+	#estado de la revision (completo o incompleto)
+	estado=$?
+	
+
+	#mostrar estado y archivos faltantes
+	estadoAfrai estado
+
+}
+
+function verificarExistenciaDeDirectorios() {
+	i=0
+	variables=("$CONFDIR" "$BINDIR" "$MAEDIE" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+
+  	for VAR in "${variables[@]}"
+  	do
+    		if [[ ! -d "$VAR" ]]; then # si la variable no esta vacia es porque fue inicializado
+      			((i+=1))
+			#agregar en un auxiliar o algo el directorio faltante a agregar despues
+    		fi
+  	done
+}
+
+estadoAfrai(){
+	local estado=$1
+	local respuesta;
+	echo "Directorio de Configuracion: ${CONFDIR}"
+	echo "Directorio de Ejecutables: ${BINDIR}"
+	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
+	echo "Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
+	echo "Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
+	echo "Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
+	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
+	echo "Directorio de Archivos de Log: ${LOGDIR}"
+	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
+	echo "Estado de la instalacion: $estado"
+	if [ $estado -eq "COMPLETO" ] 
+	then
+		echo "Proceso de Instalacion Finalizado"
+		fin;
+	else
+		# listar componentes faltantes
+		echo "Desea completar la instalacion? (Si - No)
+		read respuesta
+		if [ ${respuesta^^} == "SI" ] 
+		then
+			#instalar faltantes
+		else
+			fin;
+		fi
+	fi	
+}
+
+
+#PASO4
 verificarPerl(){
 	#SACAR
 	echo "Verificando instalacion de Perl..."
@@ -58,13 +136,13 @@ verificarPerl(){
 	fi
 }
 
-#paso 21
+#PASO21
 fin(){
 	#TODO:cerrar log
 	exit
 }
 
-#PASO 9
+#PASO9
  definirEspacioNovedades(){
          #TODO: grabar en log
          local estado=1;
@@ -81,7 +159,7 @@ fin(){
          done
 }
 
-#PASO 10
+#PASO10
 verificarEspacioDisco(){
 	local espacioDisco=$(df -h /dev/sda5 | grep "/dev/sda5" | sed "s-^/dev/sda5 *\([0-9]*.\) *\([0-9]*.\) *\([0-9]*.\).*-\3-");
 	#TODO:ARREGLAR 
