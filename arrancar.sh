@@ -86,12 +86,12 @@ function grabaEnLog() {
 # funcion llamada por los scripts
 function arrancar(){
 	verificarComandoInvocado
-	grabaEnLog
+	#grabaEnLog
 	if [ $comandoAInvocar != "afrainic" ];then
 		verificarAmbiente
 	fi
 	verificarProcesoCorriendo
-	grabarEnLog
+	#grabarEnLog
 	./$comandoAInvocar.sh
 }
 

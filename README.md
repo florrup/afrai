@@ -1,5 +1,11 @@
 # 75.08 Sistemas Operativos 2° cuatrimestre 2015
 
+
+## arrancar.sh
+
+* Falta logear.
+* Forma de llamarlo desde otro script: ./arrancar.sh <comando a arrancar> <comando que lo llama>
+ 
 ## mover.sh
 * HIPÓTESIS: Se pasa el path completo del file a mover.
 * RESPUESTA: si, vamos a pasarte la ruta entera ya que las variables de ambiente como acepdir, novedir ya van a estar con el path completo
