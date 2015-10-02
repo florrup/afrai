@@ -433,6 +433,28 @@ function verificarLlamadaSospechosa() {
 
 ##########################################################################################
 
+# 4.4 Grabar llamada sospechosa
+
+function grabarLlamadaSospechosa() {
+  local ARCH=$1
+
+  local OFICINA=$(cat $AGENTES | grep "$f1" | cut -d ";" -f 4) # cuarto field del archivo de agentes
+  local DIA=$(echo $f2 | cut -c 1-2)
+  local MES=$(echo $f2 | cut -c 4-5)
+  local ANIO=$(echo $f2 | cut -c 7-10)
+
+  local PATH=$PROCEDIR/"$OFICINA"_"$ANIO""$MES"
+
+  local IDCENTRAL=$(echo $ARCH | cut -c 1-3)
+  local IDUMBRAL="UMBRAL" # de la tabla de umbrales
+
+  echo $IDCENTRAL ; $f1 ; $IDUMBRAL ; $tipoLlamada ; $f2 ; $f3 ; $f4 ; $f5 ; $f6 ; $f7 ; $f8 >> $PATH 
+
+  # falta incrementar contadores
+}
+
+##########################################################################################
+
 # 4.5 Rechazar registro
 
 function rechazarRegistro() {
