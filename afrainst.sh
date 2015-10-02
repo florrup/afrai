@@ -19,7 +19,7 @@ existeArchivo () {
 	fi
 }
 
-#PASO 1
+#PASO1
 verificarInstalacion(){
 	#SACAR
 	echo "Verificando instalacion..."
@@ -28,16 +28,94 @@ verificarInstalacion(){
         existeArchivo $AFRACONFIG
         local resultado=$?
         if [ $resultado == 0 ];then
-                echo "puede estar instalado"
-                #TODO:VERIFICAR INSTALACION COMPLETA PASO 2
+                echo "Verificando instalacion completa..."
+		verificarInstalacionCompleta
+
+		#TODO:VERIFICAR INSTALACION COMPLETA PASO 2
         else
                 echo "******************* No esta instalado AFRA-l *****************"
                 verificarPerl;
         fi
 }
 
+#PASO2
+verificarInstalacionCompleta(){
+	local estado;
+	
+	#traer variables del afrainst.config
+	GRUPO=$(grep '^GRUPO' $AFRACONFIG | cut -d '=' -f 2)
+	CONFDIR=$(grep '^CONFDIR' $AFRACONFIG | cut -d '=' -f 2)
+	BINDIR=$(grep '^BINDIR' $AFRACONFIG | cut -d '=' -f 2)
+	MAEDIR=$(grep '^MAEDIR' $AFRACONFIG | cut -d '=' -f 2)
+	DATASIZE=$(grep '^DATASIZE' $AFRACONFIG | cut -d '=' -f 2)
+	ACEPDIR=$(grep '^ACEPDIR' $AFRACONFIG | cut -d '=' -f 2)
+	RECHDIR=$(grep '^RECHDIR' $AFRACONFIG | cut -d '=' -f 2)
+	PROCDIR=$(grep '^PROCDIR' $AFRACONFIG | cut -d '=' -f 2)
+	REPODIR=$(grep '^REPODIR' $AFRACONFIG | cut -d '=' -f 2)
+	NOVEDIR=$(grep '^NOVEDIR' $AFRACONFIG | cut -d '=' -f 2)
+	LOGDIR=$(grep '^LOGDIR' $AFRACONFIG | cut -d '=' -f 2)
+	LOGSIZE=$(grep '^LOGSIZE' $AFRACONFIG | cut -d '=' -f 2)
+	
+	
+	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
+	verificarExistenciaDeDirectorios
 
-#PASO 4
+
+	#estado de la revision (completo o incompleto)
+	estado=$?
+	
+
+	#mostrar estado y archivos faltantes
+	estadoAfrai estado
+
+}
+
+function verificarExistenciaDeDirectorios() {
+	i=0
+	variables=("$CONFDIR" "$BINDIR" "$MAEDIE" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+
+  	for VAR in "${variables[@]}"
+  	do
+    		if [[ ! -d "$VAR" ]]; then # si la variable no esta vacia es porque fue inicializado
+      			((i+=1))
+			#agregar en un auxiliar o algo el directorio faltante a agregar despues
+    		fi
+  	done
+}
+
+estadoAfrai(){
+	local estado=$1
+	local respuesta;
+	echo "Directorio de Configuracion: ${CONFDIR}"
+	echo "Directorio de Ejecutables: ${BINDIR}"
+	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
+	echo "Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
+	echo "Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
+	echo "Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
+	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
+	echo "Directorio de Archivos de Log: ${LOGDIR}"
+	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
+	echo "Estado de la instalacion: $estado"
+	if [ $estado -eq "COMPLETO" ] 
+	then
+		echo "Proceso de Instalacion Finalizado"
+		fin;
+	else
+		# listar componentes faltantes
+		echo "Desea completar la instalacion? (Si - No)"
+		read respuesta
+		if [ ${respuesta^^} == "SI" ] 
+		then
+			echo "instalando faltantes"			
+			#instalar faltantes
+		else
+			fin;
+		fi
+	fi	
+}
+
+
+#PASO4
 verificarPerl(){
 	#SACAR
 	echo "Verificando instalacion de Perl..."
@@ -58,18 +136,18 @@ verificarPerl(){
 	fi
 }
 
-#paso 21
+#PASO21
 fin(){
 	#TODO:cerrar log
 	exit
 }
 
-#PASO 9
+#PASO9
  definirEspacioNovedades(){
          #TODO: grabar en log
          local estado=1;
          while [ $estado == 1 ];do
-                 echo "Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100):"
+                 echo "Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100) : "
                  read DATASIZE
                  DATASIZE=`echo $DATASIZE | grep "^[0-9]*$"`
                  if [ ! -z $DATASIZE ];then
@@ -81,7 +159,7 @@ fin(){
          done
 }
 
-#PASO 10
+#PASO10
 verificarEspacioDisco(){
 	local espacioDisco=$(df -h /dev/sda5 | grep "/dev/sda5" | sed "s-^/dev/sda5 *\([0-9]*.\) *\([0-9]*.\) *\([0-9]*.\).*-\3-");
 	#TODO:ARREGLAR 
@@ -358,18 +436,27 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 }
 
 moverArchivos (){
-	local posicionActual=`pwd`
-	local ejecutables=`ls "$posicionActual/afrai/ejecutables"`
-	local maestros=`ls "$posicionActual/afrai/maestros"`
-	posicionActual=$posicionActual/afrai
+	posicionActual=`pwd`/afrai
 
+	moverEjecutablesYFunciones
+	moverMaestrosYTablas
+}
+
+#PASO20.2
+moverEjecutablesYFunciones () {
+	local ejecutables=`ls "$posicionActual/ejecutables"`
+	
 	echo "Instalando Programas y Funciones"
 	for archivoejec in ${ejecutables[*]}
 	do
-    		echo "moviendo $archivoejec"
 		$posicionActual/mover.sh $posicionActual/ejecutables/$archivoejec $GRUPO/$BINDIR 
 	done
 	read x
+}
+
+#PASO20.3
+moverMaestrosYTablas () {
+	local maestros=`ls "$posicionActual/maestros"`
 
 	echo "Instalando Archivos Maestros y Tablas"
 	#Mover los archivos maestros y las tablas
@@ -378,18 +465,6 @@ moverArchivos (){
     		echo "moviendo $archivomae"
 		$posicionActual/mover.sh $posicionActual/maestros/$archivomae $GRUPO/$MAEDIR 
 	done
-
-}
-
-#PASO20.2
-moverEjecutablesYFunciones () {
-	echo "Hacer"
-}
-
-#PASO20.3
-moverMaestrosYTablas () {
-
-	echo "Hacer"
 }
 
 #PASO20.4
@@ -403,6 +478,8 @@ escribirConfig () {
 	echo "BINDIR=$GRUPO/$BINDIR" >> $AFRACONFIG
 	#MAEDIR
 	echo "MAEDIR=$GRUPO/$MAEDIR" >> $AFRACONFIG
+	#NOVEDIR
+	echo "DATASIZE=$DATASIZE" >> $AFRACONFIG
 	#NOVEDIR
 	echo "NOVEDIR=$GRUPO/$NOVEDIR" >> $AFRACONFIG
 	#ACEPDIR
