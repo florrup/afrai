@@ -1,25 +1,28 @@
 #! /bin/bash
 
-TIEMPO_DORMIDO=2
+TIEMPO_DORMIDO=10
 DIR_CENTRALES=/home/gonzalo/Escritorio/Tp/Cosas_del_Mail/Datos/centrales.csv
 NOVEDIR=/home/gonzalo/Escritorio/Tp/Archivos/NOVEDIR
 ACEPDIR=/home/gonzalo/Escritorio/Tp/Archivos/ACEPDIR
+RECHDIR=/home/gonzalo/Escritorio/Tp/Archivos/RECHDIR
+MOVER=/home/gonzalo/Escritorio/Tp/afrai/mover.sh
 ciclo=0
 
 
 # Graba en el log.
 function grabarEnLog (){
-	echo $1
+	echo "*** LOG *** : ${1}"
 }
 
 #Mueve el archivo pasado por parametro a la direccion parasada por paramtro
 function moverA (){
-	echo "Moviendo archivo..."
+	echo "Moviendo ${1} a ${2}..."
+	$MOVER $1 $2
 }
 
 # Verifica si existen archivos en el directorio pasado por parametro.
 function existenArchivos (){
-	echo "Verificando existencia de archivos en ${1}..."
+	#echo "Verificando existencia de archivos en ${1}..."
 	cantidadArchivos=`ls $1 | wc -l`
 	if [ ! $cantidadArchivos -eq 0 ]
    	then
@@ -31,10 +34,15 @@ function existenArchivos (){
 
 # Valida si el archivo pasado por parametro es de texto
 function esDeTexto (){
-	if [[ $1 == *.csv ]]
+	local archivo=$NOVEDIR/${1}
+	local esTexto=`file --mime-type ${archivo} | grep "text/plain$" `
+	echo "Formato del archivo ${esTexto}"
+	if [[ ! -z $esTexto ]]
 	then
+		echo "FUEEEE DE TEXTOOOOO"
 		return 0
 	fi
+	echo "NO PUEDE SEEEEER"
 	return 1
 }
 
@@ -56,7 +64,7 @@ function tieneCodigoCorrecto (){
 	#codigo=`echo ${codigoParte1:1:3}`
 	codigo=`echo $1 | cut -d'_' -f 1`
 	cantidadEnCentrales=`echo ls | grep ^${codigo}'\;' ${DIR_CENTRALES} | wc -l`
-	echo "SE ENCONTRARON: ${cantidadEnCentrales} RESULTADOS DE MATCHEO"
+	#echo "SE ENCONTRARON: ${cantidadEnCentrales} RESULTADOS DE MATCHEO"
 	if [ $cantidadEnCentrales -gt 0 ]
 	then
 		# Codigo Correcto
@@ -95,6 +103,7 @@ function fechaValida (){
 	# Valida que el dia no supere el dia maximo, segun el mes
 	if [ $dia -gt $diaMaximo ]
 	then
+		# Dia superior a dia maximo del mes correspondiente
 		return 1
 	fi
 	
@@ -111,31 +120,31 @@ function tieneFechaCorrecta (){
 	esNumerico=`echo $fecha | grep "^[0-9]\{8\}$"`
 	if [ -z $esNumerico ]
 	then
-		echo "Fecha no numerica"
+		#echo "Fecha no numerica"
 		return 1
 	fi
 	
 	if ! fechaValida $fecha;
 	then
-		echo "Fecha fuera de rango"
+		#echo "Fecha fuera de rango"
 		return 1
 	fi
 
 	fechaActual=`date +'%Y%m%d'`
 	let diferencia=$fechaActual-$fecha
-	echo "DIFERENCIA: ${diferencia}"
+	#echo "DIFERENCIA: ${diferencia}"
 	
 	# Valida si la fecha es mayor a un año
 	if [ $diferencia -gt 10000 ]
 	then
-		echo "MAYOR A UN AÑO"
+		#echo "Mayor a un ano"
 		return 1
 	fi
 	
 	# Valida si la fecha es mayor a la fecha actual
 	if [ $diferencia -lt 0 ]
 	then
-		echo "MAYOR AL DIA DE LA FECHA"
+		#echo "Mayor al dia de la fecha"
 		return 1
 	fi
 	
@@ -147,11 +156,11 @@ function tieneFechaCorrecta (){
 function tieneNombreCorrecto (){
 	if tieneCodigoCorrecto $1;
 	then
-		echo "$1 Tuvo codigo correcto"
+		#echo "$1 Tuvo codigo correcto"
 		
 		if tieneFechaCorrecta $1;
 		then
-			echo "$1 Tuvo fecha correcta"
+			#echo "$1 Tuvo fecha correcta"
 			return 0
 		fi
 		# Fecha Invalida
@@ -162,15 +171,13 @@ function tieneNombreCorrecto (){
 
 # Realiza las validaciones de los archivos en NOVEDIR
 function procesarArchivosNovedir (){
-	echo "Procesando archivos en NOVEDIR..."
-	archivoNombreCorrecto=false
-	
+	#echo "Procesando archivos en NOVEDIR..."
 	motivoRechazo=""
 	listadoArchivos=`ls -1 ${NOVEDIR}`	
 
 	for archivo in $listadoArchivos 
 	do
-	archivoRechazado=false
+	archivoCorrecto=false
 		#Paso 3: Verifica que el archivo sea de texto.
 		if esDeTexto $archivo;
 		then
@@ -183,28 +190,28 @@ function procesarArchivosNovedir (){
 					#Paso 6: 
 					# - Mover archivo a ACEPDIR.
 					# - Grabar log.
-					moverA $archivo
+					archivoRutaCompleta=$NOVEDIR/$archivo
+                        		moverA $archivoRutaCompleta $ACEPDIR
 					grabarEnLog "Archivo ${archivo} correcto"
+					archivoCorrecto=true
 				else
-					archivoRechazado=true
 					motivoRechazo="${archivo} - Nombre incorrecto"
 				fi
 			else
-				archivoRechazado=true
 				motivoRechazo="${archivo} - Formato incorrecto"
 			fi
 		else
-			archivoRechazado=true
 			motivoRechazo="${archivo} - Archivo no es de texto"
 		fi
 	
 		#Paso 7: Rechazar archivos invalidos
 		# - Mover archivo a RECHDIR
 		# - Grabar log.
-		if $archivoRechazado ;
+		if ! $archivoCorrecto
 		then
-			moverA
-			grabarEnLog "$motivoRechazo"
+			archivoRutaCompleta=$NOVEDIR/$archivo
+			moverA $archivoRutaCompleta $RECHDIR
+			grabarEnLog "Motivo de Rechazo: ${motivoRechazo}"
 		fi
 		echo ""
 
@@ -223,10 +230,10 @@ do
 	#Paso 2: Chequear si hay archivos en el directorio NOVEDIR.	
 	if existenArchivos $NOVEDIR;
 	then
-		echo "Existieron archivos en novedir"
+		#echo "Existieron archivos en novedir"
 		#Paso 3 al 7: Procesar los archivos dentro de la carpeta NOVEDIR.
 		# Los validos, los mueve a ACEPDIR
-		# Los NO validos, los rechaza
+		# Los NO validos, los mueve a RECHDIR
 		procesarArchivosNovedir
 	fi
 	
@@ -234,17 +241,25 @@ do
 	if existenArchivos $ACEPDIR;
 	then
 		echo "Existieron archivos en ACEPDIR"
-		seInvocoAfraumbr=false
+		afraumbr=afrareci.sh
+		afraumbrCorriendo=`ps -A | grep "${afraumbr}"`
 		errorAfraumbr=false
-		idAfraumbr=00000
-		if $seInvocoAfraumbr;
+		idAfraumbr=`pgrep -o ${afraumbr}`
+		if [[ ! -z $afraumbrCorriendo ]]
 		then
-			grabarEnLog "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
-		elif $errorAfraumbr;
-		then
-			grabarEnLog "Hubo un ERROR"
+			# AFRAUMBR esta corriendo
+			echo "Corriendo con id: ${idAfraumbr}" 
+			grabarEnLog "NO SE PUEDE INVOCAR AFRAUMBR, YA ESTA CORRIENDO"
 		else
-			grabarEnLog "Invocación de AFRAUMBR pospuesta para el siguiente ciclo"
+			# INVOCAR AFRAUMBR
+			# SI SE PUEDO INVOCAR AFRAUMBR
+				grabarEnLog "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
+				# SI SE DEBE POSPONER
+					 grabarEnLog "Invocación de AFRAUMBR pospuesta para el siguiente ciclo"
+				# SINO
+					grabarEnLog "HUBO UN ERROR EN POSPONER"
+			# SINO
+			grabarEnLog "HUBO UN ERROR EN INVOCAR"
 		fi
 	fi
 	echo ""
