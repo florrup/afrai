@@ -6,11 +6,13 @@
 
 #  Variables definidas por default
 
+posicionActual=`pwd`
 GRUPO=~/grupo07;
 CONFDIR=CONF;
 AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
 MOVER="mover.sh"
+GRALOG="gralog.sh"
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -199,7 +201,7 @@ verificarPerl(){
 	if [ $version -ge 5 ];then
 		echo "Perl version: $datosPerl"
 		echo "##################################################################"
-		#TODO:GRABAR EN LOG
+		$posicionActual/$GRALOG "afrainst.sh" "$datosPerl" "INFO"
 	else
 		#TODO: grabar en log
 		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior."
