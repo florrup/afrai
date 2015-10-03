@@ -59,34 +59,52 @@ verificarInstalacionCompleta(){
 	
 	
 	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
-	verificarExistenciaDeDirectorios
-
-
-	#estado de la revision (completo o incompleto)
-	estado=$?
-	
-
-	#mostrar estado y archivos faltantes
-	estadoAfrai estado
+	verificarExistenciaDeDirectoriosYArchivos
 
 }
 
-function verificarExistenciaDeDirectorios() {
-	i=0
-	variables=("$CONFDIR" "$BINDIR" "$MAEDIE" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+function verificarExistenciaDeDirectoriosYArchivos() {
+	dir=("$CONFDIR" "$BINDIR" "$MAEDIR" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+#	mae=("$BINDIR/" "$BINDIR/" "$BINDIR/" "$BINDIR/" "$BINDIR/" "$BINDIR/")
+#	tab=(  	
 
-  	for VAR in "${variables[@]}"
-  	do
-    		if [[ ! -d "$VAR" ]]; then # si la variable no esta vacia es porque fue inicializado
-      			((i+=1))
-			#agregar en un auxiliar o algo el directorio faltante a agregar despues
-    		fi
+	local K=0;
+#	local H=1;
+#	local G=1;
+
+	for I in ${dir[*]}
+	do
+    		if [ ! -d $I ]; then # si el directorio no existe, agrego directorios que no existen al vector. 
+			faltantesDir[$K]=$I;		
+			let K=K+1;
+			
+#			if [ $I == "$BINDIR" ];then
+#				for H in ${mae[*]}
+#				do
+#
+#				done	
+#			fi
+
+#			if [ $I -eq "MAEDIR" ];then
+#				for ((J=0;J<${#mae[@]};J++))
+#				do
+#
+#				done	
+		fi
   	done
+	
+	#verificar si faltan directorios
+	if [ ${#faltantesDir[@]} -eq 0 ];then
+		estado=COMPLETO
+	else
+		estado=INCOMPLETO
+	fi
+	#mostrar estado y consultar al usuario como continuar
+	estadoAfrai $estado;
+		
 }
 
-estadoAfrai(){
-	local estado=$1
-	local respuesta;
+mostrar(){
 	echo "Directorio de Configuracion: ${CONFDIR}"
 	echo "Directorio de Ejecutables: ${BINDIR}"
 	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
@@ -96,23 +114,41 @@ estadoAfrai(){
 	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
 	echo "Directorio de Archivos de Log: ${LOGDIR}"
 	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
-	echo "Estado de la instalacion: $estado"
-	if [ $estado -eq "COMPLETO" ] 
-	then
-		echo "Proceso de Instalacion Finalizado"
-		fin;
-	else
+	echo "Estado de la instalacion: $1"
+}
+
+estadoAfrai(){
+	local estado=$1
+	local respuesta;
+	
+	mostrar $estado;
+
+	if [ $estado != "COMPLETO" ];then
 		# listar componentes faltantes
+		echo "Componentes faltanes:";
+		for I in ${faltantesDir[*]}
+		do
+			echo $I;
+		done		
+
 		echo "Desea completar la instalacion? (Si - No)"
 		read respuesta
 		if [ ${respuesta^^} == "SI" ] 
 		then
 			echo "instalando faltantes"			
-			#instalar faltantes
+			for I in ${faltantesDir[*]}
+			do
+				mkdir $I;
+			done	
+			clear;
+			estado=COMPLETO;
+			mostrar $estado;
 		else
 			fin;
 		fi
 	fi	
+	echo "Proceso de Instalacion Finalizado"
+	fin;
 }
 
 
@@ -511,4 +547,4 @@ fin #PASO 21
 # - completar paso 2/3/20
 # - Verificar que los nombres de los directorios no se dupliquen
 # - grabar afrainst.conf con el formato correspondiente
-# Ejemplo: GRUPO=/usr/alumnos/temp/grupo01=alumnos=09/04/2015 10:03 p.m
+# Ejemplo: GRUPO=/usr/alumnos/temp/grupo01=alumnos=09/04/2015 10:03 p.mcd 
