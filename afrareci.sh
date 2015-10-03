@@ -1,14 +1,7 @@
 #! /bin/bash
 
-TIEMPO_DORMIDO=10
-DIR_CENTRALES=/home/gonzalo/Escritorio/Tp/Cosas_del_Mail/Datos/centrales.csv
-NOVEDIR=/home/gonzalo/Escritorio/Tp/Archivos/NOVEDIR
-ACEPDIR=/home/gonzalo/Escritorio/Tp/Archivos/ACEPDIR
-RECHDIR=/home/gonzalo/Escritorio/Tp/Archivos/RECHDIR
-MOVER=/home/gonzalo/Escritorio/Tp/afrai/mover.sh
-GRALOG=./gralog.sh
+TIEMPO_DORMIDO=20
 ciclo=0
-
 
 # Graba en el log.
 function grabarEnLog (){
@@ -19,7 +12,7 @@ function grabarEnLog (){
 #Mueve el archivo pasado por parametro a la direccion parasada por paramtro
 function moverA (){
 	echo "Moviendo ${1} a ${2}..."
-	$MOVER $1 $2
+	$BINDIR/mover.sh $1 $2
 }
 
 # Verifica si existen archivos en el directorio pasado por parametro.
@@ -37,13 +30,13 @@ function existenArchivos (){
 function esDeTexto (){
 	local archivo=$NOVEDIR/${1}
 	local esTexto=`file --mime-type ${archivo} | grep "text/plain$" `
-	echo "Formato del archivo ${esTexto}"
+
 	if [[ ! -z $esTexto ]]
 	then
-		echo "FUEEEE DE TEXTOOOOO"
+		# Archivo es de Texto
 		return 0
 	fi
-	echo "NO PUEDE SEEEEER"
+	# Archivo No es de Texto
 	return 1
 }
 
@@ -53,16 +46,20 @@ function tieneFormatoCorrecto (){
 	
 	if [[ ! -z $formatoCorrecto ]]
 	then
+		# Formato correcto: codigo_nroFecha
 		return 0
 	fi
+	# Formato incorrecto
 	return 1
 }
 
 # Valida si el archivo pasado por parametro posee el codigo central correcto
 # y además existen en el archivo centrales.csv
 function tieneCodigoCorrecto (){
+	
+	local centrales=${MAEDIR}/CdC.mae
 	codigo=`echo $1 | cut -d'_' -f 1`
-	cantidadEnCentrales=`echo ls | grep ^${codigo}'\;' ${DIR_CENTRALES} | wc -l`
+	cantidadEnCentrales=`echo ls | grep ^${codigo}'\;' ${centrales} | wc -l`
 	
 	if [ $cantidadEnCentrales -gt 0 ]
 	then
@@ -112,9 +109,10 @@ function fechaValida (){
 
 # Valida si el archivo pasado por parametro posee la fecha correcta
 function tieneFechaCorrecta (){
+
 	fechaParte2=`echo $1 | cut -d'_' -f 2`
 	fecha=`echo ${fechaParte2:0:8}`
-
+	
 	# Valida que la fecha sea numerica
 	esNumerico=`echo $fecha | grep "^[0-9]\{8\}$"`
 	if [ -z $esNumerico ]
@@ -146,7 +144,7 @@ function tieneFechaCorrecta (){
 		return 1
 	fi
 	
-	
+	# Fecha Correcta
 	return 0
 }
 
@@ -166,6 +164,11 @@ function tieneNombreCorrecto (){
 	return 1
 }
 
+function darPermisoParaMover (){
+	archivoRutaCompleta=$NOVEDIR/$1
+	chmod +x $archivoRutaCompleta
+}
+
 # Realiza las validaciones de los archivos en NOVEDIR
 function procesarArchivosNovedir (){
 	
@@ -175,6 +178,8 @@ function procesarArchivosNovedir (){
 	for archivo in $listadoArchivos 
 	do
 		archivoCorrecto=false
+		darPermisoParaMover $archivo
+		
 		#Paso 3: Verifica que el archivo sea de texto.
 		if esDeTexto $archivo;
 		then
@@ -188,8 +193,7 @@ function procesarArchivosNovedir (){
 					# - Mover archivo a ACEPDIR.
 					# - Grabar log.
 					archivoRutaCompleta=$NOVEDIR/$archivo
-                        		moverA $archivoRutaCompleta $ACEPDIR
-					grabarEnLog "Archivo ${archivo} correcto"
+                    moverA $archivoRutaCompleta $ACEPDIR
 					archivoCorrecto=true
 				else
 					motivoRechazo="${archivo} - Nombre incorrecto"
@@ -217,8 +221,8 @@ function procesarArchivosNovedir (){
 
 
 ############################  AFRARECI  ################################
-#while [[ true ]]
-while [ $ciclo -eq 0 ]
+while [[ true ]]
+#while [ $ciclo -eq 0 ]
 do	
 	#Paso 1: Grabar en el log el numero de ciclo.
 	let ciclo++
@@ -235,18 +239,19 @@ do
 	fi
 	
 	#Paso 8: Novedades Pendientes.
-	if existenArchivos $ACEPDIR;
+	if ! existenArchivos $ACEPDIR;
+	#TODO: ATENCION! BORRAR ESTA CONDICION Y PONER LA DE ABAJO. if existenArchivos ACEPDIR
+	#if existenArchivos $ACEPDIR;
 	then
 		echo "Existieron archivos en ACEPDIR"
-		afraumbr=afraumbr.sh
-		
-		afraumbrCorriendo=`ps -A | grep "${afraumbr}"`
+		afraumbrCorriendo=`ps -A | grep "afraumbr.sh"`
 		errorAfraumbr=false
-		idAfraumbr=`pgrep -o ${afraumbr}`
+		idAfraumbr=`pgrep -o "afraumbr.sh"`
 		if [[ -z $afraumbrCorriendo ]]
 		then
 			# INVOCAR AFRAUMBR
-			
+			./arrancar.sh afraumbr testarrancar
+			idAfraumbr=`pgrep -o "afraumbr.sh"`
 			# SI SE PUEDO INVOCAR AFRAUMBR
 				grabarEnLog "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
 			# SINO
