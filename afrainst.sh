@@ -510,7 +510,5 @@ fin #PASO 21
 # - Ver como grabar el LOG
 # - completar paso 2/3/20
 # - Verificar que los nombres de los directorios no se dupliquen
-
-
-
-
+# - grabar afrainst.conf con el formato correspondiente
+# Ejemplo: GRUPO=/usr/alumnos/temp/grupo01=alumnos=09/04/2015 10:03 p.m
