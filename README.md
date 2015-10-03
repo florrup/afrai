@@ -6,6 +6,12 @@
 * Falta logear.
 * Forma de llamarlo desde otro script: ./arrancar.sh <comando a arrancar> <comando que lo llama>
  
+## detener.sh
+* falta loguear, solo sirve para detener el demonio, afrareci
+
+## funcionesComunes
+* tiene funciones para llamar desde cualquier script como verificar si esta inicializado el ambiente
+
 ## mover.sh
 * HIPÓTESIS: Se pasa el path completo del file a mover.
 * RESPUESTA: si, vamos a pasarte la ruta entera ya que las variables de ambiente como acepdir, novedir ya van a estar con el path completo
