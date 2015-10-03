@@ -252,10 +252,8 @@ codigoArea() {
   CDA=$1
   CODAREA=$2
   DDI=$3
-  if [ "$CODAREA" = "" ]; then
-    #echo "CODAREA no esta\n\n"
-    return 1
-  fi
+
+
   # CODAREA esta
   # Verifico DDI
   if [ "$DDI" = "false" ]; then
@@ -271,7 +269,7 @@ codigoArea() {
     fi
   fi
   #echo -e "DDI es true\n\n"
-  return 1
+  return 0
 }
 
 # Verifica numero de linea B
@@ -381,21 +379,17 @@ function determinarTipoDeLlamada() {
   re='^[0-9]+$'
   
   llamadoValido="false"
-
+  
   # Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
-  if [ "$DAREA"="" ] ; then
-
-    if [ ! -z $DNUM  ]; then
+  if [[ "$DAREA" = "" && ! -z $DNUM ]] ; then
       tipoLlamada="DDI"
       llamadoValido="true"
-    fi
-
+  else
     # Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
     # línea con la cantidad adecuada de dígitos, la llamada es DDN.
 
     # Comprueba cantidad de digitos
     numeroLineaB "${DNUM}" "false" "${DAREA}"
-  else
 
     if [[ $DAREA != $OAREA && "$?" = 0 ]]; then
       tipoLlamada="DDN"
