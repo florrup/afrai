@@ -580,12 +580,12 @@ escribirConfig () {
 verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
 definicionesInstalacion; #PASO 5 - 20
 fin #PASO 21
-#instalacion
 
+#instalacion
 #definirLogSize
+
+
 
 #  BUGS Y MEJORAS #
 # - Ver como grabar el LOG
 # - Verificar que los nombres de los directorios no se dupliquen
-# - grabar afrainst.conf con el formato correspondiente
-# Ejemplo: GRUPO=/usr/alumnos/temp/grupo01=alumnos=09/04/2015 10:03 p.mcd 
