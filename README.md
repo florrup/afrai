@@ -31,6 +31,7 @@
 
 ## afrareci.sh
 * LOG
+* Llamar al AFRAUMBR en PARALELO
 
 ## verificUMBR.sh
 * Falta hacer pruebas con la carpeta ACEPDIR
