@@ -4,42 +4,31 @@
 # $1 script a correr
 # $2 script que lo corrio (si no es por consola)
 
-###################  Procedimientos ##############################
+#########################  Procedimientos ##################################
+source funcionesComunes.sh
 
-GRALOG="./gralog.sh"
+GRALOG="$BINDIR/gralog.sh"
 comandoAInvocar=$1
 comandoInvocador=$2
-comandosValidos=( "afrainst" "afrainic" "afrareci" "afraumbr" "afralist")
 
 
 function verificarComandoInvocado(){
 	echo "verificando comando de entrada"
-	local esValido=1
-	for comando in ${comandosValidos[*]}
-	do
-		if [ $comando == $comandoAInvocar ];then
-			esValido=0
-		fi
-	done 
-	if [ $esValido == 1 ];then
-		local mensajeError="El comando ingresado es Incorrecto"
+	if [ ! -f $BINDIR/$comandoAInvocar.sh ]; then
+    		local mensajeError="El comando ingresado es Incorrecto"
 		imprimirResultado "$mensajeError" "ERR"
 	fi
 }
 
 function verificarAmbiente(){
 	echo "Verifico el ambiente"
-	variablesDeAmbiente=( ${GRUPO} ${CONFDIR} ${BINDIR} ${MAEDIR} ${DATASIZE} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${REPODIR} ${LOGDIR} ${RECHDIR} )
-	local ambienteCorrecto=0
-	echo "${#variablesDeAmbiente[*]}"
-	if [ ${#variablesDeAmbiente[*]} != 11 ];then
-		ambienteCorrecto=1
+	if [ $comandoAInvocar != "afrainic" ];then
+		ambienteInicializado
+		if [ $? == 1 ];then
+			local mensajeError="Ambiente no inicializado"
+			imprimirResultado "$mensajeError" "ERR"
+		fi
 	fi
-	if [ $ambienteCorrecto == 1 ];then
-		local mensajeError="Ambiente no inicializado"
-		imprimirResultado "$mensajeError" "ERR"
-	fi
-	echo
 }
 
 function verificarProcesoCorriendo(){
@@ -52,10 +41,11 @@ function verificarProcesoCorriendo(){
 	fi
 }
 
+# $1 Mensaje $2 Tipo Mensaje
 function imprimirResultado(){
 	#si no hay comandoInvocador es porque se corrio por consola
 	if [ -z $comandoInvocador ];then
-		echo "Resultado: $1"
+		echo "$2: $1"
 	else
 		echo "en el log "
 		msjLog $1 $2
@@ -86,35 +76,24 @@ function grabaEnLog() {
 # funcion llamada por los scripts
 function arrancar(){
 	verificarComandoInvocado
-	#grabaEnLog
-	if [ $comandoAInvocar != "afrainic" ];then
-		verificarAmbiente
-	fi
+	grabaEnLog
+	verificarAmbiente
 	verificarProcesoCorriendo
-	#grabarEnLog
-	./$comandoAInvocar.sh
+	
+	if [ "${comandoAInvocar}" == "afrareci" ];then
+		nohup $BINDIR/$comandoAInvocar.sh > /dev/null 2>&1 &
+	else
+		$BINDIR/$comandoAInvocar.sh
+	fi
 }
 
 
-####################   POR CONSOLA   ############################
+####################   POR CONSOLA SOLO ARRANCA EL DEMONIO  #########################
 
-if [ $# -lt 1 ];then
-	echo "Debe indicar el comando a ejecutar"
+if [ $# -lt 1 ] ;then
+	echo "Modo de arranque \"arrancar.sh afrareci\""
 	exit 1
 fi
 
-if [ $# -gt 1 ];then
-	echo "Debe indicar un solo comando a ejecutar"
-	exit 1
-fi
-
-verificarComandoInvocado
-
-if [ $comandoAInvocar != "afrainic" ];then
-	verificarAmbiente
-fi	
-
-verificarProcesoCorriendo
-./$comandoAInvocar.sh
-
+arrancar
 ###########################################################

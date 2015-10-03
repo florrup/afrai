@@ -10,6 +10,7 @@ GRUPO=~/grupo07;
 CONFDIR=CONF;
 AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
+MOVER="mover.sh"
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -428,15 +429,13 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 	moverArchivos;
 	
 	echo "Actualizando la configuracion del sistema"
-
-
 	#	escribirLog   
 	#Borrar archivos temporarios si es q los hay
 	echo "Instalacion CONCLUIDA"
 }
 
 moverArchivos (){
-	posicionActual=`pwd`/afrai
+	posicionActual=`pwd`
 
 	moverEjecutablesYFunciones
 	moverMaestrosYTablas
@@ -444,26 +443,26 @@ moverArchivos (){
 
 #PASO20.2
 moverEjecutablesYFunciones () {
-	local ejecutables=`ls "$posicionActual/ejecutables"`
+	local ejecutables=`ls "$posicionActual/BIN"`
 	
 	echo "Instalando Programas y Funciones"
 	for archivoejec in ${ejecutables[*]}
 	do
-		$posicionActual/mover.sh $posicionActual/ejecutables/$archivoejec $GRUPO/$BINDIR 
+		$posicionActual/$MOVER $posicionActual/BIN/$archivoejec $GRUPO/$BINDIR 
 	done
 	read x
 }
 
 #PASO20.3
 moverMaestrosYTablas () {
-	local maestros=`ls "$posicionActual/maestros"`
+	local maestros=`ls "$posicionActual/MAE"`
 
 	echo "Instalando Archivos Maestros y Tablas"
 	#Mover los archivos maestros y las tablas
 	for archivomae in ${maestros[*]}
 	do
     		echo "moviendo $archivomae"
-		$posicionActual/mover.sh $posicionActual/maestros/$archivomae $GRUPO/$MAEDIR 
+		$posicionActual/$MOVER $posicionActual/MAE/$archivomae $GRUPO/$MAEDIR 
 	done
 }
 
@@ -492,9 +491,11 @@ escribirConfig () {
 	echo "REPODIR=$GRUPO/$REPODIR" >> $AFRACONFIG
 	#LOGDIR
 	echo "LOGDIR=$GRUPO/$LOGDIR" >> $AFRACONFIG
+	#LOGSIZE
+	echo "LOGSIZE=$LOGSIZE" >> $AFRACONFIG
 	#RECHDIR
 	echo "RECHDIR=$GRUPO/$RECHDIR" >> $AFRACONFIG
-	#RECHDIR/llamadas	
+	#RECHDIR/llamadas
 }
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
