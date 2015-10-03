@@ -163,8 +163,8 @@ idAgente() {
     #echo "Encontrado"
     #echo "$(grep ";${ID};" $ARCH)"
     return 0 # fue encontrado
-  else
-    #echo "No encontrado en AGENTES.CSV"
+  elsecodigoAreaA
+    #echo "No encontrado en AGENTES.CSV"mart
     return 1 # no fue encontrado
   fi
 }
@@ -180,7 +180,7 @@ codigoAreaA() {
     #echo "$(grep $";${AREA}" $ARCH)"
     return 0 # fue encontrado
   else
-    #echo "No encontrado en CDA"
+    echo "No encontrado en CDA"
     return 1 # no fue encontrado
   fi
 }
@@ -350,7 +350,7 @@ validarCamposRegistro() {
   codigoPaisB "${CDP}" "${DPAIS}" "${CDA}" "${DAREA}" "${DNUM}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
-    msj="el codigoPasiB no coincide"
+    msj="el codigoPaisB no coincide"
   fi
 
   tiempo "${TIEMPO}"
