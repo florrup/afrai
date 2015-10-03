@@ -1,10 +1,12 @@
 # 75.08 Sistemas Operativos 2° cuatrimestre 2015
 
+##HIPOTESIS
+* Si se instala afrai y luego de quiere reinstalar se debe descomprimir los archivos nuevamente
 
 ## arrancar.sh
 
 * Falta logear.
-* Forma de llamarlo desde otro script: ./arrancar.sh <comando a arrancar> <comando que lo llama>
+* Forma de llamarlo desde otro script: $BINDIR/arrancar.sh <comando a arrancar> <comando que lo llama>
  
 ## detener.sh
 * falta loguear, solo sirve para detener el demonio, afrareci
@@ -14,7 +16,6 @@
 
 ## mover.sh
 * HIPÓTESIS: Se pasa el path completo del file a mover.
-* RESPUESTA: si, vamos a pasarte la ruta entera ya que las variables de ambiente como acepdir, novedir ya van a estar con el path completo
 * HIPÓTESIS: Estoy usando la secuencia NNN por cada directorio.
 
 ## gralog.sh
@@ -22,12 +23,12 @@
 
 ## afrainic.sh
 * Falta darle permisos a los scripts. 
-* Falta setear variable PATH.
+* Falta setear variable PATH. Ver export de variable
 * Falta terminar deseaArrancar() -> necesito saber cómo funciona/se usa cada comando
 
 ## afrainst.sh
+* falta logear
 
-* Ver qe archivos hay qe mover a las carpetas en el final de la instalacion
 
 ## afrareci.sh
 * LOG
