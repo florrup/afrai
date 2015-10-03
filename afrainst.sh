@@ -264,7 +264,7 @@ verificarEspacioDisco(){
 definicionesInstalacion() {
 	read x
 	clear;
-	local est 	ado=0
+	local estado=0
 	while [ $estado -eq 0 ]
 	do
 		estado=1
@@ -546,33 +546,34 @@ moverMaestrosYTablas () {
 #PASO20.4
 escribirConfig () {
 	#grabar
+
+	WHEN=`date +%T-%d-%m-%Y`
+	WHO=${USER}
+
 	#GRUPO
-	echo "GRUPO=$GRUPO" >> $AFRACONFIG
+	echo "GRUPO=$GRUPO=$WHO=$WHEN" >> $AFRACONFIG
 	#CONFDIR
-	echo "CONFDIR=$GRUPO/$CONFDIR" >> $AFRACONFIG
+	echo "CONFDIR=$GRUPO/$CONFDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#BINDIR
-	echo "BINDIR=$GRUPO/$BINDIR" >> $AFRACONFIG
+	echo "BINDIR=$GRUPO/$BINDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#MAEDIR
-	echo "MAEDIR=$GRUPO/$MAEDIR" >> $AFRACONFIG
+	echo "MAEDIR=$GRUPO/$MAEDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#NOVEDIR
-	echo "DATASIZE=$DATASIZE" >> $AFRACONFIG
+	echo "DATASIZE=$DATASIZE=$WHO=$WHEN" >> $AFRACONFIG
 	#NOVEDIR
-	echo "NOVEDIR=$GRUPO/$NOVEDIR" >> $AFRACONFIG
+	echo "NOVEDIR=$GRUPO/$NOVEDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#ACEPDIR
-	echo "ACEPDIR=$GRUPO/$ACEPDIR" >> $AFRACONFIG
+	echo "ACEPDIR=$GRUPO/$ACEPDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#PROCDIR
-	echo "PROCDIR=$GRUPO/$PROCDIR" >> $AFRACONFIG
-	#PROCDIR/proc	
-	
+	echo "PROCDIR=$GRUPO/$PROCDIR=$WHO=$WHEN" >> $AFRACONFIG	
 	#REPODIR
-	echo "REPODIR=$GRUPO/$REPODIR" >> $AFRACONFIG
+	echo "REPODIR=$GRUPO/$REPODIR=$WHO=$WHEN" >> $AFRACONFIG
 	#LOGDIR
-	echo "LOGDIR=$GRUPO/$LOGDIR" >> $AFRACONFIG
+	echo "LOGDIR=$GRUPO/$LOGDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#LOGSIZE
-	echo "LOGSIZE=$LOGSIZE" >> $AFRACONFIG
+	echo "LOGSIZE=$LOGSIZE=$WHO=$WHEN" >> $AFRACONFIG
 	#RECHDIR
-	echo "RECHDIR=$GRUPO/$RECHDIR" >> $AFRACONFIG
-	#RECHDIR/llamadas
+	echo "RECHDIR=$GRUPO/$RECHDIR=$WHO=$WHEN" >> $AFRACONFIG
 }
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
@@ -585,7 +586,6 @@ fin #PASO 21
 
 #  BUGS Y MEJORAS #
 # - Ver como grabar el LOG
-# - completar paso 2/3/20
 # - Verificar que los nombres de los directorios no se dupliquen
 # - grabar afrainst.conf con el formato correspondiente
 # Ejemplo: GRUPO=/usr/alumnos/temp/grupo01=alumnos=09/04/2015 10:03 p.mcd 
