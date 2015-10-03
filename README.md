@@ -15,7 +15,9 @@
 * Falta setear variables de configuracion
 
 ## afrainic.sh
-
+* Falta darle permisos a los scripts. 
+* Falta setear variable PATH.
+* Falta terminar deseaArrancar() -> necesito saber cómo funciona/se usa cada comando
 
 ## afrainst.sh
 
