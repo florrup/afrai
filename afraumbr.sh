@@ -78,6 +78,7 @@ function procesarArchivo() {
   # Verifico si el archivo ya fue procesado
   if [ -s $PROCDIR/$ARCH ]; then
     MSJ="Se rechaza el archivo por estar DUPLICADO"
+     #TODO Los archivos rechazados que van a RECHDIR deben tener el formato .rech
     msjLog "$MSJ" "ERR" 
     $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
     return 1
@@ -103,6 +104,7 @@ function validarPrimerRegistro() {
   if (($cantidadDeCampos != $cantidad))
   then
       MSJ="Se rechaza el archivo porque su estructura no se corresponde con el formato esperado"
+      #TODO Los archivos rechazados que van a RECHDIR deben tener el formato .rech
       msjLog "$MSJ" "ERR"
       echo $ACEPDIR/$ARCH
       $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
@@ -124,22 +126,27 @@ procesarRegistro() {
   do
     # Incremento en uno la cantidad de registros leidos
     cantRegistrosLeidos=$((cantidadRegistrosLeidos+1))
-    validarCamposRegistro #"$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
-    if [ "$?" = "true" ]; then
-      #TODO
+    validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    if [ "$?" = 1 ]; then
+      #TODO 
       echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
       rechazarRegistro $ARCH "El registro no supera las validaciones"
+    else
+      determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8"
+      if [ "$?" = 1 ]; then
+        #TODO
+        echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
+        rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
+      else
+        algo="true"
+        # Esto no esta hecho
+        #verificarLlamadaSospechosa #"$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+      fi
     fi
     
-    determinarTipoDeLlamada #"$f4" "$f6" "$f7" "$f8"
-    if [ "$?" = 1 ]; then
-      #TODO
-      echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
-      rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
-    fi
+    
 
-    # Esto no esta hecho
-    #verificarLlamadaSospechosa #"$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+
 
   done < $ACEPDIR/$ARCH
 }
@@ -245,10 +252,8 @@ codigoArea() {
   CDA=$1
   CODAREA=$2
   DDI=$3
-  if [ "$CODAREA" = "" ]; then
-    #echo "CODAREA no esta\n\n"
-    return 1
-  fi
+
+
   # CODAREA esta
   # Verifico DDI
   if [ "$DDI" = "false" ]; then
@@ -264,7 +269,7 @@ codigoArea() {
     fi
   fi
   #echo -e "DDI es true\n\n"
-  return 1
+  return 0
 }
 
 # Verifica numero de linea B
@@ -327,30 +332,35 @@ validarCamposRegistro() {
   idAgente "${AGENTES}" "${ID}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
+    msj="el idAgente no coincide"
   fi
 
   codigoAreaA "${CDA}" "${OAREA}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
+    msj="el codigoAreaA no coincide"
   fi
 
   numeroLineaA "${OAREA}" "${ONUM}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
+    msj="el numeroLineaA no coincide"
   fi
 
   codigoPaisB "${CDP}" "${DPAIS}" "${CDA}" "${DAREA}" "${DNUM}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
+    msj="el codigoPasiB no coincide"
   fi
 
   tiempo "${TIEMPO}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
+    msj="el tiempo no coincide"
   fi
 
   if [ "$RECHAZO" = "true" ]; then
-    echo "Se rechaza el registro"
+    echo "Se rechaza el registro $f1 porque "$msj
     return 1
   fi
 
@@ -367,10 +377,13 @@ function determinarTipoDeLlamada() {
 
   # Falta hacer pruebas 
   re='^[0-9]+$'
-
+  
+  llamadoValido="false"
+  
   # Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
-  if [[ "$DAREA"="" ||  ! -z $DNUM  ]]; then
-    tipoLlamada="DDI"
+  if [[ "$DAREA" = "" && ! -z $DNUM ]] ; then
+      tipoLlamada="DDI"
+      llamadoValido="true"
   else
     # Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
     # línea con la cantidad adecuada de dígitos, la llamada es DDN.
@@ -378,23 +391,27 @@ function determinarTipoDeLlamada() {
     # Comprueba cantidad de digitos
     numeroLineaB "${DNUM}" "false" "${DAREA}"
 
-    if [ $DAREA != $OAREA -a "$?" = 0 ]; then
-       tipoLlamada="DDN"
-    else
-       # Si el Numero B llamado tiene código de área igual al código de área de origen y un número de línea
-       # con la cantidad adecuada de dígitos, la llamada es LOC
-       
-       if [$DAREA = $OAREA -a "$?" = 0]; then
-         tipoLlamada="LOC"
-       else
-	 # 4.2.1
-	 # Cualquier otra combinación ir a RECHAZAR REGISTRO, sino continuar
-         echo -e "\t\tSe rechaza registro\n\n"
-         return 1
-       fi
+    if [[ $DAREA != $OAREA && "$?" = 0 ]]; then
+      tipoLlamada="DDN"
+      llamadoValido="true"
     fi
+
+    # Si el Numero B llamado tiene código de área igual al código de área de origen y un número de línea
+    # con la cantidad adecuada de dígitos, la llamada es LOC
+    if [[ $DAREA = $OAREA && "$?" = 0 ]]; then
+       tipoLlamada="LOC"
+       llamadoValido="true"
+    fi
+  fi  
+  # 4.2.1
+  # Cualquier otra combinación ir a RECHAZAR REGISTRO, sino continuar
+  if [ $llamadoValido != "true" ] ; then
+    echo -e "\t\tSe rechaza registro\n\n"
+    return 1
   fi
-  #echo $tipoLlamada
+
+
+  echo $f1 $tipoLlamada
   #echo -e "\t\tNo se rechaza\n\n" 
   return 0
 
@@ -441,13 +458,14 @@ function rechazarRegistro() {
   # Aumento en uno el contador
   cantidadRegistrosRechazados=$((cantidadRegistrosRechazados+1))
   local CODCENTRAL=$(echo $1 | cut -c 1-3)
-  local PATH=$RECHDIR/llamadas/$CODCENTRAL.rech
+  #local PATH=$RECHDIR/llamadas/$CODCENTRAL.rech
+  local PATH="martin.txt"
 
   local FUENTE=$1
   local MOTIVO=$2
   # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
 
-  echo $FUENTE ; $MOTIVO ; $f1 ; $f2 ; $f3 ; $f4 ; $f5 ; $f6 ; $f7 ; $f8 >> $PATH 
+  echo  "$f1" ";" "$f2" ";" "$f3" ";" "$f4" ";" "$f5" ";" "$f6" ";" "$f7" ";" "$f8" >> $PATH 
 }
 
 ##########################################################################################

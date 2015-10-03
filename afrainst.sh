@@ -6,11 +6,13 @@
 
 #  Variables definidas por default
 
+posicionActual=`pwd`
 GRUPO=~/grupo07;
 CONFDIR=CONF;
 AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
 MOVER="mover.sh"
+GRALOG="gralog.sh"
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -59,34 +61,57 @@ verificarInstalacionCompleta(){
 	
 	
 	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
-	verificarExistenciaDeDirectorios
-
-
-	#estado de la revision (completo o incompleto)
-	estado=$?
-	
-
-	#mostrar estado y archivos faltantes
-	estadoAfrai estado
+	verificarExistenciaDeDirectoriosYArchivos
 
 }
 
-function verificarExistenciaDeDirectorios() {
-	i=0
-	variables=("$CONFDIR" "$BINDIR" "$MAEDIE" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+function verificarExistenciaDeDirectoriosYArchivos() {
+	dir=("$CONFDIR" "$BINDIR" "$MAEDIR" "$ACEPDIR" "$RECHDIR" "$RECHDIR/llamadas" "$PROCDIR" "$PROCDIR/proc" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+	bin=("README.md" "mover.sh" "gralog.sh" "funcionesComunes.sh" "detener.sh" "arrancar.sh" "afraumbr.sh" "afrareci.sh" "afralist.pl" "afrainic.sh")
+	mae=("umbral.tab" "tllama.tab" "CdP.mae" "CdC.mae" "CdA.mae" "agentes.mae")
 
-  	for VAR in "${variables[@]}"
-  	do
-    		if [[ ! -d "$VAR" ]]; then # si la variable no esta vacia es porque fue inicializado
-      			((i+=1))
-			#agregar en un auxiliar o algo el directorio faltante a agregar despues
-    		fi
-  	done
+
+	local K=0;
+	for I in ${dir[*]}
+	do
+   		if [ ! -d $I ]; then # si el directorio no existe, agrego directorios que no existen al vector. 
+			faltantesDir[$K]=$I;		
+			let K=K+1;
+		fi
+ 	done
+
+
+	local H=0;
+	for I2 in ${bin[*]}
+	do
+		if [ ! -f "$BINDIR/$I2" ];then 
+			faltantesBin[$H]=$I2;
+			let H=H+1;
+		fi
+	done	
+
+
+	local G=0;
+	for I3 in ${mae[*]}
+	do
+		if [ ! -f "$MAEDIR/$I3" ];then 
+			faltantesMae[$G]=$I3;
+			let G=G+1;
+		fi
+	done	
+
+	#verificar si faltan directorios
+	if [ ${#faltantesDir[@]} -eq 0 -a ${#faltantesBin[@]} -eq 0 -a ${#faltantesMae[@]} -eq 0 ];then
+		estado=COMPLETO
+	else
+		estado=INCOMPLETO
+	fi
+	#mostrar estado y consultar al usuario como continuar
+	estadoAfrai $estado;
+		
 }
 
-estadoAfrai(){
-	local estado=$1
-	local respuesta;
+mostrar(){
 	echo "Directorio de Configuracion: ${CONFDIR}"
 	echo "Directorio de Ejecutables: ${BINDIR}"
 	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
@@ -96,23 +121,72 @@ estadoAfrai(){
 	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
 	echo "Directorio de Archivos de Log: ${LOGDIR}"
 	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
-	echo "Estado de la instalacion: $estado"
-	if [ $estado -eq "COMPLETO" ] 
-	then
-		echo "Proceso de Instalacion Finalizado"
-		fin;
-	else
+	echo "Estado de la instalacion: $1"
+}
+
+mostrarFaltantes (){
+	for I in ${faltantesDir[*]}
+	do
+		echo $I;
+	done
+
+	for I2 in ${faltantesBin[*]}
+	do
+		echo $BINDIR/$I2;
+	done	
+
+	for I3 in ${faltantesMae[*]}
+	do
+		echo $MAEDIR/$I3;
+	done
+}
+
+instalarFaltantes () {
+	for I in ${faltantesDir[*]}
+	do
+		mkdir $I;
+	done
+
+	posicionActual=`pwd`
+	
+	for I2 in ${faltantesBin[*]}
+	do
+		$posicionActual/$MOVER $posicionActual/BIN/$I2 $BINDIR  
+	done
+
+	posicionActual=`pwd`
+
+	for I3 in ${faltantesMae[*]}
+	do
+		$posicionActual/$MOVER $posicionActual/MAE/$I3 $MAEDIR  
+	done
+}
+
+estadoAfrai(){
+	local estado=$1
+	local respuesta;
+	
+	mostrar $estado;
+
+	if [ $estado != "COMPLETO" ];then
 		# listar componentes faltantes
+		echo "Componentes faltanes:";	
+		mostrarFaltantes;
 		echo "Desea completar la instalacion? (Si - No)"
 		read respuesta
 		if [ ${respuesta^^} == "SI" ] 
 		then
 			echo "instalando faltantes"			
-			#instalar faltantes
+			instalarFaltantes;	
+			clear;
+			estado=COMPLETO;
+			mostrar $estado;
 		else
 			fin;
 		fi
 	fi	
+	echo "Proceso de Instalacion Finalizado"
+	fin;
 }
 
 
@@ -127,7 +201,7 @@ verificarPerl(){
 	if [ $version -ge 5 ];then
 		echo "Perl version: $datosPerl"
 		echo "##################################################################"
-		#TODO:GRABAR EN LOG
+		$posicionActual/$GRALOG "afrainst.sh" "$datosPerl" "INFO"
 	else
 		#TODO: grabar en log
 		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior."
@@ -472,46 +546,46 @@ moverMaestrosYTablas () {
 #PASO20.4
 escribirConfig () {
 	#grabar
+
+	WHEN=`date +%T-%d-%m-%Y`
+	WHO=${USER}
+
 	#GRUPO
-	echo "GRUPO=$GRUPO" >> $AFRACONFIG
+	echo "GRUPO=$GRUPO=$WHO=$WHEN" >> $AFRACONFIG
 	#CONFDIR
-	echo "CONFDIR=$GRUPO/$CONFDIR" >> $AFRACONFIG
+	echo "CONFDIR=$GRUPO/$CONFDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#BINDIR
-	echo "BINDIR=$GRUPO/$BINDIR" >> $AFRACONFIG
+	echo "BINDIR=$GRUPO/$BINDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#MAEDIR
-	echo "MAEDIR=$GRUPO/$MAEDIR" >> $AFRACONFIG
+	echo "MAEDIR=$GRUPO/$MAEDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#NOVEDIR
-	echo "DATASIZE=$DATASIZE" >> $AFRACONFIG
+	echo "DATASIZE=$DATASIZE=$WHO=$WHEN" >> $AFRACONFIG
 	#NOVEDIR
-	echo "NOVEDIR=$GRUPO/$NOVEDIR" >> $AFRACONFIG
+	echo "NOVEDIR=$GRUPO/$NOVEDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#ACEPDIR
-	echo "ACEPDIR=$GRUPO/$ACEPDIR" >> $AFRACONFIG
+	echo "ACEPDIR=$GRUPO/$ACEPDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#PROCDIR
-	echo "PROCDIR=$GRUPO/$PROCDIR" >> $AFRACONFIG
-	#PROCDIR/proc	
-	
+	echo "PROCDIR=$GRUPO/$PROCDIR=$WHO=$WHEN" >> $AFRACONFIG	
 	#REPODIR
-	echo "REPODIR=$GRUPO/$REPODIR" >> $AFRACONFIG
+	echo "REPODIR=$GRUPO/$REPODIR=$WHO=$WHEN" >> $AFRACONFIG
 	#LOGDIR
-	echo "LOGDIR=$GRUPO/$LOGDIR" >> $AFRACONFIG
+	echo "LOGDIR=$GRUPO/$LOGDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#LOGSIZE
-	echo "LOGSIZE=$LOGSIZE" >> $AFRACONFIG
+	echo "LOGSIZE=$LOGSIZE=$WHO=$WHEN" >> $AFRACONFIG
 	#RECHDIR
-	echo "RECHDIR=$GRUPO/$RECHDIR" >> $AFRACONFIG
-	#RECHDIR/llamadas
+	echo "RECHDIR=$GRUPO/$RECHDIR=$WHO=$WHEN" >> $AFRACONFIG
 }
 
 # ******************** MAIN DEL PROGRAMA ********************************************************************************************************
 verificarInstalacion; #PASO 1 - 4 TODO:falta paso 2
 definicionesInstalacion; #PASO 5 - 20
 fin #PASO 21
-#instalacion
 
+#instalacion
 #definirLogSize
+
+
 
 #  BUGS Y MEJORAS #
 # - Ver como grabar el LOG
-# - completar paso 2/3/20
 # - Verificar que los nombres de los directorios no se dupliquen
-# - grabar afrainst.conf con el formato correspondiente
-# Ejemplo: GRUPO=/usr/alumnos/temp/grupo01=alumnos=09/04/2015 10:03 p.m

@@ -17,6 +17,8 @@ TIPO=$3        # INFO, WAR, ERR
 # estas de abajo son variables de configuracion
 # falta setearlas, estos valores son de prueba
 
+LOGINST=`pwd`/loginst.log
+
 LOGSIZE=10     # longitud maxima		ES $LOGSIZE
 LOGDIR="logs"  # directorio de logs 		ES $LOGDIR DE CONFIGURACION
 LOGEXT="log"   # extension de logs		ES $LOGEXT
@@ -31,18 +33,19 @@ WHO=${USER}
 TEMP="log.txt" # archivo temporal para probar logs
 
 # El caso de instalación es una excepción, verificarlo
-if [ $LOGDIR = "inst" ]; then
-  echo "Cargar en directorio de instalacion"
-  # directorio de instalacion
+if [ $CMDO = "afrainst.sh" ]; then
+  	echo "Cargar en directorio de instalacion"
+ 	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $LOGINST
+	# directorio de instalacion
+else
+
+	# Si el tamanio del archivo de log es mayor que $LOGSIZE
+	# Me quedo con las ultimas $TRUNCO lineas
+	if [ $(cat log.txt | wc -l) -gt $LOGSIZE ]; then
+	  sed -i "1,$(($(wc -l $TEMP|awk '{print $1}') - $TRUNCO)) d" $TEMP 	# reemplazar TEMP por FILE
+	fi
+
+
+	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $TEMP 			# reemplazar TEMP por FILE
+
 fi
-
-# Si el tamanio del archivo de log es mayor que $LOGSIZE
-# Me quedo con las ultimas $TRUNCO lineas
-if [ $(cat log.txt | wc -l) -gt $LOGSIZE ]; then
-  sed -i "1,$(($(wc -l $TEMP|awk '{print $1}') - $TRUNCO)) d" $TEMP 	# reemplazar TEMP por FILE
-fi
-
-
-echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $TEMP 			# reemplazar TEMP por FILE
-
-
