@@ -64,37 +64,42 @@ verificarInstalacionCompleta(){
 }
 
 function verificarExistenciaDeDirectoriosYArchivos() {
-	dir=("$CONFDIR" "$BINDIR" "$MAEDIR" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR")
-#	mae=("$BINDIR/" "$BINDIR/" "$BINDIR/" "$BINDIR/" "$BINDIR/" "$BINDIR/")
-#	tab=(  	
+	dir=("$CONFDIR" "$BINDIR" "$MAEDIR" "$ACEPDIR" "$RECHDIR" "$RECHDIR/llamadas" "$PROCDIR" "$PROCDIR/proc" "$REPODIR" "$NOVEDIR" "$LOGDIR")
+	bin=("README.md" "mover.sh" "gralog.sh" "funcionesComunes.sh" "detener.sh" "arrancar.sh" "afraumbr.sh" "afrareci.sh" "afralist.pl" "afrainic.sh")
+	mae=("umbral.tab" "tllama.tab" "CdP.mae" "CdC.mae" "CdA.mae" "agentes.mae")
+
 
 	local K=0;
-#	local H=1;
-#	local G=1;
-
 	for I in ${dir[*]}
 	do
-    		if [ ! -d $I ]; then # si el directorio no existe, agrego directorios que no existen al vector. 
+   		if [ ! -d $I ]; then # si el directorio no existe, agrego directorios que no existen al vector. 
 			faltantesDir[$K]=$I;		
 			let K=K+1;
-			
-#			if [ $I == "$BINDIR" ];then
-#				for H in ${mae[*]}
-#				do
-#
-#				done	
-#			fi
-
-#			if [ $I -eq "MAEDIR" ];then
-#				for ((J=0;J<${#mae[@]};J++))
-#				do
-#
-#				done	
 		fi
-  	done
-	
+ 	done
+
+
+	local H=0;
+	for I2 in ${bin[*]}
+	do
+		if [ ! -f "$BINDIR/$I2" ];then 
+			faltantesBin[$H]=$I2;
+			let H=H+1;
+		fi
+	done	
+
+
+	local G=0;
+	for I3 in ${mae[*]}
+	do
+		if [ ! -f "$MAEDIR/$I3" ];then 
+			faltantesMae[$G]=$I3;
+			let G=G+1;
+		fi
+	done	
+
 	#verificar si faltan directorios
-	if [ ${#faltantesDir[@]} -eq 0 ];then
+	if [ ${#faltantesDir[@]} -eq 0 -a ${#faltantesBin[@]} -eq 0 -a ${#faltantesMae[@]} -eq 0 ];then
 		estado=COMPLETO
 	else
 		estado=INCOMPLETO
@@ -117,6 +122,44 @@ mostrar(){
 	echo "Estado de la instalacion: $1"
 }
 
+mostrarFaltantes (){
+	for I in ${faltantesDir[*]}
+	do
+		echo $I;
+	done
+
+	for I2 in ${faltantesBin[*]}
+	do
+		echo $BINDIR/$I2;
+	done	
+
+	for I3 in ${faltantesMae[*]}
+	do
+		echo $MAEDIR/$I3;
+	done
+}
+
+instalarFaltantes () {
+	for I in ${faltantesDir[*]}
+	do
+		mkdir $I;
+	done
+
+	posicionActual=`pwd`
+	
+	for I2 in ${faltantesBin[*]}
+	do
+		$posicionActual/$MOVER $posicionActual/BIN/$I2 $BINDIR  
+	done
+
+	posicionActual=`pwd`
+
+	for I3 in ${faltantesMae[*]}
+	do
+		$posicionActual/$MOVER $posicionActual/MAE/$I3 $MAEDIR  
+	done
+}
+
 estadoAfrai(){
 	local estado=$1
 	local respuesta;
@@ -125,21 +168,14 @@ estadoAfrai(){
 
 	if [ $estado != "COMPLETO" ];then
 		# listar componentes faltantes
-		echo "Componentes faltanes:";
-		for I in ${faltantesDir[*]}
-		do
-			echo $I;
-		done		
-
+		echo "Componentes faltanes:";	
+		mostrarFaltantes;
 		echo "Desea completar la instalacion? (Si - No)"
 		read respuesta
 		if [ ${respuesta^^} == "SI" ] 
 		then
 			echo "instalando faltantes"			
-			for I in ${faltantesDir[*]}
-			do
-				mkdir $I;
-			done	
+			instalarFaltantes;	
 			clear;
 			estado=COMPLETO;
 			mostrar $estado;
@@ -226,7 +262,7 @@ verificarEspacioDisco(){
 definicionesInstalacion() {
 	read x
 	clear;
-	local estado=0
+	local est 	ado=0
 	while [ $estado -eq 0 ]
 	do
 		estado=1
