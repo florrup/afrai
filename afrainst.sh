@@ -162,13 +162,16 @@ fin(){
 
 #PASO10
 verificarEspacioDisco(){
-	local espacioDisco=$(df -h /dev/sda5 | grep "/dev/sda5" | sed "s-^/dev/sda5 *\([0-9]*.\) *\([0-9]*.\) *\([0-9]*.\).*-\3-");
-	#TODO:ARREGLAR 
+	local espacioDisco=$(df -h | grep "/$" | sed "s-^/dev/sda. *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\).*-\3-");
 	tamanio=$(echo "$espacioDisco" | sed "s-^\([0-9]*\).*-\1-")
-	let tamanio=tamanio*100;
+	medida=$(echo "$espacioDisco" | sed "s-^\([0-9]*\)\([KMG]\).*-\2-")	
+	if [ $medida == "K" ];then
+		tamanio=`echo "scale=10;$tamanio/1024" | bc -l`
+	fi	
+	if [ $medida == "G" ];then 
+		let tamanio=tamanio*1024	
+	fi
 
-	medida=$(echo "$espacioDisco" | sed "s-.*\([^0-9]\)-\1-")
-	
 	if [ $tamanio -lt $DATASIZE ];then
 		echo "Insuficiente espacio en disco."
 		echo "Espacio disponible: $tamanio Mb."
