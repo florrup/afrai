@@ -1,16 +1,9 @@
 #!/bin/bash
-# Prepara el entorno de ejecucion
+# Prepara el entorno de ejecución
 
-GRALOG="./gralog.sh"
+GRALOG="./gralog.sh"   
 
-CNF=$PWD/"prue.txt" # usar file de configuracion
-
-CDP="${MAE}"/"CdP.mae"
-CDA="${MAE}"/"CdA.mae"
-CDC="${MAE}"/"CdC.mae"
-AGE="${MAE}"/"agentes.mae"
-TLL="${MAE}"/"tllama.tab"
-UMB="${MAE}"/"umbral.tab"
+CNF=$PWD/"prue.txt" 	# DE PRUEBA usar file de configuración
 
 function msjLog() {
   local MOUT=$1
@@ -24,6 +17,17 @@ function existeArch() {
   local COMPLETA=0
   if [ ! -f "$FILE" ]; then
     MOUT="El archivo \"${FILE}\" no existe"
+    msjLog "$MOUT" "ERR"
+    COMPLETA=1
+  fi
+  return "$COMPLETA"
+}
+
+function existeScript() {
+  local SCR=$1
+  local COMPLETA=0
+  if [ ! -f "$SCR" ]; then
+    MOUT="El script \"${SCR}\" no existe"
     msjLog "$MOUT" "ERR"
     COMPLETA=1
   fi
@@ -48,40 +52,69 @@ function verificarAmbienteInicializado() {
     fi
   done
   if [ "$i" -gt 0 ]; then
-    MSJ="Ambiente ya inicializado, para reiniciar termine la sesion e ingrese nuevamente"
+    MSJ="Ambiente ya inicializado, para reiniciar termine la sesión e ingrese nuevamente"
     msjLog "$MSJ" "ERR"
     return 1
   fi
   return 0
 }
 
-# Verifica que la instalacion esta completa
-# Devuelve 0 si esta completa, 1 si no
+# Verifica que la instalación está completa
+# Devuelve 0 si está completa, 1 si no
 function verificarInstalacion() {
-  archivos=("$CDP" "$CDA" "$CDC" "$AGE" "$TLL" "$UMB")
+
+  faltantes=()
+
+  # checkeo archivos
   local COMPLETA=0
   for ARCH in "${archivos[@]}"
   do
     existeArch "$ARCH"
     existe=$?
-    COMPLETA=$((COMPLETA + existe))
+
+    if [ $existe = 1 ]; then
+      faltantes+=("$ARCH")
+    else
+      COMPLETA=$(($COMPLETA + 1))
+    fi
   done
 
-  # falta checkear si estan los scripts
-
-  if [ "$COMPLETA" -le 6 ]
-  then # algo no esta instalado
-    return 1
-  else
-    return 0
+  if [ "$COMPLETA" -lt 6 ]; then # algo no está instalado
+    echo "Hay algún archivo sin instalar"
   fi
+
+  # checkeo scripts
+  local COMPLETA=0
+  for SCRIPT in "${scripts[@]}"
+  do
+    existeScript "$SCRIPT"
+    existe=$?
+
+    if [ $existe = 1 ]; then
+      faltantes+=("$SCRIPT")
+    else
+      COMPLETA=$(($COMPLETA + 1))
+    fi
+  done
+
+  if [ "$COMPLETA" -lt 5 ]; then # algo no está instalado
+    echo "Hay algún script faltante"
+  fi
+
+  if [ ${#faltantes[@]} -gt 0 ]; then
+    echo "Hay algo (archivo o script) faltante"
+    return 1
+  fi
+
+  return 0
 }
 
 # Verifica los permisos
 # Devuelve 1 si no se pueden setear, 0 en caso contrario 
 function verificarPermisos() {
   i=0
-  archivos=("$CDP" "$CDA" "$CDC" "$AGE" "$TLL" "$UMB")
+
+  # checkeo archivos
   for ARCH in "${archivos[@]}"
   do
     chmod +r "$ARCH"
@@ -91,18 +124,25 @@ function verificarPermisos() {
     fi
   done
 
-  # falta checkear permisos de los scripts
+  # checkeo scripts
+  for SCRIPT in "${scripts[@]}"
+  do
+    chmod +x "$SCRIPT"
+    if [ "$?" = -1  ]; then
+      noPermisos "$SCRIPT"
+      ((i+=1))
+    fi
+  done
 
-  if [ "$i" -ge 0 ]; then
+  if [ "$i" -gt 0 ]; then
     msjLog "No se han podido setear los permisos" "ERR"
     return 1
   fi
   return 0
 }
 
-# Inicializa el ambiente
-# Setea todas las variables de ambiente
-function inicializarAmbiente() {
+# Desde el archivo de configuración tomo todas las variables
+function setearVariablesAmbiente() {
   GRP=$(grep '^GRUPO' $CNF | cut -d '=' -f 2)
   CON=$(grep '^CONFDIR' $CNF | cut -d '=' -f 2)
   BIN=$(grep '^BINDIR' $CNF | cut -d '=' -f 2)
@@ -117,7 +157,10 @@ function inicializarAmbiente() {
   LOGSIZE=$(grep '^LOGSIZE' $CNF | cut -d '=' -f 2)
 
   # falta setear PATH
+}
 
+# Inicializa el ambiente
+function inicializarAmbiente() {
   # permito que todas las variables sean utilizadas desde otros scripts con export
   export GRP
   export CON
@@ -174,7 +217,6 @@ function deseaArrancar() {
 
 ##############################
 
-
 # 1. Verifica ambiente inicializado
 verificarAmbienteInicializado
 inicializadoRtado=$?
@@ -182,20 +224,41 @@ if [ "$inicializadoRtado" == 1 ]; then
   exit 1
 fi
 
+# Seteo todas las variables de ambiente
+# A partir del archivo de configuración
+setearVariablesAmbiente
+
 # 2. Verifica instalacion completa
+CDP="${MAE}"/"CdP.mae"			# agregar "${BINDIR}"
+CDA="${MAE}"/"CdA.mae"
+CDC="${MAE}"/"CdC.mae"
+AGE="${MAE}"/"agentes.mae"
+TLL="${MAE}"/"tllama.tab"
+UMB="${MAE}"/"umbral.tab"
+
+AFRARECI="afrareci.sh"
+AFRAUMBR="afraumbr.sh"
+AFRALIST="afralist.pl"
+ARRANCAR="arrancar.sh"
+DETENER="detener.sh"
+
+archivos=("$CDP" "$CDA" "$CDC" "$AGE" "$TLL" "$UMB")
+scripts=("$AFRARECI" "$AFRAUMBR" "$AFRALIST" "$ARRANCAR" "$DETENER")
+
 verificarInstalacion
 instalacionRtado=$?
-#if [ "$instalacionRtado" == 1 ]; then
-#  echo "La instalacion no esta completa" # dar instrucciones mas completas
-#  exit 1
-#fi
+if [ "$instalacionRtado" == 1 ]; then
+  echo "La instalación no está completa, existen los siguientes archivos faltantes $(printf '%s\n' "${faltantes[@]}")" 
+  echo "Se deberá volver a realizar la instalación"
+  exit 1
+fi
 
 # 3. Verifica permisos
 verificarPermisos
 permisosRtado=$?
-#if [ "$permisosRtado" == 1 ]; then
-#  exit 1
-#fi
+if [ "$permisosRtado" == 1 ]; then
+  exit 1
+fi
 
 # 4. Inicializa el ambiente
 inicializarAmbiente
