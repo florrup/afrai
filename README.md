@@ -31,8 +31,8 @@
 
 
 ## afrareci.sh
-* LOG
-* Llamar al AFRAUMBR en PARALELO
+* Perfeccionar LOG
+* Llamar al AFRAUMBR en PARALELO: Probar si al correrlo en paralelo se puede ingresar cosas por teclado
 
 ## verificUMBR.sh
 * Falta hacer pruebas con la carpeta ACEPDIR

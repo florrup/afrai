@@ -1,6 +1,6 @@
 #! /bin/bash
 
-TIEMPO_DORMIDO=20
+TIEMPO_DORMIDO=30
 ciclo=0
 
 # Graba en el log.
@@ -254,13 +254,14 @@ do
 		idAfraumbr=`pgrep -o "afraumbr.sh"`
 		if [[ -z $afraumbrCorriendo ]]
 		then
-			# INVOCAR AFRAUMBR
-			arrancarProceso "afraumbr"
+			arrancarProceso afraumbr
 			idAfraumbr=`pgrep -o "afraumbr.sh"`
-			# SI SE PUEDO INVOCAR AFRAUMBR
+			if [ ! -z idAfraumbr ]
+			then
 				grabarEnLog "AFRAUMBR" "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
-			# SINO
-			#grabarEnLog "HUBO UN ERROR EN INVOCAR"
+			else
+				grabarEnLog "HUBO UN ERROR EN INVOCAR"
+			fi
 		else
 			# AFRAUMBR estaba corriendo
 			grabarEnLog " " "Invocación de AFRAUMBR pospuesta para el siguiente ciclo"
