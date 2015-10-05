@@ -202,8 +202,6 @@ verificarPerl(){
 	fi
 }
 
-# ********************************************Acuerdo de Licencia de Software**********************************************************
-
 #PASO5
 definicionesInstalacion() {
 	read x

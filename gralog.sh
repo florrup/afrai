@@ -34,6 +34,7 @@ TEMP="log.txt" # archivo temporal para probar logs
 
 # El caso de instalación es una excepción
 if [ $CMDO = "./afrainst.sh" ]; then
+	#grabo en el log de afrainst
  	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $LOGINST
 else
 	# Si el tamanio del archivo de log es mayor que $LOGSIZE
