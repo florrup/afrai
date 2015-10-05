@@ -132,6 +132,7 @@ procesarRegistro() {
       echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
       rechazarRegistro $ARCH "El registro no supera las validaciones"
     else
+      # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
       determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8"
       if [ "$?" = 1 ]; then
         #TODO
@@ -163,7 +164,7 @@ idAgente() {
     #echo "Encontrado"
     #echo "$(grep ";${ID};" $ARCH)"
     return 0 # fue encontrado
-  elsecodigoAreaA
+  else
     #echo "No encontrado en AGENTES.CSV"mart
     return 1 # no fue encontrado
   fi
@@ -381,9 +382,12 @@ function determinarTipoDeLlamada() {
   llamadoValido="false"
   
   # Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
-  if [[ "$DAREA" = "" && ! -z $DNUM ]] ; then
-      tipoLlamada="DDI"
-      llamadoValido="true"
+
+  if [ "$DAREA" = "" ]; then
+        if [[ ! -z $DNUM && `grep -c "${DPAIS}" $CDP` != 0 ]]; then
+            tipoLlamada="DDI"
+            llamadoValido="true"
+        fi
   else
     # Si el Numero B llamado tiene código de área distinto al código de área de origen y un número de
     # línea con la cantidad adecuada de dígitos, la llamada es DDN.
