@@ -142,7 +142,7 @@ procesarRegistro() {
         rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
       else
         #TODO Verificar 
-        verificarLlamadaSospechosa "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+        verificarLlamadaSospechosa  "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8" "$ARCH"
       fi
     fi
     
@@ -211,7 +211,7 @@ numeroLineaA() {
 
 # Valida el codigo de pais, codigo de area y numero de linea
 # Devuelve 1 si no fue encontrado, 0 en caso contrario 
-codigoPaisB() {
+checkearNumeroB() {
   CDP=$1
   CODPAIS=$2
   CDA=$3
@@ -349,7 +349,7 @@ validarCamposRegistro() {
     msj="el numeroLineaA no coincide"
   fi
 
-  codigoPaisB "${CDP}" "${DPAIS}" "${CDA}" "${DAREA}" "${DNUM}"
+  checkearNumeroB "${CDP}" "${DPAIS}" "${CDA}" "${DAREA}" "${DNUM}"
   if [ "$?" = 1 ]; then
     RECHAZO="true"
     msj="el codigoPaisB no coincide"
@@ -441,45 +441,70 @@ function verificarLlamadaSospechosa() {
   local DPAIS=$f6
   local DAREA=$f7
   local DNUM=$f8
+  local ARCH=$f9
 
   # Se selecciona los campos que cumplen
 
 
 # id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
 
+  local hayUmbral="false"
+
   if [ $tipoLlamada = "DDI" ] ;then
     codigoDestino=$(( DNUM - DPAIS ))
     #id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
     #165;341;30000112;DDI;27;88;Activo
-    campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codigoDestino}";.*Activo" $UMBRALES)
 
+    #TODO Falta cuando el llamado de destino no viene incluido
+    #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
+    # Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
+    #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
+
+    campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codigoDestino}";.*Activo" $UMBRALES)
+    tope=$(ls -1 | cut -d';' -f6 campoSeleccionado)
     echo $campoSeleccionado
 
     if [ campoSeleccionado != "" ] ; then
-      echo "entro"
-      #• Umbral.Tope < Tiempo de Conversación
+      if [ tope < $TIEMPO ] ; then
+	hayUmbral="true"
+      fi
     fi
+  else
+    codigoDestino=$(( DNUM - DAREA ))
+    campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codigoDestino}";.*Activo" $UMBRALES)
+    tope=$(ls -1 | cut -d';' -f6 $campoSeleccionado)
+
+    if [ campoSeleccionado != "" ] ; then
+      if [ tope < $TIEMPO ] ; then
+        hayUmbral="true"
+      fi
   fi
 
-  cantidadCampoSeleccionado=$(ls -1 | grep  --max-count=1 "^.*;"${ONUM}";.*Activo" $UMBRALES | wc -l)
-  echo $cantidadCampoSeleccionado
-  #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
-  campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${ONUM}";.*Activo" $UMBRALES)
-  
-  if [[ $cantidadCampoSeleccionado == 0 ]]; then
-     cantidadSinUmbral=$((cantidadSinUmbral+1))
-     return 1;
+id Central;id Agente;idUmbral;tipoDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
+
+  if [ "$hayUmbral" = "true" ] ; then
+    cantidadConUmbral=$((cantidadConUmbral+1))
+    idUmbral=$(ls -1 | cut -d';' -f1 $campoSeleccionado)
+    fechadeLlamada=$(ls -1 | cut -d'_' -f1 $ARCH)
+    idDelcentral=$(ls -1 | cut -d'_' -f2 $ARCH)
+    grabarLlamadaSospechosa $idDelcentral $idUmbral $tipoLlamada $TIEMPO $OAREA $ONUM $DPAIS $DAREA $DNUM $fechaDeLlamada $ID
   else
-     # Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
-     #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
-     cantidadConUmbral=$((cantidadConUmbral+1))
-     #if [ tipoLlamada = "DDI" ] ; then
-     #else
-      
-     #fi
+    cantidadSinUmbral=$((cantidadSinUmbral+1))
   fi
+
 
 }
+##########################################################################################
+
+# 4.4 Grabar Llamadas Sospechosas
+
+function grabarLlamadaSospechosa(){
+ local oficina=grep ";$11;" $AGENTES | cut -d ';' -f4
+ local PATH=$PROCDIR/oficina
+
+ echo "$1" ";" "$2" ";" "$3" ";" "$4" ";" "$5" ";" "$6" ";" "$7" ";" "$8" ";" "$9" ";" "$10" >> $PATH
+}
+
 
 ##########################################################################################
 
@@ -510,6 +535,8 @@ function finDeArchivo() {
   echo "Rechazadas: $cantidadRegistrosRechazados, Con umbral $cantidadConUmbral, Sin umbral $cantidadSinUmbral"
   echo "Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $((cantidadConUmbral-cantLlamadasSospechosas))"
 }
+
+
 
 ##########################################################################################
 
