@@ -33,13 +33,12 @@ function verificarAmbiente(){
 }
 
 function verificarProcesoCorriendo(){
-	echo "verifico si el proceso ya esta corriendo"
-	local procesoCorriendo=`ps aux | grep "/bin/bash ./$comandoAInvocar.sh$" | sed "s/^.*$comandoAInvocar.*$/$comandoAInvocar/"`
-	if [ ! -z $procesoCorriendo ];then
-	#if [ ! -z "$PID" ];then
+	echo "Verificando proceso corriendo"
+	if [ ! -z "$PID" ];then
 		local mensaje="$comandoAInvocar ya esta corriendo"
 		imprimirResultado "$mensaje" "WAR"
 	fi
+	echo "No esta corriendo"
 }
 
 # $1 Mensaje $2 Tipo Mensaje
@@ -67,7 +66,7 @@ function msjLog() {
 
 #Si arrancar.sh es invocada por un comando que graba en un archivo de log, registrar en el log del comando
 function grabaEnLog() {
-	if [ "$comandoInvocador" == "./afrainst.sh" ] || [ "$comandoInvocador" == "./afrainic.sh" ] || [ "$comandoInvocador" == "./afrareci.sh" ] || [ "$comandoInvocador" == "./afraumbr.sh" ] ; then
+	if [ "$comandoInvocador" == "afrainst.sh" ] || [ "$comandoInvocador" == "afrainic.sh" ] || [ "$comandoInvocador" == "afrareci.sh" ] || [ "$comandoInvocador" == "afraumbr.sh" ] ; then
 	  COMANDOGRABA="true"
 	  MENSAJE="Se ha invocado al script arrancar.sh"
 	  $GRALOG "$comandoInvocador" "$MENSAJE" "INFO"
@@ -83,6 +82,7 @@ function arrancar(){
 	
 	if [ "${comandoAInvocar}" == "afrareci" ];then
 		nohup $BINDIR/$comandoAInvocar.sh > /dev/null 2>&1 &
+		echo "afrareci se arranco"
 	else
 		$BINDIR/$comandoAInvocar.sh
 	fi

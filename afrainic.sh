@@ -2,14 +2,14 @@
 # Prepara el entorno de ejecución
 
 GRALOG="./gralog.sh"   
-
+afrainic="./afrainic.sh"
 CNF=~/grupo07/CONF/AFRAINST.conf 	# DE PRUEBA usar file de configuración
 
 function msjLog() {
   local MOUT=$1
   local TIPO=$2
   echo "${MOUT}"
-  $GRALOG "$0" "$MOUT" "$TIPO"
+  $GRALOG "$afrainic" "$MOUT" "$TIPO"
 }
 
 function existeArch() {
@@ -155,12 +155,13 @@ function setearVariablesAmbiente() {
   NOVEDIR=$(grep '^NOVEDIR' $CNF | cut -d '=' -f 2)
   LOGDIR=$(grep '^LOGDIR' $CNF | cut -d '=' -f 2)
   LOGSIZE=$(grep '^LOGSIZE' $CNF | cut -d '=' -f 2)
+  LOGEXT=$(grep '^LOGEXT' $CNF | cut -d '=' -f 2)
 }
 
 # Inicializa el ambiente
 function inicializarAmbiente() {
   # permito que todas las variables sean utilizadas desde otros scripts con export
-  #export PATH="${BINDIR}"
+  export PATH=$PATH:$BINDIR
   export GRUPO
   export CONFDIR
   export BINDIR
@@ -173,6 +174,7 @@ function inicializarAmbiente() {
   export NOVEDIR
   export LOGDIR
   export LOGSIZE
+  export LOGEXT
 }
 
 # Muestra y graba en el log variables y contenido

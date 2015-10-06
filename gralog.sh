@@ -31,7 +31,7 @@ FILE="${LOGDIR}"/"${CMDO2}"."${LOGEXT}"
 WHEN=`date +%T-%d-%m-%Y`
 WHO=${USER}
 
-ARCHLOG=$LOGDIR/$CMDO.$LOGEXT # archivo temporal para probar logs
+#ARCHLOG=$LOGDIR/$CMDO2.$LOGEXT # archivo temporal para probar logs
 
 # El caso de instalación es una excepción
 if [ $CMDO = "./afrainst.sh" ]; then
@@ -40,7 +40,7 @@ if [ $CMDO = "./afrainst.sh" ]; then
 else
 	# Si el tamanio del archivo de log es mayor que $LOGSIZE
 	# Me quedo con las ultimas $TRUNCO lineas
-	if [ $(cat log.txt | wc -l) -gt $LOGSIZE ]; then
+	if [ $(cat $FILE | wc -l) -gt $LOGSIZE ]; then
 	  sed -i "1,$(($(wc -l $TEMP|awk '{print $1}') - $TRUNCO)) d" $FILE
 	fi
 

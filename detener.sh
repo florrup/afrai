@@ -1,9 +1,7 @@
 #! /bin/bash
 
 # Detener de Scripts
-# $1 script a correr
-# $2 script que lo corrio (si no es por consola)
-
+# $1 script a detener
 #########################  Procedimientos ##################################
 source funcionesComunes.sh
 
@@ -31,8 +29,8 @@ function verificarAmbiente(){
 
 function verificarProcesoCorriendo(){
 	echo "verifico si el proceso ya esta corriendo"
-	local procesoCorriendo=`ps aux | grep "/bin/bash .*/$comando.sh$" | sed "s/^.*$comando.*$/$comando/"`
-	read x	
+	local procesoCorriendo=`ps aux | grep "/bin/bash $BINDIR/$comando.sh$" | sed "s/^.*$comando.*$/$comando/" | head -n 1`
+	echo " $procesoCorriendo"
 	if [ -z $procesoCorriendo ];then
 		local mensaje="$comandoAInvocar no esta corriendo"
 		imprimirResultado "$mensaje" "WAR"
