@@ -155,13 +155,12 @@ function setearVariablesAmbiente() {
   NOVEDIR=$(grep '^NOVEDIR' $CNF | cut -d '=' -f 2)
   LOGDIR=$(grep '^LOGDIR' $CNF | cut -d '=' -f 2)
   LOGSIZE=$(grep '^LOGSIZE' $CNF | cut -d '=' -f 2)
-
-  # falta setear PATH
 }
 
 # Inicializa el ambiente
 function inicializarAmbiente() {
   # permito que todas las variables sean utilizadas desde otros scripts con export
+  export PATH=${BINDIR}
   export GRUPO
   export CONFDIR
   export BINDIR
@@ -202,7 +201,7 @@ function deseaArrancar() {
   respuesta=${respuesta,,} # lo paso a lowercase
   case $respuesta in
     "no")
-      echo "NOOO" # falta explicar como hacerlo con comando arrancar
+      echo "NOOO"			 # falta explicar como hacerlo con comando arrancar
       ;;
     "si")
       echo "SIIII"
@@ -230,7 +229,7 @@ fi
 setearVariablesAmbiente
 
 # 2. Verifica instalacion completa
-CDP="${MAEDIR}"/"CdP.mae"			# agregar "${BINDIR}"
+CDP="${MAEDIR}"/"CdP.mae"			
 CDA="${MAEDIR}"/"CdA.mae"
 CDC="${MAEDIR}"/"CdC.mae"
 AGE="${MAEDIR}"/"agentes.mae"
