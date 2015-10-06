@@ -3,7 +3,7 @@
 
 GRALOG="./gralog.sh"   
 
-CNF=CONF/"AFRAINST.conf" 	# DE PRUEBA usar file de configuración
+CNF=~/grupo07/CONF/AFRAINST.conf 	# DE PRUEBA usar file de configuración
 
 function msjLog() {
   local MOUT=$1
@@ -160,7 +160,7 @@ function setearVariablesAmbiente() {
 # Inicializa el ambiente
 function inicializarAmbiente() {
   # permito que todas las variables sean utilizadas desde otros scripts con export
-  export PATH=${BINDIR}
+  #export PATH="${BINDIR}"
   export GRUPO
   export CONFDIR
   export BINDIR
@@ -201,11 +201,11 @@ function deseaArrancar() {
   respuesta=${respuesta,,} # lo paso a lowercase
   case $respuesta in
     "no")
-      echo "NOOO"			 # falta explicar como hacerlo con comando arrancar
+      echo "NOOO" # falta explicar como hacerlo con comando arrancar
       ;;
     "si")
-      echo "SIIII"
-      $BINDIR/arrancar.sh afrareci  	 # falta activar demonio
+      echo "SIIII" # falta activar demonio
+      $BINDIR/arrancar.sh afrareci
       ;;
     *)
       echo "La respuesta debe ser \"si\" o \"no\""
@@ -229,18 +229,18 @@ fi
 setearVariablesAmbiente
 
 # 2. Verifica instalacion completa
-CDP="${MAEDIR}"/"CdP.mae"			
+CDP="${MAEDIR}"/"CdP.mae"			# agregar "${BINDIR}"
 CDA="${MAEDIR}"/"CdA.mae"
 CDC="${MAEDIR}"/"CdC.mae"
 AGE="${MAEDIR}"/"agentes.mae"
 TLL="${MAEDIR}"/"tllama.tab"
 UMB="${MAEDIR}"/"umbral.tab"
 
-AFRARECI="${BINDIR}"/"afrareci.sh"
-AFRAUMBR="${BINDIR}"/"afraumbr.sh"
-AFRALIST="${BINDIR}"/"afralist.pl"
-ARRANCAR="${BINDIR}"/"arrancar.sh"
-DETENER="${BINDIR}"/"detener.sh"
+AFRARECI="afrareci.sh"
+AFRAUMBR="afraumbr.sh"
+AFRALIST="afralist.pl"
+ARRANCAR="arrancar.sh"
+DETENER="detener.sh"
 
 archivos=("$CDP" "$CDA" "$CDC" "$AGE" "$TLL" "$UMB")
 scripts=("$AFRARECI" "$AFRAUMBR" "$AFRALIST" "$ARRANCAR" "$DETENER")
