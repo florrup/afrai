@@ -445,6 +445,22 @@ function verificarLlamadaSospechosa() {
   # Se selecciona los campos que cumplen
 
 
+# id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
+
+  if [ $tipoLlamada = "DDI" ] ;then
+    codigoDestino=$(( DNUM - DPAIS ))
+    #id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
+    #165;341;30000112;DDI;27;88;Activo
+    campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codigoDestino}";.*Activo" $UMBRALES)
+
+    echo $campoSeleccionado
+
+    if [ campoSeleccionado != "" ] ; then
+      echo "entro"
+      #• Umbral.Tope < Tiempo de Conversación
+    fi
+  fi
+
   cantidadCampoSeleccionado=$(ls -1 | grep  --max-count=1 "^.*;"${ONUM}";.*Activo" $UMBRALES | wc -l)
   echo $cantidadCampoSeleccionado
   #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
