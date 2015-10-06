@@ -54,7 +54,7 @@ function ambienteInicializado(){
 }
 
 function getPid(){
-    local ppid=`ps aux | grep "\($BINDIR\)\?/$1.sh" | grep -v grep | awk '{print $2}' | head -n 1`
+    local ppid=` ps aux | grep "\(/bin/bash\)\ ./$1.sh" | grep -v grep | awk '{print $2}' | head -n 1`
     echo $ppid
 }
 

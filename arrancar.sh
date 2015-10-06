@@ -10,6 +10,7 @@ source funcionesComunes.sh
 GRALOG="$BINDIR/gralog.sh"
 comandoAInvocar=$1
 comandoInvocador=$2
+PID=$(getPid $comandoAInvocar)
 
 
 function verificarComandoInvocado(){
@@ -34,8 +35,8 @@ function verificarAmbiente(){
 function verificarProcesoCorriendo(){
 	echo "verifico si el proceso ya esta corriendo"
 	local procesoCorriendo=`ps aux | grep "/bin/bash ./$comandoAInvocar.sh$" | sed "s/^.*$comandoAInvocar.*$/$comandoAInvocar/"`
-	read x	
 	if [ ! -z $procesoCorriendo ];then
+	#if [ ! -z "$PID" ];then
 		local mensaje="$comandoAInvocar ya esta corriendo"
 		imprimirResultado "$mensaje" "WAR"
 	fi

@@ -431,14 +431,12 @@ definirLogExt () {
 		local MENSAJE="Defina nombre para la extension de los archivos de log (log):"
 		echo "$MENSAJE"
 		read LOGEXT
-		#TODO VER REGEX DE CANTIDAD DE CARACTERES		
-		#LONGITUD=`echo $LOGEXT | grep "^.{1,5}$"`
-        	#        if [ ! -z $LONGITUD ];then
-				 $posicionActual/$GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
-				 estado=0
-        	#         else
-        	#                 echo "Debe ingresar una extensión con un máximo de 5 caracteres"
-        	#         fi
+	        if [ ${#LOGEXT} -le 5 ];then
+			 $posicionActual/$GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
+			 estado=0
+	         else
+	                 echo "Debe ingresar una extensión con un máximo de 5 caracteres"
+	         fi
 	done
 }
 
@@ -458,6 +456,7 @@ definirLogSize () {
 		fi
          done
 }
+
 #PASO17
 definirRechDir () {
 	local estado=1
@@ -569,7 +568,6 @@ moverEjecutablesYFunciones () {
 	do
 		$posicionActual/$MOVER $posicionActual/BIN/$archivoejec $GRUPO/$BINDIR 
 	done
-	read x
 }
 
 #PASO20.3
@@ -628,7 +626,6 @@ definicionesInstalacion; #PASO 5 - 20
 fin #PASO 21
 
 #  BUGS Y MEJORAS #
-# - Ver entrada de max 5 caracteres en extension del log
 # - Verificar que los nombres de los directorios no se dupliquen
 
 
