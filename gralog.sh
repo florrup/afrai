@@ -17,20 +17,21 @@ TIPO=$3        # INFO, WAR, ERR
 # estas de abajo son variables de configuracion
 # falta setearlas, estos valores son de prueba
 
-LOGINST=`pwd`/loginst.log
+LOGINST=`pwd`/afrainst.log
 
-LOGSIZE=10     # longitud maxima		ES $LOGSIZE
-LOGDIR="logs"  # directorio de logs 		ES $LOGDIR DE CONFIGURACION
-LOGEXT="log"   # extension de logs		ES $LOGEXT
+LOGSIZE=$LOGSIZE     # longitud maxima		ES $LOGSIZE
+LOGDIR=$LOGDIR  # directorio de logs 		ES $LOGDIR DE CONFIGURACION
+LOGEXT=$LOGEXT   # extension de logs		ES $LOGEXT
 
 TRUNCO=5       # lineas que me guardo al truncar
 
-FILE="${LOGDIR}"/"${CMDO%%.*}"."${LOGEXT}"
+CMDO2=`echo $CMDO | sed "s/^.\/\([a-z]*\).sh$/\1/"`
+FILE="${LOGDIR}"/"${CMDO2}"."${LOGEXT}"
 
 WHEN=`date +%T-%d-%m-%Y`
 WHO=${USER}
 
-TEMP="log.txt" # archivo temporal para probar logs
+ARCHLOG=$LOGDIR/$CMDO.$LOGEXT # archivo temporal para probar logs
 
 # El caso de instalación es una excepción
 if [ $CMDO = "./afrainst.sh" ]; then
@@ -40,10 +41,10 @@ else
 	# Si el tamanio del archivo de log es mayor que $LOGSIZE
 	# Me quedo con las ultimas $TRUNCO lineas
 	if [ $(cat log.txt | wc -l) -gt $LOGSIZE ]; then
-	  sed -i "1,$(($(wc -l $TEMP|awk '{print $1}') - $TRUNCO)) d" $TEMP 	# reemplazar TEMP por FILE
+	  sed -i "1,$(($(wc -l $TEMP|awk '{print $1}') - $TRUNCO)) d" $FILE
 	fi
 
 
-	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $TEMP 			# reemplazar TEMP por FILE
+	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $FILE 			
 
 fi
