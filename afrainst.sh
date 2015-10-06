@@ -53,6 +53,7 @@ verificarInstalacionCompleta(){
 	NOVEDIR=$(grep '^NOVEDIR' $AFRACONFIG | cut -d '=' -f 2)
 	LOGDIR=$(grep '^LOGDIR' $AFRACONFIG | cut -d '=' -f 2)
 	LOGSIZE=$(grep '^LOGSIZE' $AFRACONFIG | cut -d '=' -f 2)
+	LOGEXT=	$(grep '^LOGEXT' $AFRACONFIG | cut -d '=' -f 2)
 
 	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
 	verificarExistenciaDeDirectoriosYArchivos
@@ -610,6 +611,8 @@ escribirConfig () {
 	echo "LOGDIR=$GRUPO/$LOGDIR=$WHO=$WHEN" >> $AFRACONFIG
 	#LOGSIZE
 	echo "LOGSIZE=$LOGSIZE=$WHO=$WHEN" >> $AFRACONFIG
+	#LOGEXT
+	echo "LOGEXT=$LOGEXT=$WHO=$WHEN" >> $AFRACONFIG
 	#RECHDIR
 	echo "RECHDIR=$GRUPO/$RECHDIR=$WHO=$WHEN" >> $AFRACONFIG
 }
