@@ -22,7 +22,7 @@ MOVER="./mover.sh"
 AGENTES=$MAEDIR/"agentes.mae"
 CDP=$MAEDIR/"CdP.mae"
 CDA=$MAEDIR/"CdA.mae"
-UMBRALES=$MAEDIR/"umbrales.mae"
+UMBRALES=$MAEDIR/"umbrales.tab"
 
 function msjLog() {
   local MOUT=$1
@@ -140,8 +140,8 @@ procesarRegistro() {
         rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
       else
         algo="true"
-        # Esto no esta hecho
-        #verificarLlamadaSospechosa #"$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+        #TODO Verificar 
+        verificarLlamadaSospechosa "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
       fi
     fi
     
@@ -379,7 +379,7 @@ function determinarTipoDeLlamada() {
   # Falta hacer pruebas 
   re='^[0-9]+$'
   
-  llamadoValido="false"
+  llamadoValido="false"   
   
   # Si el Numero B llamado tiene código de país válido y un número de línea, la llamada es DDI.
 
@@ -443,7 +443,7 @@ function verificarLlamadaSospechosa() {
 
   # Se selecciona los campos que cumplen
   cantidadCampoSeleccionado=$(ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" $UMBRALES | wc -l)
-  #echo $cantidadCampoSeleccionado
+  echo $cantidadCampoSeleccionado
   campoSeleccionado=$(ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" $UMBRALES )
   
   if [[ $cantidadCampoSeleccionado == 0 ]]; then
