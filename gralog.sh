@@ -16,7 +16,7 @@ TIPO=$3        # INFO, WAR, ERR
 
 LOGINST=`pwd`/afrainst.log	
 
-TRUNCO=10				# lineas que me guardo al truncar
+TRUNCO=50				# lineas que me guardo al truncar
 
 tamaniomaximo=$((${LOGSIZE}*1024))	# tamanio maximo en bytes
 

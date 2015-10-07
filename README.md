@@ -4,7 +4,6 @@
 * Si se instala afrai y luego de quiere reinstalar se debe descomprimir los archivos nuevamente
 
 ## arrancar.sh
-
 * Falta logear.
 * Forma de llamarlo desde otro script: $BINDIR/arrancar.sh <comando a arrancar> <comando que lo llama>
  
@@ -19,16 +18,13 @@
 * HIPÓTESIS: Estoy usando la secuencia NNN por cada directorio.
 
 ## gralog.sh
-* Falta setear variables de configuracion
+* HIPÓTESIS: Tomo las últimas 50 líneas al truncar.
 
 ## afrainic.sh
-* Falta darle permisos a los scripts. 
-* Falta setear variable PATH. Ver export de variable
 * Falta terminar deseaArrancar() -> necesito saber cómo funciona/se usa cada comando
 
 ## afrainst.sh
 * falta logear
-
 
 ## afrareci.sh
 * Perfeccionar LOG
