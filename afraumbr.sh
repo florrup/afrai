@@ -24,6 +24,8 @@ CDP=$MAEDIR/"CdP.mae"
 CDA=$MAEDIR/"CdA.mae"
 UMBRALES=$MAEDIR/"umbral.tab"
 
+tipoLlamada=""
+
 function msjLog() {
   local MOUT=$1
   local TIPO=$2
@@ -133,13 +135,12 @@ procesarRegistro() {
       rechazarRegistro $ARCH "El registro no supera las validaciones"
     else
       # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
-      determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8"
+      determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8" 
       if [ "$?" = 1 ]; then
         #TODO
         echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
         rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
       else
-        algo="true"
         #TODO Verificar 
         verificarLlamadaSospechosa "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
       fi
@@ -376,8 +377,8 @@ function determinarTipoDeLlamada() {
   local DAREA=$f7
   local DNUM=$f8
 
-  # Falta hacer pruebas 
-  re='^[0-9]+$'
+  tipoLlamada=""
+ 
   
   llamadoValido="false"   
   
@@ -444,16 +445,24 @@ function verificarLlamadaSospechosa() {
   # Se selecciona los campos que cumplen
 
 
-  cantidadCampoSeleccionado=$(ls -1 | grep "^.*;"${ONUM}";.*Activo" $UMBRALES | wc -l)
+  cantidadCampoSeleccionado=$(ls -1 | grep  --max-count=1 "^.*;"${ONUM}";.*Activo" $UMBRALES | wc -l)
   echo $cantidadCampoSeleccionado
-  campoSeleccionado=$(ls -1 | grep "^.*;"${ONUM}";.*Activo" $UMBRALES)
+  #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
+  campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${ONUM}";.*Activo" $UMBRALES)
   
   if [[ $cantidadCampoSeleccionado == 0 ]]; then
      cantidadSinUmbral=$((cantidadSinUmbral+1))
+     return 1;
   else
      # Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
-     cantidadConUmbral=$((cantidadSinUmbral+1))
+     #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
+     cantidadConUmbral=$((cantidadConUmbral+1))
+     #if [ tipoLlamada = "DDI" ] ; then
+     #else
+      
+     #fi
   fi
+
 }
 
 ##########################################################################################
