@@ -14,11 +14,6 @@
 
 GRALOG="./gralog.sh"
 MOVER="./mover.sh"
-
-#ACEPDIR=$ACEPDIR" 	# deben ser las variables de configuracion
-#RECHDIR="RECHDIR"
-#PROCDIR="PROCDIR"
-
 AGENTES=$MAEDIR/"agentes.mae"
 CDP=$MAEDIR/"CdP.mae"
 CDA=$MAEDIR/"CdA.mae"
@@ -118,9 +113,11 @@ function validarPrimerRegistro() {
 ##########################################################################################
 
 # 4. Procesar un registro
-
+fileNameAProcesar=""
 procesarRegistro() {
   local ARCH=$1
+  fileNameAProcesar=$1
+
   # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
   local IFS=";"
   cantRegistrosLeidos=0
@@ -142,7 +139,7 @@ procesarRegistro() {
         rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
       else
         #TODO Verificar 
-        verificarLlamadaSospechosa  "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8" "$ARCH"
+        verificarLlamadaSospechosa  "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
       fi
     fi
     
@@ -433,7 +430,7 @@ cantidadConUmbral=0
 # id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
 
 function verificarLlamadaSospechosa() {
-  local ID=$f1
+  local IDAGENTE=$f1
   local FECHA=$f2
   local TIEMPO=$f3
   local OAREA=$f4
@@ -441,7 +438,6 @@ function verificarLlamadaSospechosa() {
   local DPAIS=$f6
   local DAREA=$f7
   local DNUM=$f8
-  local ARCH=$f9
 
   # Se selecciona los campos que cumplen
 
@@ -451,7 +447,6 @@ function verificarLlamadaSospechosa() {
   local hayUmbral="false"
 
   if [ $tipoLlamada = "DDI" ] ;then
-    codigoDestino=$(( DNUM - DPAIS ))
     #id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
     #165;341;30000112;DDI;27;88;Activo
 
@@ -460,34 +455,35 @@ function verificarLlamadaSospechosa() {
     # Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
     #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
 
-    campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codigoDestino}";.*Activo" $UMBRALES)
-    tope=$(ls -1 | cut -d';' -f6 campoSeleccionado)
-    echo $campoSeleccionado
+    #
+    campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DPAIS}";.*Activo" $UMBRALES | head -n 1)
 
-    if [ campoSeleccionado != "" ] ; then
-      if [ tope < $TIEMPO ] ; then
+    tope=$(echo $campoSeleccionado | cut -d ' ' -f6)
+
+    if [ ${#campoSeleccionado} -gt 0 ] ; then
+      if [ $tope -lt $TIEMPO ] ; then
 	hayUmbral="true"
       fi
     fi
   else
-    codigoDestino=$(( DNUM - DAREA ))
-    campoSeleccionado=$(ls -1 | grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codigoDestino}";.*Activo" $UMBRALES)
-    tope=$(ls -1 | cut -d';' -f6 $campoSeleccionado)
 
-    if [ campoSeleccionado != "" ] ; then
-      if [ tope < $TIEMPO ] ; then
+    campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DPAIS}";.*Activo" $UMBRALES )
+    tope=$(echo $campoSeleccionado | cut -d' ' -f6 )
+
+    if [ ${#campoSeleccionado} -gt 0 ] ; then
+      if [ $tope -lt $TIEMPO ] ; then
         hayUmbral="true"
       fi
+    fi
   fi
 
-id Central;id Agente;idUmbral;tipoDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
+#id Central;id #Agente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
 
   if [ "$hayUmbral" = "true" ] ; then
     cantidadConUmbral=$((cantidadConUmbral+1))
-    idUmbral=$(ls -1 | cut -d';' -f1 $campoSeleccionado)
-    fechadeLlamada=$(ls -1 | cut -d'_' -f1 $ARCH)
-    idDelcentral=$(ls -1 | cut -d'_' -f2 $ARCH)
-    grabarLlamadaSospechosa $idDelcentral $idUmbral $tipoLlamada $TIEMPO $OAREA $ONUM $DPAIS $DAREA $DNUM $fechaDeLlamada $ID
+    idUmbral=$(echo $campoSeleccionado | cut -d' ' -f1 )
+ 
+    grabarLlamadaSospechosa "$idDelcentral" "$IDAGENTE" "$idUmbral" "$tipoLlamada" "$FECHA" "$TIEMPO" "$OAREA" "$ONUM" "$DPAIS" "$DAREA" "$DNUM"
   else
     cantidadSinUmbral=$((cantidadSinUmbral+1))
   fi
@@ -499,10 +495,24 @@ id Central;id Agente;idUmbral;tipoDeLlamada;tiempoDeConversacion;codigoDeAreaA,n
 # 4.4 Grabar Llamadas Sospechosas
 
 function grabarLlamadaSospechosa(){
- local oficina=grep ";$11;" $AGENTES | cut -d ';' -f4
- local PATH=$PROCDIR/oficina
+ local IDAGENTE=$2
+ local FECHAINICIO=$5
 
- echo "$1" ";" "$2" ";" "$3" ";" "$4" ";" "$5" ";" "$6" ";" "$7" ";" "$8" ";" "$9" ";" "$10" >> $PATH
+ idDelcentral=$(echo $fileNameAProcesar | cut -d'_' -f1 )
+ fechadeLlamada=$(echo $fileNameAProcesar | grep "^.*csv" | cut -d'_' -f2 )
+ echo "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" $fechadeLlamada
+
+ #Busco agente en agentes.mae y luego la oficina
+ local oficina=$(grep  "^.*;${IDAGENTE};" $AGENTES | cut -d';' -f4)
+ echo $oficina
+
+
+ local fechaLlamada=$(echo $FECHAINICIO | sed "s/^.*\/\([0-9]\{2\}\)\/\([0-9]\{4\}\).*$/\2\1/")
+ 
+ local PATH=$PROCDIR/proc/$oficina"_"$fechaLlamada
+
+#id Central;id #Agente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
+ echo $idDelcentral";"$2";"$3";"$4";"$5";"$6";"$7";"$8";"$9";"$10";"$11";"$fechadeLlamada>> $PATH
 }
 
 
