@@ -14,16 +14,11 @@ CMDO=$1
 MSJE=$2
 TIPO=$3        # INFO, WAR, ERR
 
-# estas de abajo son variables de configuracion
-# falta setearlas, estos valores son de prueba
+LOGINST=`pwd`/afrainst.log	
 
-LOGINST=`pwd`/afrainst.log
+TRUNCO=10				# lineas que me guardo al truncar
 
-LOGSIZE=$LOGSIZE     # longitud maxima		ES $LOGSIZE
-LOGDIR=$LOGDIR  # directorio de logs 		ES $LOGDIR DE CONFIGURACION
-LOGEXT=$LOGEXT   # extension de logs		ES $LOGEXT
-
-TRUNCO=5       # lineas que me guardo al truncar
+tamaniomaximo=$((${LOGSIZE}*1024))	# tamanio maximo en bytes
 
 CMDO2=`echo $CMDO | sed "s/^.\/\([a-z]*\).sh$/\1/"`
 FILE="${LOGDIR}"/"${CMDO2}"."${LOGEXT}"
@@ -40,10 +35,12 @@ if [ $CMDO = "./afrainst.sh" ]; then
 else
 	# Si el tamanio del archivo de log es mayor que $LOGSIZE
 	# Me quedo con las ultimas $TRUNCO lineas
-	if [ $(cat $FILE | wc -l) -gt $LOGSIZE ]; then
-	  sed -i "1,$(($(wc -l $TEMP|awk '{print $1}') - $TRUNCO)) d" $FILE
-	fi
+        tamanioactual=$(wc -c <"$FILE")		
 
+	if [[ "$tamanioactual" -ge "$tamaniomaximo" ]]; then
+	  sed -i "1,$(($(wc -l $FILE|awk '{print $1}') - $TRUNCO)) d" $FILE
+	  echo $WHEN - $WHO - $CMDO - "INFO" - "Log Excedido" >> $FILE 
+	fi
 
 	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $FILE 			
 
