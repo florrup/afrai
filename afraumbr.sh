@@ -423,21 +423,33 @@ function determinarTipoDeLlamada() {
 
 # 4.3 Determinar si la llamada debe ser considerada como sospechosa
 
-cantidadSinUmbral=0
-cantidadConUmbral=0
+
 
 # Campos de umbral.tab (umbrales.csv) separados por ;
 # id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
+ 
+cantidadSinUmbral=0
+cantidadConUmbral=0
 
+ IDAGENTE=""
+ FECHAINICIO=""
+ TIEMPO=""
+ OAREA=""
+ ONUM=""
+ DPAIS=""
+ DAREA=""
+ DNUM=""
+
+ IDUMBRAL=""
 function verificarLlamadaSospechosa() {
-  local IDAGENTE=$f1
-  local FECHA=$f2
-  local TIEMPO=$f3
-  local OAREA=$f4
-  local ONUM=$f5
-  local DPAIS=$f6
-  local DAREA=$f7
-  local DNUM=$f8
+  IDAGENTE=$f1
+  FECHAINICIO=$f2
+  TIEMPO=$f3
+  OAREA=$f4
+  ONUM=$f5
+  DPAIS=$f6
+  DAREA=$f7
+  DNUM=$f8
 
   # Se selecciona los campos que cumplen
 
@@ -481,9 +493,8 @@ function verificarLlamadaSospechosa() {
 
   if [ "$hayUmbral" = "true" ] ; then
     cantidadConUmbral=$((cantidadConUmbral+1))
-    idUmbral=$(echo $campoSeleccionado | cut -d' ' -f1 )
- 
-    grabarLlamadaSospechosa "$idDelcentral" "$IDAGENTE" "$idUmbral" "$tipoLlamada" "$FECHA" "$TIEMPO" "$OAREA" "$ONUM" "$DPAIS" "$DAREA" "$DNUM"
+    IDUMBRAL=$(echo $campoSeleccionado | cut -d' ' -f1 )
+    grabarLlamadaSospechosa 
   else
     cantidadSinUmbral=$((cantidadSinUmbral+1))
   fi
@@ -495,24 +506,21 @@ function verificarLlamadaSospechosa() {
 # 4.4 Grabar Llamadas Sospechosas
 
 function grabarLlamadaSospechosa(){
- local IDAGENTE=$2
- local FECHAINICIO=$5
+
 
  idDelcentral=$(echo $fileNameAProcesar | cut -d'_' -f1 )
  fechadeLlamada=$(echo $fileNameAProcesar | grep "^.*csv" | cut -d'_' -f2 )
- echo "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" $fechadeLlamada
 
  #Busco agente en agentes.mae y luego la oficina
  local oficina=$(grep  "^.*;${IDAGENTE};" $AGENTES | cut -d';' -f4)
- echo $oficina
-
 
  local fechaLlamada=$(echo $FECHAINICIO | sed "s/^.*\/\([0-9]\{2\}\)\/\([0-9]\{4\}\).*$/\2\1/")
+ fechaFinal=$(echo $fechaLlamada | cut -d'.' -f1)
  
  local PATH=$PROCDIR/proc/$oficina"_"$fechaLlamada
 
 #id Central;id #Agente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
- echo $idDelcentral";"$2";"$3";"$4";"$5";"$6";"$7";"$8";"$9";"$10";"$11";"$fechadeLlamada>> $PATH
+ echo $idDelcentral";"$IDAGENTE";"$IDUMBRAL";"$tipoLlamada";"$FECHAINICIO";"$TIEMPO";"$OAREA";"$ONUM";"$DPAIS";"$DAREA";"$DNUM";"$fechaFinal>>$PATH
 }
 
 
