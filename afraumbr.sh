@@ -22,7 +22,7 @@ MOVER="./mover.sh"
 AGENTES=$MAEDIR/"agentes.mae"
 CDP=$MAEDIR/"CdP.mae"
 CDA=$MAEDIR/"CdA.mae"
-UMBRALES=$MAEDIR/"umbrales.tab"
+UMBRALES=$MAEDIR/"umbral.tab"
 
 function msjLog() {
   local MOUT=$1
@@ -442,9 +442,11 @@ function verificarLlamadaSospechosa() {
   local DNUM=$f8
 
   # Se selecciona los campos que cumplen
-  cantidadCampoSeleccionado=$(ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" $UMBRALES | wc -l)
+
+
+  cantidadCampoSeleccionado=$(ls -1 | grep "^.*;"${ONUM}";.*Activo" $UMBRALES | wc -l)
   echo $cantidadCampoSeleccionado
-  campoSeleccionado=$(ls -1 | grep "^.*;"{OAREA}";"{ONUM}";.*Activo" $UMBRALES )
+  campoSeleccionado=$(ls -1 | grep "^.*;"${ONUM}";.*Activo" $UMBRALES)
   
   if [[ $cantidadCampoSeleccionado == 0 ]]; then
      cantidadSinUmbral=$((cantidadSinUmbral+1))
