@@ -462,12 +462,7 @@ function verificarLlamadaSospechosa() {
     #id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
     #165;341;30000112;DDI;27;88;Activo
 
-    #TODO Falta cuando el llamado de destino no viene incluido
-    #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
-    # Aca se tiene que definir que se hace cuando hay mas de un umbral aplicable a la llamada
-    #TODO Falta considerar una hipotesis pero por ahora solo tomo el primer umbral que aparece
-
-    #
+    #TODO como hipotesis tomo el primer registro de todos si hay mas de una coincidencia en la tabla de umbrales
     campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DPAIS}";.*Activo" $UMBRALES | head -n 1)
 
     tope=$(echo $campoSeleccionado | cut -d ' ' -f6)
@@ -479,7 +474,7 @@ function verificarLlamadaSospechosa() {
     fi
   else
 
-    campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DPAIS}";.*Activo" $UMBRALES )
+    campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DAREA}";.*Activo" $UMBRALES | head -n 1 )
     tope=$(echo $campoSeleccionado | cut -d' ' -f6 )
 
     if [ ${#campoSeleccionado} -gt 0 ] ; then
