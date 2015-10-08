@@ -64,8 +64,8 @@ function tieneCodigoCorrecto (){
 	
 	local centrales=${MAEDIR}/CdC.mae
 	codigo=`echo $1 | cut -d'_' -f 1`
-	cantidadEnCentrales=`echo ls | grep ^${codigo}'\;' ${centrales} | wc -l`
-	
+	#TODO: EN ESTE GREP SACAMOS EL LS PORQUE ERA INNECESARIO
+	cantidadEnCentrales=`grep "^${codigo};" ${centrales} | wc -l`
 	if [ $cantidadEnCentrales -gt 0 ]
 	then
 		# Codigo Correcto
@@ -158,7 +158,7 @@ function tieneFechaCorrecta (){
 # 1: Archivo con fecha invalida
 # 2: Archivo con codigo invalido
 function tieneNombreCorrecto (){
-	
+	#TODO: MODIFIQUE IF AHORA ANDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	if tieneCodigoCorrecto $1;
 	then
 		if tieneFechaCorrecta $1;
@@ -168,10 +168,12 @@ function tieneNombreCorrecto (){
 		fi
 		# Archivo invalido -  Fecha Invalida
 		motivoRechazo="Fecha invalida"
-	fi
-	# Archivo invalido - Codigo incorrecto o no encontrado
-	motivoRechazo="Central inexistente"
+	else
+		# Archivo invalido - Codigo incorrecto o no encontrado
+		motivoRechazo="Central inexistente"
+	fi	
 	return 1
+	
 }
 
 function darPermisoParaMover (){
