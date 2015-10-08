@@ -12,8 +12,8 @@
 # 
 #
 
-GRALOG="./gralog.sh"
-MOVER="./mover.sh"
+GRALOG="gralog.sh"
+MOVER="mover.sh"
 AGENTES=$MAEDIR/"agentes.mae"
 CDP=$MAEDIR/"CdP.mae"
 CDA=$MAEDIR/"CdA.mae"
@@ -46,18 +46,15 @@ function inicio() {
 
   for fileName in $inputFiles;
   do
-    echo $fileName
-    cantidadRegistrosRechazados=0
     procesarArchivo $fileName
     if [ "$?" = 0 ]; then	# si no fue procesado, sigo
       validarPrimerRegistro $fileName
       if [ "$?" = 0 ]; then
         # 3. Si se puede procesar el archivo
         msjLog "Archivo a procesar: $fileName" "INFO"
-
 	# Empiezo a procesar cada registro
 	procesarRegistro $fileName
-
+	finDeArchivo
       fi
     fi
   done  
@@ -70,14 +67,12 @@ function inicio() {
 # 2.1. Verificar que no sea un archivo duplicado
 # Devuelve 1 si ya fue procesado, 0 en caso contrario
 function procesarArchivo() {
-  local ARCH=$1
-
+  local archivo=$1
   # Verifico si el archivo ya fue procesado
-  if [ -s $PROCDIR/$ARCH ]; then
+  if [ -s $PROCDIR/proc/$archivo ]; then
     MSJ="Se rechaza el archivo por estar DUPLICADO"
-     #TODO Los archivos rechazados que van a RECHDIR deben tener el formato .rech
-    msjLog "$MSJ" "ERR" 
-    $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
+    msjLog "$MSJ" "ERR"
+    $MOVER "$ACEPDIR/$archivo" "$RECHDIR" "${0}"
     return 1
   fi
   return 0
@@ -103,7 +98,6 @@ function validarPrimerRegistro() {
       MSJ="Se rechaza el archivo porque su estructura no se corresponde con el formato esperado"
       #TODO Los archivos rechazados que van a RECHDIR deben tener el formato .rech
       msjLog "$MSJ" "ERR"
-      echo $ACEPDIR/$ARCH
       $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
       return 1
   fi
@@ -121,32 +115,33 @@ procesarRegistro() {
   # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
   local IFS=";"
   cantRegistrosLeidos=0
-  while read f1 f2 f3 f4 f5 f6 f7 f8
+  cantidadRegistrosRechazados=0
+  cantidadSinUmbral=0
+  cantidadConUmbral=0
+  cantLlamadasSospechosas=0
+  cantLlamadasNoSospechosas=0
+  while read idAgente inicioLlamada tiempoConversacion origenArea origenNumero destinoPais destinoArea destinoNumero 
   do
     # Incremento en uno la cantidad de registros leidos
-    cantRegistrosLeidos=$((cantidadRegistrosLeidos+1))
-    validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    cantRegistrosLeidos=$((cantRegistrosLeidos+1))
+    motivo="";
+    #TODO   validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+    validarCamposRegistro
     if [ "$?" = 1 ]; then
-      #TODO 
       echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
-      rechazarRegistro $ARCH "El registro no supera las validaciones"
+      rechazarRegistro
     else
       # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
-      determinarTipoDeLlamada "$f4" "$f6" "$f7" "$f8" 
+      determinarTipoDeLlamada
       if [ "$?" = 1 ]; then
-        #TODO
-        echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
-        rechazarRegistro $ARCH "No se ha podido determinar el tipo de llamada"
+        echo "SE RECHAZA EL REGISTRO"
+	motivo="No se ha podido determinar el tipo de llamada"
+        rechazarRegistro
       else
-        #TODO Verificar 
-        verificarLlamadaSospechosa  "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+        #TODO verificarLlamadaSospechosa  "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
+	verificarLlamadaSospechosa
       fi
     fi
-    
-    
-
-
-
   done < $ACEPDIR/$ARCH
 }
 
@@ -318,15 +313,15 @@ tiempo() {
 # Determina si un registro cumple con las verificaciones
 # Devuelve 0 si todo OK
 validarCamposRegistro() {
-  local ID=$f1
-  local FECHA=$f2
-  local TIEMPO=$f3
-  local OAREA=$f4
-  local ONUM=$f5
-  local DPAIS=$f6
-  local DAREA=$f7
-  local DNUM=$f8
-
+  local ID=$idAgente
+  local FECHA=$inicioLlamada
+  local TIEMPO=$tiempoConversacion
+  local OAREA=$origenArea
+  local ONUM=$origenNumero
+  local DPAIS=$destinoPais
+  local DAREA=$destinoArea
+  local DNUM=$destinoNumero
+      
   RECHAZO="false"
   idAgente "${AGENTES}" "${ID}"
   if [ "$?" = 1 ]; then
@@ -359,7 +354,8 @@ validarCamposRegistro() {
   fi
 
   if [ "$RECHAZO" = "true" ]; then
-    echo "Se rechaza el registro $f1 porque "$msj
+    echo "Se rechaza el registro $idAgente porque "$msj
+    motivo=$msj
     return 1
   fi
 
@@ -369,13 +365,12 @@ validarCamposRegistro() {
 # 4.2 Determinar el tipo de llamada
 # Devuelve 1 si se rechaza el registro
 function determinarTipoDeLlamada() {
-  local OAREA=$f4
-  local DPAIS=$f6
-  local DAREA=$f7
-  local DNUM=$f8
+  local OAREA=$origenArea
+  local DPAIS=$destinoPais
+  local DAREA=$destinoArea
+  local DNUM=$destinoNumero
 
   tipoLlamada=""
- 
   
   llamadoValido="false"   
   
@@ -413,7 +408,7 @@ function determinarTipoDeLlamada() {
   fi
 
 
-  echo $f1 $tipoLlamada
+  echo $idAgente $tipoLlamada
   #echo -e "\t\tNo se rechaza\n\n" 
   return 0
 
@@ -422,100 +417,78 @@ function determinarTipoDeLlamada() {
 ##########################################################################################
 
 # 4.3 Determinar si la llamada debe ser considerada como sospechosa
-
-
-
-# Campos de umbral.tab (umbrales.csv) separados por ;
+# Campos de umbral.tab separados por ;
 # id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
- 
-cantidadSinUmbral=0
-cantidadConUmbral=0
 
- IDAGENTE=""
- FECHAINICIO=""
- TIEMPO=""
- OAREA=""
- ONUM=""
- DPAIS=""
- DAREA=""
- DNUM=""
-
- IDUMBRAL=""
 function verificarLlamadaSospechosa() {
-  IDAGENTE=$f1
-  FECHAINICIO=$f2
-  TIEMPO=$f3
-  OAREA=$f4
-  ONUM=$f5
-  DPAIS=$f6
-  DAREA=$f7
-  DNUM=$f8
+  IDAGENTE=$idAgente
+  FECHAINICIO=$inicioLlamada
+  TIEMPO=$tiempoConversacion
+  OAREA=$origenArea
+  ONUM=$origenNumero
+  DPAIS=$destinoPais
+  DAREA=$destinoArea
+  DNUM=$destinoNumero
 
   # Se selecciona los campos que cumplen
-
-
 # id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
 
   local hayUmbral="false"
-
+  local esSospechosa="false"
+  local codDestino=""
   if [ $tipoLlamada = "DDI" ] ;then
     #id umbral;Cod de Area Origen;Num de linea de Origen;Tipo de Llamada;Codigo destino;Tope;Estado
     #165;341;30000112;DDI;27;88;Activo
-
-    #TODO como hipotesis tomo el primer registro de todos si hay mas de una coincidencia en la tabla de umbrales
-    campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DPAIS}";.*Activo" $UMBRALES | head -n 1)
-
-    tope=$(echo $campoSeleccionado | cut -d ' ' -f6)
-
-    if [ ${#campoSeleccionado} -gt 0 ] ; then
-      if [ $tope -lt $TIEMPO ] ; then
-	hayUmbral="true"
-      fi
-    fi
+    codDestino="${DPAIS}"
   else
-
-    campoSeleccionado=$(grep --max-count=1 "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${DAREA}";.*Activo" $UMBRALES | head -n 1 )
-    tope=$(echo $campoSeleccionado | cut -d' ' -f6 )
-
-    if [ ${#campoSeleccionado} -gt 0 ] ; then
-      if [ $tope -lt $TIEMPO ] ; then
-        hayUmbral="true"
-      fi
-    fi
+    codDestino="${DAREA}"
   fi
-
-#id Central;id #Agente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
-
-  if [ "$hayUmbral" = "true" ] ; then
+  echo "$OAREA - $ONUM - $tipoLlamada - $codDestino"
+  
+  campoSeleccionado=$(grep "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codDestino}";.*Activo" $UMBRALES | head -n 1 )
+  tope=$(echo $campoSeleccionado | cut -d' ' -f6 )
+ 
+  if [ ${#campoSeleccionado} -gt 0 ];then
+    #Llamadas con umbral
     cantidadConUmbral=$((cantidadConUmbral+1))
-    IDUMBRAL=$(echo $campoSeleccionado | cut -d' ' -f1 )
-    grabarLlamadaSospechosa 
+    if [ $tope -lt $TIEMPO ]; then
+      cantLlamadasSospechosas=$((cantLlamadasSospechosas+1))
+      IDUMBRAL=$(echo $campoSeleccionado | cut -d' ' -f1 )
+      grabarLlamadaSospechosa 
+    else
+      cantLlamadasNoSospechosas=$((cantLlamadasNoSospechosas+1))
+    fi
   else
+    #Llamadas sin umbral
     cantidadSinUmbral=$((cantidadSinUmbral+1))
   fi
 
-
+#id Central;idAgente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,
+#codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDelArchivo
 }
 ##########################################################################################
 
 # 4.4 Grabar Llamadas Sospechosas
 
 function grabarLlamadaSospechosa(){
-
-
- idDelcentral=$(echo $fileNameAProcesar | cut -d'_' -f1 )
- fechadeLlamada=$(echo $fileNameAProcesar | grep "^.*csv" | cut -d'_' -f2 )
-
- #Busco agente en agentes.mae y luego la oficina
- local oficina=$(grep  "^.*;${IDAGENTE};" $AGENTES | cut -d';' -f4)
-
- local fechaLlamada=$(echo $FECHAINICIO | sed "s/^.*\/\([0-9]\{2\}\)\/\([0-9]\{4\}\).*$/\2\1/")
- fechaFinal=$(echo $fechaLlamada | cut -d'.' -f1)
+  echo "Archivo con llamada sospechosa: $fileNameAProcesar"
  
- local PATH=$PROCDIR/proc/$oficina"_"$fechaLlamada
+  idDelcentral=$(echo $fileNameAProcesar | cut -d'_' -f1 )
+  fechaDelArchivo=$(echo $fileNameAProcesar | cut -d'_' -f2 )
+  
+  echo "IdCentral y fecha de Archivo $idDelcentral - $fechaDelArchivo"
+  
+  #Busco agente en agentes.mae y luego la oficina
+  local oficina=$(grep  "^.*;${IDAGENTE};" $AGENTES | cut -d';' -f4)
 
-#id Central;id #Agente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDeLlamada
- echo $idDelcentral";"$IDAGENTE";"$IDUMBRAL";"$tipoLlamada";"$FECHAINICIO";"$TIEMPO";"$OAREA";"$ONUM";"$DPAIS";"$DAREA";"$DNUM";"$fechaFinal>>$PATH
+  local anioMesLlamada=$(echo $FECHAINICIO | sed "s/^.*\/\([0-9]\{2\}\)\/\([0-9]\{4\}\).*$/\2\1/")
+
+  echo "oficina $oficina - $anioMesLlamada - $fechaFinal"
+  local PROCARCH=$PROCDIR/$oficina"_"$anioMesLlamada
+
+  #id Central;idAgente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,
+  #codigoDePaisB,codigoDeAreaB,numeroDeLineaB,fechaDelArchivo
+ echo  $idDelcentral";"$IDAGENTE";"$IDUMBRAL";"$tipoLlamada";"$FECHAINICIO";"$TIEMPO";"$OAREA";"$ONUM";"$DPAIS";"$DAREA";"$DNUM";"$fechaDelArchivo>>$PROCARCH
 }
 
 
@@ -526,15 +499,12 @@ function grabarLlamadaSospechosa(){
 function rechazarRegistro() {
   # Aumento en uno el contador
   cantidadRegistrosRechazados=$((cantidadRegistrosRechazados+1))
-  local CODCENTRAL=$(echo $1 | cut -c 1-3)
-  #local PATH=$RECHDIR/llamadas/$CODCENTRAL.rech
-  local PATH="martin.txt"
+  local CODCENTRAL=$(echo $ARCH | cut -d'_' -f1)
+  local RECHARCH="$RECHDIR/llamadas/$CODCENTRAL.rech"
 
-  local FUENTE=$1
-  local MOTIVO=$2
   # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
 
-  echo  "$f1" ";" "$f2" ";" "$f3" ";" "$f4" ";" "$f5" ";" "$f6" ";" "$f7" ";" "$f8" >> $PATH 
+  echo  "$ARCH" ";" "$motivo" ";" "$idAgente" ";" "$inicioLlamada" ";" "$tiempoConversacion" ";" "$origenArea" ";" "$origenNumero" ";" "$destinoPais" ";" "$destinoArea" ";" "$destinoNumero" >> $RECHARCH 
 }
 
 ##########################################################################################
@@ -542,15 +512,11 @@ function rechazarRegistro() {
 # 6. Fin de archivo
 
 function finDeArchivo() {
-  local ARCH=$1
   $MOVER "$ACEPDIR/$ARCH" "$PROCDIR"/proc "${0}"
   echo "Cantidad de llamadas: $cantRegistrosLeidos"
-  echo "Rechazadas: $cantidadRegistrosRechazados, Con umbral $cantidadConUmbral, Sin umbral $cantidadSinUmbral"
-  echo "Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $((cantidadConUmbral-cantLlamadasSospechosas))"
+  echo "Rechazadas: $cantidadRegistrosRechazados, Con umbral: $cantidadConUmbral, Sin umbral: $cantidadSinUmbral"
+  echo "Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $cantLlamadasNoSospechosas"
 }
-
-
-
 ##########################################################################################
 
 inicio
