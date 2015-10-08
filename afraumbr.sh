@@ -46,6 +46,7 @@ function inicio() {
 
   for fileName in $inputFiles;
   do
+	echo "Procesar Archivo: $fileName 1"
     procesarArchivo $fileName
     if [ "$?" = 0 ]; then	# si no fue procesado, sigo
       validarPrimerRegistro $fileName
@@ -54,7 +55,7 @@ function inicio() {
         msjLog "Archivo a procesar: $fileName" "INFO"
 	# Empiezo a procesar cada registro
 	procesarRegistro $fileName
-	finDeArchivo
+	finDeArchivo $fileName
       fi
     fi
   done  
@@ -512,7 +513,9 @@ function rechazarRegistro() {
 # 6. Fin de archivo
 
 function finDeArchivo() {
-  $MOVER "$ACEPDIR/$ARCH" "$PROCDIR"/proc "${0}"
+	local archivo=$1
+	echo "Procesar Archivo: $archivo 2"
+  $MOVER "$ACEPDIR/$archivo" "$PROCDIR"/proc "${0}"
   echo "Cantidad de llamadas: $cantRegistrosLeidos"
   echo "Rechazadas: $cantidadRegistrosRechazados, Con umbral: $cantidadConUmbral, Sin umbral: $cantidadSinUmbral"
   echo "Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $cantLlamadasNoSospechosas"
