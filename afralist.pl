@@ -1,8 +1,8 @@
 #! /usr/bin/perl
 
-$procdir = "PROCDIR"; #direccion donde esten los archivos a consultar
-$maedir = "MAEDIR";
-$repodir = "REPODIR";
+$procdir = $ENV{PROCDIR}; #direccion donde esten los archivos a consultar
+$maedir = $ENV{MAEDIR};
+$repodir = $ENV{REPODIR};
 
 $subllamadaNro = 0;
 
@@ -114,7 +114,6 @@ sub oficinaYaniomes{
 		print "No se han encontrado archivos con ese nombre\n";
 		die;
 	}
-	print @nombreArchivos;
 
 	&borrarDuplicados(@nombreArchivos);
 }
@@ -138,7 +137,7 @@ sub abrirDirYMostrar {
 	close(DIR);
 	@aDir=();
 	foreach $ad (@aD){
-		next unless ($ad =~ /^[0-9]{3}_[0-9]{4}[0-1][0-9]$/);
+		next unless ($ad =~ /^.*_[0-9]{4}[0-1][0-9]$/);
 		push (@aDir, $ad);
 		@archSort = sort(@aDir);
 	}
@@ -224,15 +223,22 @@ sub generarRanking{
 # Ordena un hash sin contar los valores con 1
 sub generarRankingUmbrales{
 	my %hash = @_;
+	my %hashSin1;
 	my @arreglo;
-	foreach $h (sort{$hash{$b} <=> $hash{$a} } keys %hash){
-		if($hash{$h}>1){		
-			push(@arreglo,"$h;$hash{$h}");
+	my @a;
+	foreach $h (keys %hash){
+		@a = split(";",$hash{$h});
+		if($a[1]>1){
+			$hashSin1{$a[0]} = $a[1];
 		}
+	}
+	foreach $h (sort{$hashSin1{$b} <=> $hashSin1{$a} } keys %hashSin1){		
+		push(@arreglo,"$hashSin1{$h} : $h\n");
 	}
 @arreglo;
 }
 
+# genera el ranking de un hash sin un archivo
 sub rankingSinArchivo{
 	my @completo = ();
 	my @arreglo = @_;
@@ -246,7 +252,7 @@ sub rankingSinArchivo{
 
 # Agrega al ranking de agentes la informacion del archivo
 sub rankingAgentesArchivo{
-	my $archivo = $maedir."/agentes.csv";	
+	my $archivo = $maedir."/agentes.mae";	
 	my @arreglo = @_;
 	my @splitA = ();
 	my @completo = ();
@@ -271,7 +277,7 @@ sub rankingAgentesArchivo{
 
 # Argrega al ranking de centrales la informacion en el archivo centrales
 sub rankingCentralesArchivo{
-	my $archivo = $maedir."/centrales.csv";	
+	my $archivo = $maedir."/CdC.mae";	
 	my @arreglo = @_;
 	my @completo = ();
 	my @splitA = ();
@@ -421,7 +427,7 @@ if(exists $opcionHash{"-S"}){
 	@aniomes = &respToken;
 	@aniomesValido = &validarAnioMes (@aniomes);
 	foreach $am (@aniomesValido){
-		push(@archivos, "[0-9]{3}_".$am);
+		push(@archivos, ".*_".$am);
 	}
 
 	#Genera una lista con el nombre completo del archivo si el archivo existe en el directorio
@@ -457,7 +463,7 @@ if(exists $opcionHash{"-S"}){
 		$cant=0;
 		$tiempo=0;
 		open (ARCH, $arch);
-		if($arch =~ m/.*([0-9]{3})_[0-9]{6}$/){
+		if($arch =~ m/.*\/(.*)_[0-9]{6}$/){
 			$ofi = $1;
 		}
 
@@ -522,7 +528,7 @@ if(exists $opcionHash{"-S"}){
 		if($opcion == 7){
 			print "Ranking de umbrales por cantidad:\n";
 			@arreglo = &generarRanking (%Humbrales);
-			@arregloAImprimir = &rankingSinArchivo(@arreglo);
+			@arregloAImprimir = generarRankingUmbrales(@arreglo);
 		}
 		if($opcion == 8){
 			print "Ranking de destinos por cantidad:FALTA\n";
