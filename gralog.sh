@@ -20,7 +20,7 @@ TRUNCO=50				# lineas que me guardo al truncar
 
 tamaniomaximo=$((${LOGSIZE}*1024))	# tamanio maximo en bytes
 
-CMDO2=`echo $CMDO | sed "s/^.\/\([a-z]*\).sh$/\1/"`
+CMDO2=`echo $CMDO | sed "s/^.*\/\([a-z]*\).sh$/\1/"`
 FILE="${LOGDIR}"/"${CMDO2}"."${LOGEXT}"
 
 WHEN=`date +%T-%d-%m-%Y`
@@ -35,9 +35,10 @@ if [ $CMDO = "./afrainst.sh" ]; then
 else
 	# Si el tamanio del archivo de log es mayor que $LOGSIZE
 	# Me quedo con las ultimas $TRUNCO lineas
-        tamanioactual=$(wc -c <"$FILE")		
-
-	if [[ "$tamanioactual" -ge "$tamaniomaximo" ]]; then
+	if [ -f $FILE ];then      
+		tamanioactual=$(wc -c <"$FILE")		
+	fi
+	if [[ "${tamanioactual}" -ge "${tamaniomaximo}" ]]; then
 	  sed -i "1,$(($(wc -l $FILE|awk '{print $1}') - $TRUNCO)) d" $FILE
 	  echo $WHEN - $WHO - $CMDO - "INFO" - "Log Excedido" >> $FILE 
 	fi

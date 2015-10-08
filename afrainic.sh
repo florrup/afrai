@@ -1,9 +1,9 @@
 #!/bin/bash
 # Prepara el entorno de ejecución
 
-GRALOG="./gralog.sh"   
-afrainic="./afrainic.sh"
-CNF=~/grupo07/CONF/AFRAINST.conf 	# DE PRUEBA usar file de configuración
+GRALOG="gralog.sh"   
+afrainic="$BINDIR/afrainic.sh"
+CNF=~/grupo07/CONF/AFRAINST.conf
 
 function msjLog() {
   local MOUT=$1
@@ -196,18 +196,18 @@ function mostrarYgrabar() {
   msjLog "Estado del Sistema: INICIALIZADO" "INFO"
 }
 
-# Pregunta si arranca demonio
+# 6. Pregunta si arranca demonio
 function deseaArrancar() {
   echo "¿Desea efectuar la activación de AFRARECI? si - no"
   read respuesta
   respuesta=${respuesta,,} # lo paso a lowercase
   case $respuesta in
     "no")
-      echo "NOOO" # falta explicar como hacerlo con comando arrancar
+        echo "Modo de uso de comando ARRANCAR para iniciar AFRARECI: arrancar.sh afrareci" 
       ;;
     "si")
-      echo "SIIII" # falta activar demonio
-      $BINDIR/arrancar.sh afrareci
+	echo "Se ha llamado a afrareci"
+	arrancar.sh afrareci
       ;;
     *)
       echo "La respuesta debe ser \"si\" o \"no\""
