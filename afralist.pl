@@ -4,8 +4,11 @@ $procdir = "PROCDIR"; #direccion donde esten los archivos a consultar
 $maedir = "MAEDIR";
 $repodir = "REPODIR";
 
+$subllamadaNro = 0;
+
 # Lee el ingreso validando que sea S o N
 sub respSN {
+	my $resp;
 do{
 	$resp = <STDIN>;
 	chomp($resp);
@@ -19,8 +22,7 @@ $resp;
 
 # Lee el ingreso de una cadena y la parsea en segun espacios
 sub respToken {
-$codString = <STDIN>;
-
+my $codString = <STDIN>;
 split(' ', uc($codString));
 }
 
@@ -31,6 +33,7 @@ chomp($codString);
 $codString;
 }
 
+# Une los codigos para generar la expresion regular
 sub unirCodigos{
 my @tokens = @_;
 my $codUni = ".*";
@@ -45,13 +48,17 @@ if($#tokens != -1){
 $codUni;
 }
 
+# Valida la oficina
 sub validarOficina{
-	$bool = (($_[0] !~ /^[[:alnum:]]{3}$/)&&($_[0] ne "0")&&($_[0] ne "-a")&&($_[0] ne "-A"));
+	my $bool = (($_[0] !~ /^[[:alnum:]]{3}$/)&&($_[0] ne "0")&&($_[0] ne "-a")&&($_[0] ne "-A"));
+	$bool;
 }
 
+# Valida el ingreso de los anio meses
 sub validarAnioMes{
-
-foreach $am (@_){
+my @anioMes = @_;
+my @aniomesValido = ();
+foreach my $am (@anioMes){
 	if($am !~ /^[0-9]{4}[0-1][0-9]$/){
 		print "El anio mes: $am es invalido y no sera tenido en cuenta\n";
 	}
@@ -70,9 +77,11 @@ if($#aniomesValido == -1){
 
 #Pregunta las oficinas y los anio mes al usuario validando ambos ingresos
 sub oficinaYaniomes{
+	my @archivos = ();
+	my @nombreArchivos = ();
 	do{
-		print "Ingrese oficina (0 para terminar): ";
-		$oficina = &respSimple;
+		print "Ingrese oficina (-a todas las)(0 para terminar): ";
+		my $oficina = &respSimple;
 		if(&validarOficina ($oficina)){
 			print "Oficina invalida\n";
 			$oficina = "-1";
@@ -83,8 +92,8 @@ sub oficinaYaniomes{
 		}
 		if($oficina ne "0" && $oficina ne "-1"){
 			print "Ingrese anio mes separados por espacio de la forma (AAAAMM): ";
-			@aniomes = &respToken;
-			@aniomesValido = &validarAnioMes (@aniomes);
+			my @aniomes = &respToken;
+			my @aniomesValido = &validarAnioMes (@aniomes);
 			foreach $am (@aniomesValido){
 				push(@archivos, $oficina."_".$am);
 			}
@@ -105,6 +114,7 @@ sub oficinaYaniomes{
 		print "No se han encontrado archivos con ese nombre\n";
 		die;
 	}
+	print @nombreArchivos;
 
 	&borrarDuplicados(@nombreArchivos);
 }
@@ -112,10 +122,12 @@ sub oficinaYaniomes{
 
 sub borrarDuplicados {
 my %hash = ();
-foreach my $elem (@_){
+foreach my $elem (@_)
+{
     $hash{$elem} ++;
 }
 @sinDuplicado = keys %hash;
+
 }
 
 #Abre el directorio, y almacena en @archSort los archivos validos
@@ -124,6 +136,7 @@ sub abrirDirYMostrar {
 	opendir(DIR,$procdir) or die print "No se encontro el directorio\n";
 	@aD=readdir(DIR);
 	close(DIR);
+	@aDir=();
 	foreach $ad (@aD){
 		next unless ($ad =~ /^[0-9]{3}_[0-9]{4}[0-1][0-9]$/);
 		push (@aDir, $ad);
@@ -147,17 +160,138 @@ sub abrirDirYMostrar {
 	print "\n";
 }
 
-
+# Obtiene las opciones ingresadas
 sub obtenerOpciones{
 	my %opcionHash = ();
 	my @opciones = "";
-	print "Seleccione las opciones: ";
+	print "Seleccione las opciones (-h: ayuda): ";
 	@opciones = &respToken;
 	foreach $opcion (@opciones){
 		$opcionHash{$opcion} = 0;
 	}
 %opcionHash;	
 }
+
+# Graba en un archivo un arreglo (Nombre archivo, Arreglo a imprimir)
+sub grabarEnArch{
+	my $nombreArch = shift;
+	my @aImprimir = @_;
+	open (ARCHSAL,">$nombreArch") or die print "No se pudo guardar en $nombreArch\n\n";
+	foreach $aI (@aImprimir){
+		print ARCHSAL $aI;
+	}
+	close (ARCHSAL);
+}
+
+# Pide el ingerso de un nombre valido para guardar en un archivo
+sub validarNombreArch{
+	my $nombre;
+	my $var;
+	opendir (REPODIR, $repodir) or die print "Falta directorio de salida \"$repodir\"\n";
+	@archDir = readdir(REPODIR);
+	close(REPODIR);
+	do{
+		print "Ingrese nombre del archivo de salida: ";
+		$nombre = <STDIN>;
+		chomp($nombre);
+		my @a = grep {$_ =~ /^$nombre$/} @archDir;
+		$var = $#a;
+		if($var != -1){
+			print "Ya existe un archivo con el nombre $nombre.\nIngrese otro nombre:";
+		}	
+	}until($var == -1);
+$nombre;
+}
+
+# Imprime un arreglo por pantalla 
+sub imprimirArreglo{
+	foreach $a (@_){
+		print $a;
+	}
+}
+
+# Ordena las claves de un hash por su valor
+sub generarRanking{
+	my %hash = @_;
+	my @arreglo;
+	
+	foreach $h (sort{$hash{$b} <=> $hash{$a} } keys %hash){
+		push(@arreglo,"$h;$hash{$h}");
+	}
+@arreglo;
+}
+
+# Ordena un hash sin contar los valores con 1
+sub generarRankingUmbrales{
+	my %hash = @_;
+	my @arreglo;
+	foreach $h (sort{$hash{$b} <=> $hash{$a} } keys %hash){
+		if($hash{$h}>1){		
+			push(@arreglo,"$h;$hash{$h}");
+		}
+	}
+@arreglo;
+}
+
+sub rankingSinArchivo{
+	my @completo = ();
+	my @arreglo = @_;
+	my @splitA = ();
+	foreach $a (@arreglo){
+		@splitA = split (";",$a);
+		push (@completo, "$splitA[1] : $splitA[0]\n");	
+	}
+	@completo;
+}
+
+# Agrega al ranking de agentes la informacion del archivo
+sub rankingAgentesArchivo{
+	my $archivo = $maedir."/agentes.csv";	
+	my @arreglo = @_;
+	my @splitA = ();
+	my @completo = ();
+
+	if(open (ARCH,$archivo)){
+		my @archReg = <ARCH>;
+		foreach $a (@arreglo){
+			@splitA = split (";",$a);
+			@regGrep = grep {$_ =~ /^.*;.*;$splitA[0];.*;.*$/} @archReg;
+			$regGrep[0] =~ s/;/\t/g;
+			if($regGrep[0] =~ m/.*\t(.*\t.*\t.*)$/){
+				push (@completo, "$splitA[1] : $1\n");
+			}	
+		}
+	}
+	else{
+		print "No se encontro el archivo de agentes";
+	}
+
+@completo;
+}
+
+# Argrega al ranking de centrales la informacion en el archivo centrales
+sub rankingCentralesArchivo{
+	my $archivo = $maedir."/centrales.csv";	
+	my @arreglo = @_;
+	my @completo = ();
+	my @splitA = ();
+	if(open (ARCH,$archivo)){
+		my @archReg = <ARCH>;
+		foreach $a (@arreglo){
+			@splitA = split(";",$a);
+			@regGrep = grep {$_ =~ /^$splitA[0];.*$/} @archReg;
+			$regGrep[0] =~ s/;/\t/g;
+			push (@completo, "$splitA[1] : $regGrep[0]");		
+		}
+	}
+	else{
+		print "No se encontro el archivo de centrales";
+	}
+@completo;
+}
+
+
+
 
 #
 # Comienzo del programa
@@ -166,13 +300,24 @@ sub obtenerOpciones{
 do{
 
 	%opcionHash = &obtenerOpciones; 
-	#Se selecciono la opcion de consultar	
+
+#OPCION CONSULTAR
+
 if(exists $opcionHash{"-R"}){ 
 
+	print "\n";
 	&abrirDirYMostrar;
+	print "\n";	
+	@a = ();
 	@nombreArchSinDup = &oficinaYaniomes;
 
 	#Comienza a preguntar sobre los filtros al usuario
+	@centrales = ();
+	@agentes = ();
+	@umbrales = ();
+	@tipo = ();
+	@numA = ();
+	$codigosunidos = "";
 	$regex = "^";#Va generando la expresion regular segun los filtros
 	
 	print "Desea filtrar centrales? (S/N): ";	
@@ -240,7 +385,6 @@ if(exists $opcionHash{"-R"}){
 
 	$regex .= ";.*\$";  # "^centrales;agentes;umbrales;tipo;.*;[minimo-maximo];numeroA;.*$;"
 	
-	print $regex;
 
 	foreach $arch (@nombreArchSinDup){
 		open(ARCH, $arch);
@@ -253,16 +397,21 @@ if(exists $opcionHash{"-R"}){
 		}
 	
 	}
-	print @a;
+	if(exists $opcionHash{"-W"}){
+		$subllamada = "subllamada.".$subllamadaNro;
+		&grabarEnArch($repodir."/".$subllamada,@a);
+		$cant = $#a++;
+		print "Se guardo el resultado en \"$subllamada\" y se obtuvieron $cant registros\n";
+		$subllamadaNro++;
+	}
+	if(!exists $opcionHash{"-W"}){
+		print "Se obtuvieron $#a registros en la consulta\n";
+		&imprimirArreglo(@a);
+	} 
 	
 }
 
-if(exists $opcionHash{"-W"}){
-	$subllamada = "subllamada.000";
-	open ($archSub, '>', $subllamada);
-	print $archSub @a;
-	
-}
+#OOPCION ESTADISTICA
 
 if(exists $opcionHash{"-S"}){
 
@@ -291,7 +440,7 @@ if(exists $opcionHash{"-S"}){
 	}
 	
 	@nombreArchivosSD = &borrarDuplicados(@nombreArchivos);
-	
+
 	%Hcentrales = ();
 	%Hoficinas = ();
 	%Hagentes = ();
@@ -336,40 +485,44 @@ if(exists $opcionHash{"-S"}){
 	print "7-Mostrar ranking de umbrales por cantidad.\n8-Mostrar ranking de destinos de llamadas\n9-Finalizar\n\nIngrese opcion: ";
 		$opcion = <STDIN>;
 		chomp($opcion);
+		@arregloAImprimir = 0;
 		if($opcion<1 || $opcion >9){
 			print "Ingreso incorrecto, ingrese una de las opciones del menu\n";
 		}
 		if($opcion == 1){
 			print "Ranking de oficinas por cantidad:\n";
-			@arregloAImprimir = &generarRanking (%Hoficinas);
+			@arreglo = &generarRanking (%Hoficinas);
+			@arregloAImprimir = &rankingSinArchivo(@arreglo);
 		}
 		if($opcion == 2){
 			print "Ranking de oficinas por tiempo de llamadas:\n";
-			&generarRanking (%HofiTiempo);
+			@arreglo = &generarRanking (%HofiTiempo);
+			@arregloAImprimir = &rankingSinArchivo(@arreglo);
 		}
 		if($opcion == 3){
 			print "Ranking de centrales por cantidad:\n";
 			@arreglo = &generarRanking(%Hcentrales);
-			&rankingCentralesArchivo(@arreglo);
+			@arregloAImprimir = &rankingCentralesArchivo(@arreglo);
 		}
 		if($opcion == 4){
 			print "Ranking de centrales por tiempo de llamada:\n";
 			@arreglo = &generarRanking(%HcentrTiempo);	
-			&rankingCentralesArchivo(@arreglo);
+			@arregloAImprimir = &rankingCentralesArchivo(@arreglo);
 		}
 		if($opcion == 5){
 			print "Ranking de agentes por cantidad:\n";
 			@arreglo = &generarRanking(%Hagentes);
-			&rankingAgentesArchivo(@arreglo);
+			@arregloAImprimir = &rankingAgentesArchivo(@arreglo);
 		}
 		if($opcion == 6){
 			print "Ranking de agentes por tiempo de llamadas:\n";
 			@arreglo = &generarRanking(%HagentTiempo);
-			&rankingAgentesArchivo(@arreglo);
+			@arregloAImprimir = &rankingAgentesArchivo(@arreglo);
 		}
 		if($opcion == 7){
 			print "Ranking de umbrales por cantidad:\n";
-			&genararRankingUmbrales(%Humbrales);
+			@arreglo = &generarRanking (%Humbrales);
+			@arregloAImprimir = &rankingSinArchivo(@arreglo);
 		}
 		if($opcion == 8){
 			print "Ranking de destinos por cantidad:FALTA\n";
@@ -378,86 +531,30 @@ if(exists $opcionHash{"-S"}){
 		if($opcion == 9){
 			print "Gracias, vuelva prontos\n";
 		}
+		if(exists $opcionHash{"-W"}&& $opcion != 9){
+			$nombreArch = &validarNombreArch;
+			&grabarEnArch($repodir."/".$nombreArch,@arregloAImprimir);
+			print "Se almaceno el resultado en el archivo \"$nombreArch\"\n";
+		}
+		if(!exists $opcionHash{"-W"}&& $opcion != 9){
+			&imprimirArreglo(@arregloAImprimir);
+		}
 	}until($opcion == 9);
-	
+		
 }
 
+#OPCION AYUDA
+
 if(exists $opcionHash{"-H"}){
-	print "ayuda \n";
+	open(HELP, "AFRALIST_help.txt") or die print "NO SE ENCONTRO EL ARCHIVO DE AYUDA\n";
+	@help = <HELP>;
+	close (HELP);
+	&imprimirArreglo(@help);
 }
 
 print "Finalizo su consulta\n";
+
 }until(exists $opcionHash{"-E"});
 
-sub validarNombreArch{
-	my $nombre = <STDIN>;
-	my $val = 0;
-}
 
-sub imprimirArreglo{
-	foreach $a (@_){
-		print $a;
-	}
-}
-
-sub generarRanking{
-	my %hash = @_;
-	my @arreglo;
-	
-	foreach $h (sort{$hash{$b} <=> $hash{$a} } keys %hash){
-		push(@arreglo,$h);
-	}
-@arreglo;
-}
-
-sub genararRankingUmbrales{
-	my %hash = @_;
-	my @arreglo;
-	foreach $h (sort{$hash{$b} <=> $hash{$a} } keys %hash){
-		if($hash{$h}>1){		
-			push(@arreglo,"$h\n");
-		}
-	}
-@arreglo;
-}
-
-
-sub rankingAgentesArchivo{
-	my $archivo = "agentes.csv";	
-	my @arreglo = @_;
-	my @completo;
-	if(open (ARCH,$archivo)){
-		my @archReg = <ARCH>;
-		foreach $a (@arreglo){
-			@regGrep = grep {$_ =~ /^.*;.*;$a;.*;.*$/} @archReg;
-			$regGrep[0] =~ s/;/\t/g;
-			if($regGrep[0] =~ m/.*\t(.*\t.*\t.*)$/){
-				push (@completo, "$1\n");
-			}	
-		}
-	}
-	else{
-		print "No se encontro el archivo de agentes";
-	}
-
-@completo;
-}
-
-sub rankingCentralesArchivo{
-	my $archivo = "centrales.csv";	
-	my @arreglo = @_;
-	my @completo;
-	if(open (ARCH,$archivo)){
-		my @archReg = <ARCH>;
-		foreach $a (@arreglo){
-			@regGrep = grep {$_ =~ /^$a;.*$/} @archReg;
-			$regGrep[0] =~ s/;/\t/g;
-			push (@completo, "$regGrep[0]");		
-		}
-	}
-	else{
-		print "No se encontro el archivo de centrales";
-	}
-	
-}
 
