@@ -53,7 +53,7 @@ verificarInstalacionCompleta(){
 	NOVEDIR=$(grep '^NOVEDIR' $AFRACONFIG | cut -d '=' -f 2)
 	LOGDIR=$(grep '^LOGDIR' $AFRACONFIG | cut -d '=' -f 2)
 	LOGSIZE=$(grep '^LOGSIZE' $AFRACONFIG | cut -d '=' -f 2)
-	LOGEXT=	$(grep '^LOGEXT' $AFRACONFIG | cut -d '=' -f 2)
+	LOGEXT=$(grep '^LOGEXT' $AFRACONFIG | cut -d '=' -f 2)
 
 	#revisar que este todo y devolver el estado de la instalacion + archivos a instalar si es que faltan
 	verificarExistenciaDeDirectoriosYArchivos
@@ -62,7 +62,7 @@ verificarInstalacionCompleta(){
 
 function verificarExistenciaDeDirectoriosYArchivos() {
 	dir=("$CONFDIR" "$BINDIR" "$MAEDIR" "$ACEPDIR" "$RECHDIR" "$RECHDIR/llamadas" "$PROCDIR" "$PROCDIR/proc" "$REPODIR" "$NOVEDIR" "$LOGDIR")
-	bin=("README.md" "mover.sh" "gralog.sh" "funcionesComunes.sh" "detener.sh" "arrancar.sh" "afraumbr.sh" "afrareci.sh" "afralist.pl" "afrainic.sh")
+	bin=("mover.sh" "gralog.sh" "funcionesComunes.sh" "detener.sh" "arrancar.sh" "afraumbr.sh" "afrareci.sh" "afralist.pl" "afrainic.sh")
 	mae=("umbral.tab" "tllama.tab" "CdP.mae" "CdC.mae" "CdA.mae" "agentes.mae")
 
 

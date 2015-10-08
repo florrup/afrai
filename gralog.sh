@@ -18,7 +18,7 @@ LOGINST=`pwd`/afrainst.log
 
 TRUNCO=50				# lineas que me guardo al truncar
 
-tamaniomaximo=$((${LOGSIZE}*1024))	# tamanio maximo en bytes
+bytes=1024
 
 CMDO2=`echo $CMDO | sed "s/^.*\/\([a-z]*\).sh$/\1/"`
 FILE="${LOGDIR}"/"${CMDO2}"."${LOGEXT}"
@@ -35,6 +35,7 @@ if [ $CMDO = "./afrainst.sh" ]; then
 else
 	# Si el tamanio del archivo de log es mayor que $LOGSIZE
 	# Me quedo con las ultimas $TRUNCO lineas
+	tamaniomaximo=$((${LOGSIZE} * ${bytes}))	# tamanio maximo en bytes
 	if [ -f $FILE ];then      
 		tamanioactual=$(wc -c <"$FILE")		
 	fi
