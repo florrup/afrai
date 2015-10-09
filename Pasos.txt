@@ -1,7 +1,5 @@
 Para probar:
 
-*Verificar si el paquete ya fue instalado(Paso 2 y 3)
-
 *Probar truncamiento de gralog.log 
 
 

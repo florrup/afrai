@@ -1,10 +1,6 @@
 # 75.08 Sistemas Operativos 2° cuatrimestre 2015
 
-##HIPOTESIS
-
-
 ## arrancar.sh
-* Falta logear.
 * Forma de llamarlo desde otro script: $BINDIR/arrancar.sh <comando a arrancar> <comando que lo llama>
  
 ## detener.sh
