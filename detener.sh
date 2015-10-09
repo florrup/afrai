@@ -9,7 +9,6 @@ GRALOG="$BINDIR/gralog.sh"
 comando=$1
 
 function verificarComandoInvocado(){
-	echo "verificando comando de entrada"
 	if [ ! -f $BINDIR/$comando.sh ]; then
     		local mensajeError="El comando ingresado es Incorrecto"
 		imprimirResultado "$mensajeError" "ERR"
@@ -17,7 +16,6 @@ function verificarComandoInvocado(){
 }
 
 function verificarAmbiente(){
-	echo "Verifico el ambiente"
 	if [ $comando != "afrainic" ];then
 		ambienteInicializado
 		if [ $? == 1 ];then
@@ -28,10 +26,8 @@ function verificarAmbiente(){
 }
 
 function verificarProcesoCorriendo(){
-	echo "verifico si el proceso ya esta corriendo"
-	local procesoCorriendo=`ps aux | grep "/bin/bash $BINDIR/$comando.sh$" | sed "s/^.*$comando.*$/$comando/" | head -n 1`
-	echo " $procesoCorriendo"
-	if [ -z $procesoCorriendo ];then
+	PID=$(getPid $comando)
+	if [ -z $PID ];then
 		local mensaje="$comandoAInvocar no esta corriendo"
 		imprimirResultado "$mensaje" "WAR"
 	fi
@@ -57,18 +53,18 @@ function detener(){
 	    
 	    if [ $? -ne 0 ];
 	    then
-		echo "error al detener"		
+		echo "Error al detener"		
 		#log "ERR" "Error al detener el demonio con pid $PID"    
 	    fi
 
 	    PID=$(getPid $1)
 
 	    if [ "$PID" != "" ]; then
-		echo "no se detuvo"
+		echo "No se detuvo"
 		#log "ERR" "No se pudo detener el demonio"    
 		exit 1
 	    fi
-	    echo "se detuvo"
+	    echo "Se detuvo Afrareci"
 	    #log "INFO" "Se detuvo el demonio"
 	    exit 0
 	fi

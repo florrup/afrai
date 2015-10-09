@@ -1,6 +1,7 @@
 #!/bin/bash
 # Prepara el entorno de ejecución
 
+ARRANCAR="arrancar.sh"
 GRALOG="gralog.sh"   
 afrainic="$BINDIR/afrainic.sh"
 CNF=~/grupo07/CONF/AFRAINST.conf
@@ -206,8 +207,7 @@ function deseaArrancar() {
         echo "Modo de uso de comando ARRANCAR para iniciar AFRARECI: arrancar.sh afrareci" 
       ;;
     "si")
-	echo "Se ha llamado a afrareci"
-	arrancar.sh afrareci
+	$ARRANCAR afrareci
       ;;
     *)
       echo "La respuesta debe ser \"si\" o \"no\""

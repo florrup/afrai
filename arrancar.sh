@@ -10,11 +10,9 @@ source funcionesComunes.sh
 GRALOG="gralog.sh"
 comandoAInvocar=$1
 comandoInvocador=$2
-PID=$(getPid $comandoAInvocar)
 
 
 function verificarComandoInvocado(){
-	echo "verificando comando de entrada correcto.."
 	if [ ! -f $BINDIR/$comandoAInvocar.sh ]; then
     		local mensajeError="El comando ingresado es Incorrecto"
 		imprimirResultado "$mensajeError" "ERR"
@@ -22,7 +20,6 @@ function verificarComandoInvocado(){
 }
 
 function verificarAmbiente(){
-	echo "Verificando si el ambiente esta inicializado.."
 	if [ $comandoAInvocar != "afrainic" ];then
 		ambienteInicializado
 		if [ $? == 1 ];then
@@ -33,7 +30,6 @@ function verificarAmbiente(){
 }
 
 function verificarProcesoCorriendo(){
-	echo "Verificando si el proceso ya se encuentra corriendo.."
 	if [ ! -z "$PID" ];then
 		local mensaje="$comandoAInvocar ya esta corriendo con PID: $PID"
 		imprimirResultado "$mensaje" "WAR"
@@ -70,6 +66,37 @@ function grabaEnLog() {
 	fi
 }
 
+function arrancar(){
+
+	verificarAmbiente
+	verificarComandoInvocado
+	grabaEnLog
+	
+	PID=$(getPid $comandoAInvocar)
+	verificarProcesoCorriendo
+
+	if [ "${comandoAInvocar}" == "afrareci" ];then
+		nohup $BINDIR/$comandoAInvocar.sh > /dev/null 2>&1 &
+	else
+		$BINDIR/$comandoAInvocar.sh &
+	fi
+
+	PID=$(getPid $comandoAInvocar)
+	if [ ! -z $PID ];then
+		mensaje="$comandoAInvocar corriendo bajo el no.: $PID. Para detenerlo ejecute detener.sh $comandoAInvocar"
+		tipo="INFO"
+	else
+		mensaje="Error al arrancar el comando $comandoAInvocar"
+		tipo="ERR"
+	fi
+
+	imprimirResultado "$mensaje" "$tipo"
+	if [ $tipo = "ERR" ];then
+		return 1
+	else
+		return 0
+	fi
+}
 ####################   POR CONSOLA SOLO ARRANCA EL DEMONIO  #########################
 
 if [ $# -lt 1 ] ;then
@@ -77,25 +104,4 @@ if [ $# -lt 1 ] ;then
 	exit 1
 fi
 
-verificarAmbiente
-verificarComandoInvocado
-grabaEnLog
-verificarProcesoCorriendo
-
-if [ "${comandoAInvocar}" == "afrareci" ];then
-	nohup $BINDIR/$comandoAInvocar.sh > /dev/null 2>&1 &
-else
-	$BINDIR/$comandoAInvocar.sh &
-fi
-
-PID=$(getPid $comandoAInvocar)
-if [ ! -z $PID ];then
-	mensaje="$comandoAInvocar corriendo bajo el no.: $PID. Para detenerlo ejecute detener.sh $comandoAInvocar"
-	tipo="INFO"
-else
-	mensaje="Error al arrancar el comando $comandoAInvocar"
-	tipo="ERR"
-fi
-
-imprimirResultado "$mensaje" "$tipo"
-
+arrancar
