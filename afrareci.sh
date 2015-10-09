@@ -5,19 +5,19 @@ ciclo=0
 
 # Graba en el log.
 function grabarEnLog (){
-	echo "*** LOG *** : AFRARECI ${1} ${2}"
-	$BINDIR/gralog.sh "AFRARECI" "${1}" "${2}"
+	echo "*** LOG *** : ${0} ${1} ${2}"
+	gralog.sh "${0}" "${1}" "${2}"
 }
 
 # Mueve el archivo pasado por parametro a la direccion parasada por paramtro
 function moverA (){
 	echo "Moviendo ${1} a ${2}..."
-	$BINDIR/mover.sh $1 $2
+	mover.sh $1 $2
 }
 
 # Arranca el proceso pasado por parametro
-function arrancarProceso (){
-	$BINDIR/arrancar.sh $1
+function arrancarProcesoAfraumbr (){
+	arrancar.sh afraumbr afrareci
 }
 
 # Verifica si existen archivos en el directorio pasado por parametro.
@@ -64,7 +64,7 @@ function tieneCodigoCorrecto (){
 	
 	local centrales=${MAEDIR}/CdC.mae
 	codigo=`echo $1 | cut -d'_' -f 1`
-	#TODO: EN ESTE GREP SACAMOS EL LS PORQUE ERA INNECESARIO
+	
 	cantidadEnCentrales=`grep "^${codigo};" ${centrales} | wc -l`
 	if [ $cantidadEnCentrales -gt 0 ]
 	then
@@ -154,11 +154,9 @@ function tieneFechaCorrecta (){
 }
 
 # Valida si el archivo pasado por parametro posee nombre correcto
-# 0: Archivo valido
-# 1: Archivo con fecha invalida
-# 2: Archivo con codigo invalido
+# El nombre consta de codigo y fecha
 function tieneNombreCorrecto (){
-	#TODO: MODIFIQUE IF AHORA ANDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	
 	if tieneCodigoCorrecto $1;
 	then
 		if tieneFechaCorrecta $1;
@@ -176,6 +174,7 @@ function tieneNombreCorrecto (){
 	
 }
 
+# Da los permisos para mover los archivos que se encuentran en NOVEDIR
 function darPermisoParaMover (){
 	archivoRutaCompleta=$NOVEDIR/$1
 	chmod +x $archivoRutaCompleta
@@ -207,7 +206,7 @@ function procesarArchivosNovedir (){
 					archivoRutaCompleta=$NOVEDIR/$archivo
                     moverA $archivoRutaCompleta $ACEPDIR
 					archivoCorrecto=true
-					grabarEnLog "ACEPTADO" "${archivoRutaCompleta}"
+					grabarEnLog "ACEPTADO - ${archivoRutaCompleta}" "INFO"
 				fi
 			else
 				motivoRechazo="Formato incorrecto"
@@ -223,7 +222,7 @@ function procesarArchivosNovedir (){
 		then
 			archivoRutaCompleta=$NOVEDIR/$archivo
 			moverA $archivoRutaCompleta $RECHDIR
-			grabarEnLog "RECHAZADO" "${archivo}-${motivoRechazo}" 
+			grabarEnLog "RECHAZADO - ${motivoRechazo} - ${archivoRutaCompleta}" "INFO"
 		fi
 		echo ""
 
@@ -233,11 +232,10 @@ function procesarArchivosNovedir (){
 
 ############################  AFRARECI  ################################
 while [[ true ]]
-#while [ $ciclo -eq 0 ]
 do	
 	#Paso 1: Grabar en el log el numero de ciclo.
 	let ciclo++
-	grabarEnLog " " "ciclo nro. $ciclo"
+	grabarEnLog "AFRARECI ciclo nro. $ciclo" "INFO"
 
 	#Paso 2: Chequear si hay archivos en el directorio NOVEDIR.	
 	if existenArchivos $NOVEDIR;
@@ -252,22 +250,7 @@ do
 	#Paso 8: Novedades Pendientes.
 	if existenArchivos $ACEPDIR;
 	then
-		afraumbrCorriendo=`ps -A | grep "afraumbr.sh"`
-		idAfraumbr=`pgrep -o "afraumbr.sh"`
-		if [[ -z $afraumbrCorriendo ]]
-		then
-			arrancarProceso afraumbr
-			idAfraumbr=`pgrep -o "afraumbr.sh"`
-			if [ ! -z idAfraumbr ]
-			then
-				grabarEnLog "AFRAUMBR" "AFRAUMBR corriendo bajo el no.: ${idAfraumbr}"
-			else
-				grabarEnLog "HUBO UN ERROR EN INVOCAR"
-			fi
-		else
-			# AFRAUMBR estaba corriendo
-			grabarEnLog " " "Invocación de AFRAUMBR pospuesta para el siguiente ciclo"
-		fi
+		arrancarProcesoAfraumbr
 	fi
 	echo ""
 	sleep $TIEMPO_DORMIDO
