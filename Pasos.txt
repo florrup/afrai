@@ -1,22 +1,7 @@
 Para probar:
 
 *Probar truncamiento de gralog.log 
-
-
-Error:
-
-AFRAINIC.SH
-*Cuando se corre con ". ./afrainic.sh" dos veces, se cierra la consola.
-
-*No hay que loggearse (Paso 1)
-
-*No detecta faltantes de instalacion (Paso 2) tampoco hay que loggear.
-
-AFRARECI.SH
-*Ver validaciones de nombre de archivo
-
-*Separar formato de fecha invalida con central inexistente
-
+*Probar afralist
 
 Camino Feliz (Ver al principio del enunciado)
 
@@ -24,8 +9,8 @@ AFRAINST OK
 
 AFRAINIC OK
 
-AFRARECI Falta ver "Valida central" y "Valida fecha archivo" 
+AFRARECI OK
 
-AFRAUMBR Ver validaciones
+AFRAUMBR OK
 
 AFRALIST Falta probar
