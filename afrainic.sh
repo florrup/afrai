@@ -17,8 +17,8 @@ function existeArch() {
   local FILE=$1
   local COMPLETA=0
   if [ ! -f "$FILE" ]; then
-    MOUT="El archivo \"${FILE}\" no existe"
-    msjLog "$MOUT" "ERR"
+    #MOUT="El archivo \"${FILE}\" no existe"
+    #msjLog "$MOUT" "ERR"
     COMPLETA=1
   fi
   return "$COMPLETA"
@@ -28,8 +28,8 @@ function existeScript() {
   local SCR=$1
   local COMPLETA=0
   if [ ! -f "$SCR" ]; then
-    MOUT="El script \"${SCR}\" no existe"
-    msjLog "$MOUT" "ERR"
+    #MOUT="El script \"${SCR}\" no existe"
+    #msjLog "$MOUT" "ERR"
     COMPLETA=1
   fi
   return "$COMPLETA"
@@ -223,7 +223,7 @@ function deseaArrancar() {
 verificarAmbienteInicializado
 inicializadoRtado=$?
 if [ "$inicializadoRtado" == 1 ]; then
-  exit 1
+  return 1
 fi
 
 # Seteo todas las variables de ambiente
@@ -252,14 +252,14 @@ instalacionRtado=$?
 if [ "$instalacionRtado" == 1 ]; then
   echo "La instalación no está completa, existen los siguientes archivos faltantes $(printf '%s\n' "${faltantes[@]}")" 
   echo "Se deberá volver a realizar la instalación"
-  exit 1
+  return 1
 fi
-
+echo "adsda"
 # 3. Verifica permisos
 verificarPermisos
 permisosRtado=$?
 if [ "$permisosRtado" == 1 ]; then
-  exit 1
+  return 1
 fi
 
 # 4. Inicializa el ambiente
