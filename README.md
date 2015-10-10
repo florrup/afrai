@@ -23,8 +23,7 @@
 * HIPOTESIS: Si se instala afrai y luego de quiere reinstalar se debe descomprimir los archivos nuevamente
 
 ## afrareci.sh
-* Perfeccionar LOG
-* Llamar al AFRAUMBR en PARALELO: Probar si al correrlo en paralelo se puede ingresar cosas por teclado
+* Tiempo entre ciclos: 30 segundos.
 
 ## verificUMBR.sh
 * HIPOTESIS: Si se encuentras mas de un umbral se toma el primer registro 
