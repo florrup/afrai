@@ -11,8 +11,8 @@ GRUPO=~/grupo07;
 CONFDIR=CONF;
 AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
-MOVER="mover.sh"
-GRALOG="gralog.sh"
+MOVER="$GRUPO/afrai/BIN/mover.sh"
+GRALOG="$GRUPO/afrai/BIN/gralog.sh"
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -146,14 +146,14 @@ instalarFaltantes () {
 	
 	for I2 in ${faltantesBin[*]}
 	do
-		$posicionActual/$MOVER $posicionActual/BIN/$I2 $BINDIR  
+		cp $posicionActual/BIN/$I2 $BINDIR  
 	done
 
 	posicionActual=`pwd`
 
 	for I3 in ${faltantesMae[*]}
 	do
-		$posicionActual/$MOVER $posicionActual/MAE/$I3 $MAEDIR  
+		cp $posicionActual/MAE/$I3 $MAEDIR  
 	done
 }
 
@@ -192,13 +192,13 @@ verificarPerl(){
 	local version=$(echo "$datosPerl" | grep " perl [0-9]" | sed "s-.*\(perl\) \([0-9]*\).*-\2-")
 	if [ $version -ge 5 ];then
 		echo "Perl version: $datosPerl"
-		$posicionActual/$GRALOG "$0" "$datosPerl" "INFO"
+		$GRALOG "$0" "$datosPerl" "INFO"
 	else
 		local MENSAJE="Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior. Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado"
 		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior"
 		echo "Efectúe su instalación e inténtelo nuevamente"
 		echo "Proceso de Instalación Cancelado"
-		$posicionActual/$GRALOG "$0" "$MENSAJE" "ERR"
+		$GRALOG "$0" "$MENSAJE" "ERR"
 		fin;
 	fi
 }
@@ -220,7 +220,7 @@ definicionesInstalacion() {
 		echo "Acepta? (Si - No)"	
 		read respuesta
 		local MENSAJE="Proceso de Instalacion de \"AFRA-I\" Tema I Copyright  Grupo 07 - Segundo Cuatrimestre 2015 A T E N C I O N: Al instalar UD. expresa aceptar los terminos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\" incluido en este paquete. Acepta? (Si - No): ${respuesta^^}"
-		$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+		$GRALOG "$0" "$MENSAJE" "INFO"
 		if [ ${respuesta^^} = "NO" ];then
 			echo "Proceso Cancelado";
 			fin;
@@ -292,7 +292,7 @@ definirBinDir () {
 		read BINDIR
 		existeDir $BINDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $BINDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $BINDIR" "INFO"
 	done
 }
 
@@ -306,7 +306,7 @@ definirMaeDir () {
 		read MAEDIR
 		existeDir $MAEDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $MAEDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $MAEDIR" "INFO"
 	done
 }
 
@@ -320,7 +320,7 @@ definirNoveDir () {
 		read NOVEDIR
 		existeDir $NOVEDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $NOVEDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $NOVEDIR" "INFO"
 	done
 }
 
@@ -333,7 +333,7 @@ definirNoveDir () {
                  read DATASIZE
                  DATASIZE=`echo $DATASIZE | grep "^[0-9]*$"`
                  if [ ! -z $DATASIZE ];then
-			 $posicionActual/$GRALOG "$0" "$MENSAJE $DATASIZE" "INFO"
+			 $GRALOG "$0" "$MENSAJE $DATASIZE" "INFO"
                          verificarEspacioDisco
                          estado=$?;
                  else
@@ -344,23 +344,15 @@ definirNoveDir () {
 
 #PASO10
 verificarEspacioDisco(){
-	local espacioDisco=$(df -h | grep "/$" | sed "s-^/dev/sda. *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\) *\([0-9]*[,]*[0-9]*[KMG]\).*-\3-");
-	tamanio=$(echo "$espacioDisco" | sed "s-^\([0-9]*\).*-\1-")
-	medida=$(echo "$espacioDisco" | sed "s-^\([0-9]*\)\([KMG]\).*-\2-")	
-	if [ $medida == "K" ];then
-		tamanio=`echo "scale=10;$tamanio/1024" | bc -l`
-	fi	
-	if [ $medida == "G" ];then 
-		let tamanio=tamanio*1024	
-	fi
-
+	local espacioDisco=`df $posicionActual | tail -n 1 | tr -s ' ' | cut -d' ' -f 4`
+	let tamanio=espacioDisco/1024	
 	if [ $tamanio -lt $DATASIZE ];then
 		local MENSAJE="Insuficiente espacio en disco. Espacio disponible: $tamanio Mb. Espacio requerido $DATASIZE Mb. Inténtelo nuevamente."
 		echo "Insuficiente espacio en disco."
 		echo "Espacio disponible: $tamanio Mb."
 		echo "Espacio requerido $DATASIZE Mb"
 		echo "Inténtelo nuevamente."
-		$posicionActual/$GRALOG "$0" "$MENSAJE" "ERR"
+		$GRALOG "$0" "$MENSAJE" "ERR"
 		return 1;
 	else
 		return 0;
@@ -379,7 +371,7 @@ definirAcepDir () {
 		read ACEPDIR
 		existeDir $ACEPDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $ACEPDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $ACEPDIR" "INFO"
 	done
 }
 
@@ -393,7 +385,7 @@ definirProcDir () {
 		read PROCDIR
 		existeDir $PROCDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $PROCDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $PROCDIR" "INFO"
 	done
 }
 
@@ -407,7 +399,7 @@ definirRepoDir () {
 		read REPODIR
 		existeDir $REPODIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $REPODIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $REPODIR" "INFO"
 	done
 }
 
@@ -421,7 +413,7 @@ definirLogDir () {
 		read LOGDIR
 		existeDir $LOGDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $LOGDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $LOGDIR" "INFO"
 	done
 }
 
@@ -433,7 +425,7 @@ definirLogExt () {
 		echo "$MENSAJE"
 		read LOGEXT
 	        if [ ${#LOGEXT} -le 5 ];then
-			 $posicionActual/$GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
+			 $GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
 			 estado=0
 	         else
 	                 echo "Debe ingresar una extensión con un máximo de 5 caracteres"
@@ -452,7 +444,7 @@ definirLogSize () {
                 if [ -z $LOGSIZE ];then
                         echo "No pose caracteres numericos, intente nuevamente"
 		else	
-			$posicionActual/$GRALOG "$0" "$MENSAJE $LOGSIZE" "INFO"
+			$GRALOG "$0" "$MENSAJE $LOGSIZE" "INFO"
 			estado=0; 
 		fi
          done
@@ -468,7 +460,7 @@ definirRechDir () {
 		read RECHDIR
 		existeDir $RECHDIR
 		estado=$?
-		$posicionActual/$GRALOG "$0" "$MENSAJE $RECHDIR" "INFO"
+		$GRALOG "$0" "$MENSAJE $RECHDIR" "INFO"
 	done
 }
 
@@ -476,49 +468,49 @@ definirRechDir () {
 mostrarDefiniciones () {
 	local MENSAJE="Directorio de Ejecutables: ${BINDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Maestros y Tablas: ${MAEDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Espacio minimo libre para arribos: ${DATASIZE} Mb"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archivos de Log: ${LOGDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Extension para los archivos de log: ${LOGEXT}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Tamanio maximo para los archivos de log: ${LOGSIZE} Kb"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archvios Rechazados: ${RECHDIR}"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Estado de la instalacion: LISTA"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Desea continuar con la instalacion? (Si - No):"
 	echo "$MENSAJE"
 	read respuesta
-	$posicionActual/$GRALOG "$0" "$MENSAJE $respuesta" "INFO"
+	$GRALOG "$0" "$MENSAJE $respuesta" "INFO"
 	if [ "${respuesta^^}" = "SI" ];then
 		MENSAJE="Iniciando Instalacion. Esta Ud. seguro? (Si - No):"
 		echo "$MENSAJE"
 		read respuesta2
-		$posicionActual/$GRALOG "$0" "$MENSAJE $respuesta2" "INFO"
+		$GRALOG "$0" "$MENSAJE $respuesta2" "INFO"
 		if [ "${respuesta2^^}" = "SI" ];then
 			instalacion;
 		fi
@@ -545,13 +537,13 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 	done
 	local MENSAJE="Actualizando la configuracion del sistema"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 	escribirConfig;
 	moverArchivos;
 	#Borrar archivos temporarios si es q los hay
 	MENSAJE="Instalacion CONCLUIDA"
 	echo "$MENSAJE"
-	$posicionActual/$GRALOG "$0" "$MENSAJE" "INFO"
+	$GRALOG "$0" "$MENSAJE" "INFO"
 }
 
 moverArchivos (){
@@ -567,7 +559,7 @@ moverEjecutablesYFunciones () {
 	echo "Instalando Programas y Funciones"
 	for archivoejec in ${ejecutables[*]}
 	do
-		$posicionActual/$MOVER $posicionActual/BIN/$archivoejec $GRUPO/$BINDIR 
+		cp $posicionActual/BIN/$archivoejec $GRUPO/$BINDIR 
 	done
 }
 
@@ -580,7 +572,7 @@ moverMaestrosYTablas () {
 	for archivomae in ${maestros[*]}
 	do
     		echo "moviendo $archivomae"
-		$posicionActual/$MOVER $posicionActual/MAE/$archivomae $GRUPO/$MAEDIR 
+		cp $posicionActual/MAE/$archivomae $GRUPO/$MAEDIR 
 	done
 }
 
@@ -619,7 +611,11 @@ escribirConfig () {
 
 #PASO21
 fin(){
-	$posicionActual/$GRALOG "$0" "Fin de Instalacion" "INFO"
+	$GRALOG "$0" "Fin de Instalacion" "INFO"
+	if [ -f "$GRUPO/CONF/afrainst.log" ];then
+		rm "$GRUPO/CONF/afrainst.log"
+	fi
+	$MOVER $posicionActual/afrainst.log $GRUPO/CONF
 	exit
 }
 
