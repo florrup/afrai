@@ -217,11 +217,8 @@ checkearNumeroB() {
     DDI="true"  # es DDI cuando contiene el codigo
     if ! grep -q "^${CODPAIS};" $CDP;
     then
-      #echo "Encontrado"
-      #echo "$(grep "^${CODPAIS};" $CDP)"
-      #return 0  # fue encontrado
-   # else
-      #echo "No encontrado\n\n"
+      RECHAZO="true"
+      msj="el codigoPaisB no coincide"
       return 1 # no fue encontrado
     fi
   fi
@@ -229,12 +226,16 @@ checkearNumeroB() {
   codigoArea "${CDA}" "${CODAREA}" "${DDI}"
   rtaArea=$?
   if [ "${rtaArea}" = 1 ]; then
+    RECHAZO="true"
+    msj="el codigoAreaB no coincide"
     return 1
   fi
 
   numeroLineaB "${NUM}" "${DDI}" "${CODAREA}"
   rtaNum=$?
   if [ "${rtaNum}" = 1 ]; then
+    RECHAZO="true"
+    msj="el numeroLineaB no coincide"
     return 1
   else
     return 0
@@ -343,10 +344,6 @@ validarCamposRegistro() {
   fi
 
   checkearNumeroB "${CDP}" "${DPAIS}" "${CDA}" "${DAREA}" "${DNUM}"
-  if [ "$?" = 1 ]; then
-    RECHAZO="true"
-    msj="el codigoPaisB no coincide"
-  fi
 
   tiempo "${TIEMPO}"
   if [ "$?" = 1 ]; then
