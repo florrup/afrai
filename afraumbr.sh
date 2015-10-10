@@ -33,12 +33,10 @@ function msjLog() {
 function inicio() {
   MSJ="Inicio de AFRAUMBR"
   msjLog "${MSJ}" "INFO"
+  cantidadRechazados=0;
 
   # Calculo la cantidad de archivos en ACEPDIR
   cantArchivos=$(ls $ACEPDIR | wc -l)
-
-  MSJ="Cantidad de archivos a procesar: $cantArchivos"
-  msjLog "${MSJ}" "INFO"
     
   # Parseo por fechas y lista ordenando cronologicamente
   # Desde el antiguo al mas reciente 
@@ -59,6 +57,13 @@ function inicio() {
       fi
     fi
   done  
+
+  MSJ="Cantidad de archivos procesados: $cantArchivos"
+  msjLog "${MSJ}" "INFO"
+  MSJ="Cantidad de archivos rechazados: $cantidadRechazados"
+  msjLog "${MSJ}" "INFO"
+
+
   MSJ="Fin de AFRAUMBR"
   msjLog "${MSJ}" "INFO"
 }
@@ -76,6 +81,7 @@ function procesarArchivo() {
     MSJ="Se rechaza el archivo por estar DUPLICADO"
     msjLog "$MSJ" "ERR"
     $MOVER "$ACEPDIR/$archivo" "$RECHDIR" "${0}"
+    cantidadRechazados=$((cantidadRechazados+1))
     return 1
   fi
   return 0
@@ -102,6 +108,7 @@ function validarPrimerRegistro() {
       #TODO Los archivos rechazados que van a RECHDIR deben tener el formato .rech
       msjLog "$MSJ" "ERR"
       $MOVER "$ACEPDIR/$ARCH" "$RECHDIR" "${0}"
+      cantidadRechazados=$((cantidadRechazados+1))
       return 1
   fi
   return 0
@@ -515,9 +522,15 @@ function finDeArchivo() {
 	local archivo=$1
 	echo "Procesar Archivo: $archivo 2"
   $MOVER "$ACEPDIR/$archivo" "$PROCDIR"/proc "${0}"
-  echo "Cantidad de llamadas: $cantRegistrosLeidos"
-  echo "Rechazadas: $cantidadRegistrosRechazados, Con umbral: $cantidadConUmbral, Sin umbral: $cantidadSinUmbral"
-  echo "Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $cantLlamadasNoSospechosas"
+
+  MSJ="Cantidad de llamadas: $cantRegistrosLeidos"
+  msjLog "${MSJ}" "INFO"
+
+  MSJ="Rechazadas: $cantidadRegistrosRechazados, Con umbral: $cantidadConUmbral, Sin umbral: $cantidadSinUmbral"
+  msjLog "${MSJ}" "INFO"
+
+  MSJ="Cantidad de llamadas sospechosas: $cantLlamadasSospechosas generaron llamadas sospechosas, no sospechosas: $cantLlamadasNoSospechosas"
+  msjLog "${MSJ}" "INFO"
 }
 ##########################################################################################
 
