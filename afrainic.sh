@@ -207,7 +207,7 @@ function deseaArrancar() {
         echo "Modo de uso de comando ARRANCAR para iniciar AFRARECI: arrancar.sh afrareci" 
       ;;
     "si")
-	$ARRANCAR afrareci
+	$ARRANCAR afrareci afrainic
       ;;
     *)
       echo "La respuesta debe ser \"si\" o \"no\""

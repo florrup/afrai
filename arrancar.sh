@@ -30,6 +30,7 @@ function verificarAmbiente(){
 }
 
 function verificarProcesoCorriendo(){
+	PID=$(getPid $comandoAInvocar)
 	if [ ! -z "$PID" ];then
 		local mensaje="$comandoAInvocar ya esta corriendo con PID: $PID"
 		imprimirResultado "$mensaje" "WAR"
@@ -40,19 +41,17 @@ function verificarProcesoCorriendo(){
 function imprimirResultado(){
 	#si no hay comandoInvocador es porque se corrio por consola
 	if [ ! -z $comandoInvocador ];then
-		msjLog $1 $2
+		msjLog "$1" "$2"
 	fi
 	echo "$2: $1"
-	exit
 }
 
 function msjLog() {
 	  local MENSAJE=$1
 	  local TIPO=$2
-	  echo "${MENSAJE}"
 	  # solo graba si se invoca por un comando que registre en su log
 	  if [ $COMANDOGRABA = "true" ]; then
-	    $GRALOG "$BINDIR/$comandoInvocador.sh" "$MENSAJE" "$TIPO"
+	    $GRALOG "/$comandoInvocador.sh" "$MENSAJE" "$TIPO"
 	  fi
 }
 
@@ -62,7 +61,7 @@ function grabaEnLog() {
 	if [ "$comandoInvocador" == "afrainst" ] || [ "$comandoInvocador" == "afrainic" ] || [ "$comandoInvocador" == "afrareci" ] || [ "$comandoInvocador" == "afraumbr" ] ; then
 	  COMANDOGRABA="true"
 	  MENSAJE="Se ha invocado al script arrancar.sh"
-	  $GRALOG "$BINDIR/$comandoInvocador.sh" "$MENSAJE" "INFO"
+	  $GRALOG "/$comandoInvocador.sh" "$MENSAJE" "INFO"
 	fi
 }
 
@@ -71,8 +70,6 @@ function arrancar(){
 	verificarAmbiente
 	verificarComandoInvocado
 	grabaEnLog
-	
-	PID=$(getPid $comandoAInvocar)
 	verificarProcesoCorriendo
 
 	if [ "${comandoAInvocar}" == "afrareci" ];then
@@ -90,7 +87,7 @@ function arrancar(){
 		tipo="ERR"
 	fi
 
-	imprimirResultado "$mensaje" "$tipo"
+	imprimirResultado "${mensaje}" "${tipo}"
 	if [ $tipo = "ERR" ];then
 		return 1
 	else
