@@ -17,20 +17,20 @@ function msjLog() {
   local MOUT=$1
   local TIPO=$2
   echo "${MOUT}"
-  # solo graba si se invoca por un comando que registre en su log
+  # Solo graba si se invoca por un comando que registre en su log
   if [[ ( ! -z $CMD ) && ( $CMDGRABA = "true" ) ]]; then
     $GRALOG "$CMD" "$MOUT" "$TIPO"
   fi
 }
 
-#Si mover.sh es invocada por un comando que graba en un archivo de log, registrar el resultado de su uso en el log del comando
+# Si mover.sh es invocada por un comando que graba en un archivo de log, registrar el resultado de su uso en el log del comando
 if [ "$CMD" == "./afrainst.sh" ] || [ "$CMD" == "./afrainic.sh" ] || [ "$CMD" == "./afrareci.sh" ] || [ "$CMD" == "./afraumbr.sh" ] ; then
   CMDGRABA="true"
   MOUT="Se ha invocado al script mover.sh"
   $GRALOG "$CMD" "$MOUT" "INFO"
 fi
 
-#Revisa que se reciban si o si dos parametros
+# Revisa que se reciban si o si dos parametros
 if [ $# -lt 2 ]; then
   MOUT="Se deben ingresar al menos dos parametros para Mover"
   msjLog "${MOUT}" "ERR"  

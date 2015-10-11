@@ -17,8 +17,6 @@ function existeArch() {
   local FILE=$1
   local COMPLETA=0
   if [ ! -f "$FILE" ]; then
-    #MOUT="El archivo \"${FILE}\" no existe"
-    #msjLog "$MOUT" "ERR"
     COMPLETA=1
   fi
   return "$COMPLETA"
@@ -28,8 +26,6 @@ function existeScript() {
   local SCR=$1
   local COMPLETA=0
   if [ ! -f "$SCR" ]; then
-    #MOUT="El script \"${SCR}\" no existe"
-    #msjLog "$MOUT" "ERR"
     COMPLETA=1
   fi
   return "$COMPLETA"
@@ -48,7 +44,7 @@ function verificarAmbienteInicializado() {
   variables=("$GRUPO" "$CONFDIR" "$BINDIR" "$MAEDIR" "$DATASIZE" "$ACEPDIR" "$RECHDIR" "$PROCDIR" "$REPODIR" "$NOVEDIR" "$LOGDIR" "$LOGSIZE")
   for VAR in "${variables[@]}"
   do
-    if [[ ! -z "$VAR" ]]; then # si la variable no esta vacia es porque fue inicializado
+    if [[ ! -z "$VAR" ]]; then # si la variable no está vacía es porque fue inicializado
       ((i+=1))
     fi
   done
@@ -199,7 +195,7 @@ function mostrarYgrabar() {
 
 # 6. Pregunta si arranca demonio
 function deseaArrancar() {
-  echo "¿Desea efectuar la activación de AFRARECI? si - no"
+  echo "¿Desea efectuar la activación de AFRARECI? (Si - No)"
   read respuesta
   respuesta=${respuesta,,} # lo paso a lowercase
   case $respuesta in
@@ -210,7 +206,7 @@ function deseaArrancar() {
 	$ARRANCAR afrareci afrainic
       ;;
     *)
-      echo "La respuesta debe ser \"si\" o \"no\""
+      echo "La respuesta debe ser \"Si\" o \"No\""
       deseaArrancar 
       ;;
   esac
@@ -254,7 +250,7 @@ if [ "$instalacionRtado" == 1 ]; then
   echo "Se deberá volver a realizar la instalación"
   return 1
 fi
-echo "adsda"
+
 # 3. Verifica permisos
 verificarPermisos
 permisosRtado=$?

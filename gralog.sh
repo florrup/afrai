@@ -1,6 +1,6 @@
 #!/bin/bash
 # Registro oficial de logs
-# $1 comando que lo invoca, se pasa como $0
+# $1 comando que lo invoca
 # $2 mensaje
 # $3 tipo de mensaje
 
@@ -12,11 +12,11 @@ fi
 
 CMDO=$1
 MSJE=$2
-TIPO=$3        # INFO, WAR, ERR
+TIPO=$3        		# INFO, WAR, ERR
 
 LOGINST=`pwd`/afrainst.log	
 
-TRUNCO=50				# lineas que me guardo al truncar
+TRUNCO=50		# Lineas que me guardo al truncar
 
 bytes=1024
 
@@ -26,16 +26,13 @@ FILE="${LOGDIR}"/"${CMDO2}"."${LOGEXT}"
 WHEN=`date +%T-%d-%m-%Y`
 WHO=${USER}
 
-#ARCHLOG=$LOGDIR/$CMDO2.$LOGEXT # archivo temporal para probar logs
-
 # El caso de instalación es una excepción
 if [ $CMDO = "./afrainst.sh" ]; then
-	#grabo en el log de afrainst
+	# Grabo en el log de afrainst
  	echo $WHEN - $WHO - $CMDO - $TIPO - $MSJE >> $LOGINST
 else
-	# Si el tamanio del archivo de log es mayor que $LOGSIZE
-	# Me quedo con las ultimas $TRUNCO lineas
-	tamaniomaximo=$((${LOGSIZE} * ${bytes}))	# tamanio maximo en bytes
+	# Si el tamanio del archivo de log es mayor que $LOGSIZE, guardo las últimas $TRUNCO líneas
+	tamaniomaximo=$((${LOGSIZE} * ${bytes}))	# Tamanio máximo en bytes
 	if [ -f $FILE ];then      
 		tamanioactual=$(wc -c <"$FILE")		
 	fi

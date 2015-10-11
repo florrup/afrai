@@ -24,14 +24,14 @@ existeArchivo () {
 
 #PASO1
 verificarInstalacion(){
-	echo "Verificando instalacion..."
+	echo -e "\nVerificando instalación...\n"
         existeArchivo $AFRACONFIG
         local resultado=$?
         if [ $resultado == 0 ];then
-                echo "Verificando instalacion completa..."
+                echo "Verificando instalación completa..."
 		verificarInstalacionCompleta
         else
-                echo "Afrai no esta instalado en su PC"
+                echo -e "AFRA-I no está instalado en su PC\n"
                 verificarPerl;
         fi
 }
@@ -107,16 +107,16 @@ function verificarExistenciaDeDirectoriosYArchivos() {
 }
 
 mostrar(){
-	echo "Directorio de Configuracion: ${CONFDIR}"
+	echo "Directorio de Configuración: ${CONFDIR}"
 	echo "Directorio de Ejecutables: ${BINDIR}"
 	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
-	echo "Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
+	echo "Directorio de recepción de archivos de llamadas: ${NOVEDIR}"
 	echo "Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
 	echo "Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
 	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
 	echo "Directorio de Archivos de Log: ${LOGDIR}"
 	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
-	echo "Estado de la instalacion: $1"
+	echo -e "\nEstado de la instalación: $1"
 }
 
 mostrarFaltantes (){
@@ -165,13 +165,13 @@ estadoAfrai(){
 
 	if [ $estado != "COMPLETO" ];then
 		# listar componentes faltantes
-		echo "Componentes faltanes:";	
+		echo "Componentes faltantes:";	
 		mostrarFaltantes;
-		echo "Desea completar la instalacion? (Si - No)"
+		echo "¿Desea completar la instalación? (Si - No)"
 		read respuesta
 		if [ ${respuesta^^} == "SI" ] 
 		then
-			echo "instalando faltantes"			
+			echo "Instalando faltantes..."			
 			instalarFaltantes;	
 			clear;
 			estado=COMPLETO;
@@ -180,14 +180,14 @@ estadoAfrai(){
 			fin;
 		fi
 	fi	
-	echo "Proceso de Instalacion Finalizado"
+	echo "Proceso de Instalación Finalizado"
 	fin;
 }
 
 
 #PASO4
 verificarPerl(){
-	echo "Verificando instalacion de Perl..."
+	echo -e "Verificando instalación de Perl...\n"
 	local datosPerl=`perl -v`
 	local version=$(echo "$datosPerl" | grep " perl [0-9]" | sed "s-.*\(perl\) \([0-9]*\).*-\2-")
 	if [ $version -ge 5 ];then
@@ -197,7 +197,7 @@ verificarPerl(){
 		local MENSAJE="Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior. Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado"
 		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior"
 		echo "Efectúe su instalación e inténtelo nuevamente"
-		echo "Proceso de Instalación Cancelado"
+		echo -e "\nProceso de Instalación Cancelado\n"
 		$GRALOG "$0" "$MENSAJE" "ERR"
 		fin;
 	fi
@@ -212,17 +212,17 @@ definicionesInstalacion() {
 	do	
 		estado=1
 		echo "*****************************************************************"
-		echo "*              Proceso de Instalacion de "AFRA-I"               *"
+		echo "*              Proceso de Instalación de \"AFRA-I\"               *"
 		echo "*    Tema I Copyright  Grupo 07 - Segundo Cuatrimestre 2015     *"
 		echo "*****************************************************************"
-		echo "A T E N C I O N: Al instalar UD. expresa aceptar los terminos y condiciones"
+		echo "A T E N C I Ó N: Al instalar UD. expresa aceptar los términos y condiciones"
 		echo "del "ACUERDO DE LICENCIA DE SOFTWARE" incluido en este paquete."
-		echo "Acepta? (Si - No)"	
+		echo "¿Acepta? (Si - No)"	
 		read respuesta
-		local MENSAJE="Proceso de Instalacion de \"AFRA-I\" Tema I Copyright  Grupo 07 - Segundo Cuatrimestre 2015 A T E N C I O N: Al instalar UD. expresa aceptar los terminos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\" incluido en este paquete. Acepta? (Si - No): ${respuesta^^}"
+		local MENSAJE="Proceso de Instalación de \"AFRA-I\" Tema I Copyright  Grupo 07 - Segundo Cuatrimestre 2015 A T E N C I Ó N: Al instalar UD. expresa aceptar los términos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\" incluido en este paquete. ¿Acepta? (Si - No): ${respuesta^^}"
 		$GRALOG "$0" "$MENSAJE" "INFO"
 		if [ ${respuesta^^} = "NO" ];then
-			echo "Proceso Cancelado";
+			echo -e "\nProceso Cancelado\n";
 			fin;
 		elif [ ${respuesta^^} = "SI" ];then		
 			while [ ${respuesta^^} = "SI" ]
@@ -257,17 +257,17 @@ definicionesDir() {
 #PASO3.1
 verifInstalacion () {
 	local estado=$1
-	echo "Directorio de Configuracion: ${CONFDIR}"
+	echo "Directorio de Configuración: ${CONFDIR}"
 	echo "Directorio de Ejecutables: ${BINDIR}"
 	echo "Directorio de Maestros y Tablas: ${MAEDIR}"
-	echo "Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
+	echo "Directorio de recepción de archivos de llamadas: ${NOVEDIR}"
 	echo "Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
 	echo "Directorio de Archivos de llamadas Sospechosas: ${PROCDIR}"
 	echo "Directorio de Archivos de Reportes de llamadas: ${REPODIR}"
 	echo "Directorio de Archivos de Log: ${LOGDIR}"
 	echo "Directorio de Archvios Rechazados: ${RECHDIR}"
-	echo "Estado de la instalacion: ${estado}"
-	echo "Proceso de Instalacion Finalizado"
+	echo "Estado de la instalación: ${estado}"
+	echo "Proceso de Instalación Finalizado"
 }
 # **************************************************************************************************************************************
 # ********************************************Definicion de directorios, extensiones, longitudes****************************************
@@ -337,7 +337,7 @@ definirNoveDir () {
                          verificarEspacioDisco
                          estado=$?;
                  else
-                         echo "No pose caracteres numericos, intente nuevamente"
+                         echo "No posee caracteres numéricos, intente nuevamente"
                  fi
          done
 }
@@ -366,7 +366,7 @@ definirAcepDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		local MENSAJE="Defina el directorio de grabacion de los archivos de llamadas aceptadas ($GRUPO/aceptadas):"
+		local MENSAJE="Defina el directorio de grabación de los archivos de llamadas aceptadas ($GRUPO/aceptadas):"
 		echo "$MENSAJE"
 		read ACEPDIR
 		existeDir $ACEPDIR
@@ -380,7 +380,7 @@ definirProcDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		local MENSAJE="Defina el directorio de grabacion de los registros de llamadas sospechosas ($GRUPO/sospechosas):"
+		local MENSAJE="Defina el directorio de grabación de los registros de llamadas sospechosas ($GRUPO/sospechosas):"
 		echo "$MENSAJE"
 		read PROCDIR
 		existeDir $PROCDIR
@@ -394,7 +394,7 @@ definirRepoDir () {
 	local estado=1
 	while [ $estado -eq 1 ]
 	do
-		local MENSAJE="Defina el directorio de grabacion de los reportes ($GRUPO/reportes):"
+		local MENSAJE="Defina el directorio de grabación de los reportes ($GRUPO/reportes):"
 		echo "$MENSAJE"
 		read REPODIR
 		existeDir $REPODIR
@@ -421,7 +421,7 @@ definirLogDir () {
 definirLogExt () {
 	local estado=1 
 	while [ $estado == 1 ];do
-		local MENSAJE="Defina nombre para la extension de los archivos de log (log):"
+		local MENSAJE="Defina nombre para la extensión de los archivos de log (log):"
 		echo "$MENSAJE"
 		read LOGEXT
 	        if [ ${#LOGEXT} -le 5 ];then
@@ -436,13 +436,13 @@ definirLogExt () {
 #PASO16
 definirLogSize () {
          local estado=1;
-	 local MENSAJE="Defina el tamanio maximo para cada archivo de log en Kbytes (400):"
+	 local MENSAJE="Defina el tamanio máximo para cada archivo de log en Kbytes (400):"
          while [ $estado == 1 ];do
 		echo "$MENSAJE"
 		read LOGSIZE
                 LOGSIZE=`echo $LOGSIZE | grep "^[0-9]*$"`
                 if [ -z $LOGSIZE ];then
-                        echo "No pose caracteres numericos, intente nuevamente"
+                        echo "No pose caracteres numéricos, intente nuevamente"
 		else	
 			$GRALOG "$0" "$MENSAJE $LOGSIZE" "INFO"
 			estado=0; 
@@ -453,7 +453,7 @@ definirLogSize () {
 #PASO17
 definirRechDir () {
 	local estado=1
-	local MENSAJE="Defina el directorio de grabacion de Archivos rechazados ($GRUPO/rechazadas):"
+	local MENSAJE="Defina el directorio de grabación de Archivos rechazados ($GRUPO/rechazadas):"
 	while [ $estado -eq 1 ]
 	do	
 		echo "$MENSAJE"
@@ -467,15 +467,15 @@ definirRechDir () {
 #PASO18Y19
 mostrarDefiniciones () {
 	local MENSAJE="Directorio de Ejecutables: ${BINDIR}"
-	echo "$MENSAJE"
+	echo -e "\n$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Maestros y Tablas: ${MAEDIR}"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
-	MENSAJE="Directorio de recepcion de archivos de llamadas: ${NOVEDIR}"
+	MENSAJE="Directorio de recepción de archivos de llamadas: ${NOVEDIR}"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
-	MENSAJE="Espacio minimo libre para arribos: ${DATASIZE} Mb"
+	MENSAJE="Espacio mínimo libre para arribos: ${DATASIZE} Mb"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archivos de llamadas Aceptadas: ${ACEPDIR}"
@@ -493,22 +493,22 @@ mostrarDefiniciones () {
 	MENSAJE="Extension para los archivos de log: ${LOGEXT}"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
-	MENSAJE="Tamanio maximo para los archivos de log: ${LOGSIZE} Kb"
+	MENSAJE="Tamanio máximo para los archivos de log: ${LOGSIZE} Kb"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="Directorio de Archvios Rechazados: ${RECHDIR}"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
-	MENSAJE="Estado de la instalacion: LISTA"
+	MENSAJE="Estado de la instalación: LISTA"
 	echo "$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
-	MENSAJE="Desea continuar con la instalacion? (Si - No):"
-	echo "$MENSAJE"
+	MENSAJE="¿Desea continuar con la instalación? (Si - No):"
+	echo -e "\n$MENSAJE"
 	read respuesta
 	$GRALOG "$0" "$MENSAJE $respuesta" "INFO"
 	if [ "${respuesta^^}" = "SI" ];then
-		MENSAJE="Iniciando Instalacion. Esta Ud. seguro? (Si - No):"
-		echo "$MENSAJE"
+		MENSAJE="Iniciando Instalación. ¿Está Ud. seguro? (Si - No):"
+		echo -e "\n$MENSAJE"
 		read respuesta2
 		$GRALOG "$0" "$MENSAJE $respuesta2" "INFO"
 		if [ "${respuesta2^^}" = "SI" ];then
@@ -535,14 +535,14 @@ variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PRO
 		mkdir $GRUPO/$index
 
 	done
-	local MENSAJE="Actualizando la configuracion del sistema"
-	echo "$MENSAJE"
+	local MENSAJE="Actualizando la configuración del sistema"
+	echo -e "\n$MENSAJE"
 	$GRALOG "$0" "$MENSAJE" "INFO"
 	escribirConfig;
 	moverArchivos;
 	#Borrar archivos temporarios si es q los hay
-	MENSAJE="Instalacion CONCLUIDA"
-	echo "$MENSAJE"
+	MENSAJE="Instalación CONCLUÍDA"
+	echo -e "\n$MENSAJE\n"
 	$GRALOG "$0" "$MENSAJE" "INFO"
 }
 
@@ -556,7 +556,7 @@ moverArchivos (){
 moverEjecutablesYFunciones () {
 	local ejecutables=`ls "$posicionActual/BIN"`
 	
-	echo "Instalando Programas y Funciones"
+	echo -e "\nInstalando Programas y Funciones"
 	for archivoejec in ${ejecutables[*]}
 	do
 		cp $posicionActual/BIN/$archivoejec $GRUPO/$BINDIR 
@@ -567,7 +567,7 @@ moverEjecutablesYFunciones () {
 moverMaestrosYTablas () {
 	local maestros=`ls "$posicionActual/MAE"`
 
-	echo "Instalando Archivos Maestros y Tablas"
+	echo -e "\nInstalando Archivos Maestros y Tablas"
 	#Mover los archivos maestros y las tablas
 	for archivomae in ${maestros[*]}
 	do
@@ -611,7 +611,7 @@ escribirConfig () {
 
 #PASO21
 fin(){
-	$GRALOG "$0" "Fin de Instalacion" "INFO"
+	$GRALOG "$0" "Fin de Instalación" "INFO"
 	if [ -f "$GRUPO/CONF/afrainst.log" ];then
 		rm "$GRUPO/CONF/afrainst.log"
 	fi
