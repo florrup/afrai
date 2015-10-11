@@ -16,6 +16,7 @@ function verificarComandoInvocado(){
 	if [ ! -f $BINDIR/$comandoAInvocar.sh ]; then
     		local mensajeError="El comando ingresado es Incorrecto"
 		imprimirResultado "$mensajeError" "ERR"
+		exit 1
 	fi
 }
 
@@ -25,6 +26,7 @@ function verificarAmbiente(){
 		if [ $? == 1 ];then
 			local mensajeError="Ambiente no inicializado"
 			imprimirResultado "$mensajeError" "ERR"
+			exit 1
 		fi
 	fi
 }
@@ -34,6 +36,7 @@ function verificarProcesoCorriendo(){
 	if [ ! -z "$PID" ];then
 		local mensaje="$comandoAInvocar ya esta corriendo con PID: $PID"
 		imprimirResultado "$mensaje" "WAR"
+		exit 1
 	fi
 }
 
@@ -89,9 +92,9 @@ function arrancar(){
 
 	imprimirResultado "${mensaje}" "${tipo}"
 	if [ $tipo = "ERR" ];then
-		return 1
+		exit 1
 	else
-		return 0
+		exit 0
 	fi
 }
 ####################   POR CONSOLA SOLO ARRANCA EL DEMONIO  #########################
