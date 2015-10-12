@@ -23,7 +23,8 @@ $resp;
 # Lee el ingreso de una cadena y la parsea en segun espacios
 sub respToken {
 my $codString = <STDIN>;
-split(' ', uc($codString));
+my @return = split(' ', uc($codString));
+@return;
 }
 
 # Lee un string y NO lo parsea
@@ -162,7 +163,7 @@ sub abrirDirYMostrar {
 # Obtiene las opciones ingresadas
 sub obtenerOpciones{
 	my %opcionHash = ();
-	my @opciones = "";
+	my @opciones = ();
 	print "Seleccione las opciones (-h: ayuda): ";
 	@opciones = &respToken;
 	foreach $opcion (@opciones){
@@ -296,7 +297,28 @@ sub rankingCentralesArchivo{
 @completo;
 }
 
+sub separarDigitos{
+	my @arregloDigitos = @_;
+	my @numBrackets = ();
+	my @splitDig;
+	my @numArreglo;
+	my $stringNum = "";
 
+
+	foreach $digitos (@arregloDigitos){
+		@splitDig = split(undef,$digitos);
+		@numBrackets = ();
+		foreach $dig (@splitDig){
+			push (@numBrackets, "[".$dig."]");
+		}
+		$stringNum = "";
+		foreach $nBra (@numBrackets){
+			$stringNum .= $nBra; 
+		}
+		push(@numArreglo,$stringNum);
+	}
+	@numArreglo;
+}
 
 
 #
@@ -348,7 +370,7 @@ if(exists $opcionHash{"-R"}){
 	print "Desea filtrar por umbrales? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de umbrales (separados por espacios): ";
-		@umbrales = &respToken;
+		@umbralesBra = separarDigitos(@umbrales);
 	}
 
 	$codigosunidos = &unirCodigos (@umbrales);
@@ -376,20 +398,21 @@ if(exists $opcionHash{"-R"}){
 		print "Ingrese tiempo maximo: ";
 		$Tmax = <STDIN>;
 		chomp($Tmax);
-		$codigosunidos = "[".$Tmin.".".$Tmax."]";
+	#	$codigosunidos = "[".$Tmin."..".$Tmax."]";
 	}
+
 	$regex .= ";".$codigosunidos; # "^centrales;agentes;umbrales;tipo;.*;[minimo-maximo]"
 
 	print "Desea filtrar por numero A? (S/N): ";
 	if(&respSN eq 'S'){
-		print "Ingrese los numeros (separados por espacios): ";
+		print "Ingrese los numeros (sin codigos de area)(separados por espacios): ";
 		@numA = &respToken;
 	}
 
 	$codigosunidos = &unirCodigos (@numA);
-	$regex .= ";".$codigosunidos; # "^centrales;agentes;umbrales;tipo;.*;[minimo-maximo];numeroA"
+	$regex .= ".*;".$codigosunidos; # "^centrales;agentes;umbrales;tipo;.*;[minimo-maximo];.*;numeroA"
 
-	$regex .= ";.*\$";  # "^centrales;agentes;umbrales;tipo;.*;[minimo-maximo];numeroA;.*$;"
+	$regex .= ";.*;,*;.*;.*\$";  # "^centrales;agentes;umbrales;tipo;.*;[minimo-maximo];numeroA;.*$;"
 	
 
 	foreach $arch (@nombreArchSinDup){
@@ -401,20 +424,27 @@ if(exists $opcionHash{"-R"}){
 				push(@a,$regArch);
 			}
 		}
-	
 	}
+
+	@b = ();
+	foreach $a (@a){
+		@arrTiempo = split (';', $a);
+		if($arrTiempo[5]>=$Tmin && $arrTiempo[5]<=$Tmax){
+			push(@b,$a);
+		}
+	}
+	$cant = $#b + 1;
+
 	if(exists $opcionHash{"-W"}){
 		$subllamada = "subllamada.".$subllamadaNro;
-		&grabarEnArch($repodir."/".$subllamada,@a);
-		$cant = $#a++;
+		&grabarEnArch($repodir."/".$subllamada,@b);
 		print "Se guardo el resultado en \"$subllamada\" y se obtuvieron $cant registros\n";
 		$subllamadaNro++;
 	}
 	if(!exists $opcionHash{"-W"}){
-		print "Se obtuvieron $#a registros en la consulta\n";
-		&imprimirArreglo(@a);
+		print "Se obtuvieron $cant registros en la consulta\n";
+		&imprimirArreglo(@b);
 	} 
-	
 }
 
 #OOPCION ESTADISTICA
@@ -488,11 +518,11 @@ if(exists $opcionHash{"-S"}){
 	print "Menu de estadisticas:\n1-Mostrar ranking de oficinas por cantidad.\n2-Mostrar ranking de oficinas por tiempo de llamada.\n";
 	print "3-Mostrar ranking de centrales por cantidad.\n4-Mostrar ranking de centrales por tiempo de llamada.\n";
 	print "5-Mostrar ranking de agentes por cantidad.\n6-Mostrar ranking de agentes por tiempo de llamada.\n";
-	print "7-Mostrar ranking de umbrales por cantidad.\n8-Mostrar ranking de destinos de llamadas\n9-Finalizar\n\nIngrese opcion: ";
+	print "7-Mostrar ranking de umbrales por cantidad.\n8-Finalizar\n\nIngrese opcion: ";
 		$opcion = <STDIN>;
 		chomp($opcion);
 		@arregloAImprimir = 0;
-		if($opcion<1 || $opcion >9){
+		if($opcion<1 || $opcion >8){
 			print "Ingreso incorrecto, ingrese una de las opciones del menu\n";
 		}
 		if($opcion == 1){
@@ -531,31 +561,107 @@ if(exists $opcionHash{"-S"}){
 			@arregloAImprimir = generarRankingUmbrales(@arreglo);
 		}
 		if($opcion == 8){
-			print "Ranking de destinos por cantidad:FALTA\n";
-		}
-		
-		if($opcion == 9){
 			print "Gracias, vuelva prontos\n";
 		}
-		if(exists $opcionHash{"-W"}&& $opcion != 9){
+		if(exists $opcionHash{"-W"}&& $opcion != 8){
 			$nombreArch = &validarNombreArch;
 			&grabarEnArch($repodir."/".$nombreArch,@arregloAImprimir);
 			print "Se almaceno el resultado en el archivo \"$nombreArch\"\n";
 		}
-		if(!exists $opcionHash{"-W"}&& $opcion != 9){
+		if(!exists $opcionHash{"-W"}&& $opcion != 8){
 			&imprimirArreglo(@arregloAImprimir);
 		}
-	}until($opcion == 9);
+	}until($opcion == 8);
 		
 }
 
 #OPCION AYUDA
 
 if(exists $opcionHash{"-H"}){
-	open(HELP, "AFRALIST_help.txt") or die print "NO SE ENCONTRO EL ARCHIVO DE AYUDA\n";
-	@help = <HELP>;
-	close (HELP);
-	&imprimirArreglo(@help);
+
+print "................................................................................
+............................:AFRALIST MENU DE AYUDA:............................
+................................................................................
+
+El comando AFRALIST lo ayudara a usted a generar consultas y estadisticas 
+rapidas sobre los archivos de llamadas sospechosas.
+
+Menu inicial:
+	(-r) Consultar uno, alguno o todos los archivos de llamadas sospechosas.
+	(-s) Mostrar estadisticas sobre uno, alguno o todos los archivos de 
+	     llamadas sospechosas.
+	(-w) Alamacenara la consulta o estadistica en un archivo segun 
+	     corresponda.
+	(-h) Muestra este menu de ayuda.
+	(-e) Finalizar consultas y salir.
+
+Los comandos en profundidad:
+
+CONSULTAR (-r):
+	Con la opcion -r usted consultara los archivos de llamadas sospechosas,
+	aplicando los filtros que usted desee.
+	Instrucciones:
+
+		1) Ingresar oficianas a filtrar, se le solicitara el ingreso 
+		de las oficinas que desea consultar. Si desea consultar 
+		todas las oficinas debe ingresar (-a). Si usted ingreso 
+		algunas oficinas y desea finalizar el ingreso ingrese \"0\".
+		
+		2) Ingresar los anio mes que desea filtrar, es importante
+		que el ingreso sea en el formato AAAAMM separados por espacios.
+		Se consultaran todos los anio mes que ingrese de la oficina
+		seleccionada anteriormente. Si desea que consultar todos los
+		anio mes de una oficina simplemente ingrese la tecla enter.
+
+		3) Generar el filtro: en este paso usted debe ingresar los
+		filtros que desea aplicar a los archivos que ya fueron
+		seleccionados.
+
+		4) Se realizara la consulta. Recuerde que si usted selecciono
+		la opcion (-w) el sistema almacenara el resultado en un 
+		archivo \"subllamadas.XXX\", caso contrario se mostrara el 
+		resultado por la pantalla de la consola.
+
+ESTADISTICAS (-s):
+	Con la opcion -s usted realizara estadisticas sobre los archivos de 
+	llamadas sospechosas y realizar consultas especificas a criterio 
+	del usuario.
+	
+	Intrucciones:
+
+		1) Ingresar oficianas a filtrar, se le solicitara el ingreso
+		de las oficinas que desea consultar. Si desea consultar todas
+		las oficinas debe ingresar (-a). Si usted ingreso algunas
+		oficinas y desea finalizar el ingreso ingrese \"0\".
+
+		2) Ingresar los anio mes que desea filtrar, es importante que
+		el ingreso sea en el formato AAAAMM separados por espacios. 
+		Se consultaran todos los anio mes que ingrese de la oficina 
+		seleccionada anteriormente. Si desea que consultar todos los
+		anio mes de una oficina simplemente ingrese la tecla enter.
+
+		3) Se realizaran las estadisticas pertinentes y el sistema
+		dispondra de un menu para que usted seleccione la estadistica
+		que desea ver o almacenar.
+
+		4) Recuerde que si usted ingreso la opcion (-w) la estadistica
+		generada por consulta sera almacenada en un archivo el cual 
+		usted proporcionara el nombre.
+
+GUARDAR (-w):
+	Esta opcion debe ser utilizada en conjunto con (-r) o (-s) y almacenara
+	el resultado en un archivo, segun corresponda, si es utilizada sin los
+	otros comandos, sera ignarada la opcion y debera ingresar otra opcion.
+
+AYUDA (-h):
+	Muestra por pantalla este menu de ayuda.;
+
+SALIR (-e):
+	Salir del programa.";
+	#open(HELP, "AFRALIST_help.txt") or die print "NO SE ENCONTRO EL ARCHIVO DE AYUDA\n";
+	#@help = <HELP>;
+	#close (HELP);
+	#&imprimirArreglo(@help);
 }
 
 print "Finalizo su consulta\n";
