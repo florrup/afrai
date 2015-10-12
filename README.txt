@@ -83,15 +83,13 @@
 ################################################################################################################################################
 
 Luego de haber procesado los archivos, se pueden generar consultas, informes y estadisticas usando el comando
-afralist.pl presente en la carpeta de ejecutables. Para ver detalladamente cómo usarlo, ejecutar el comando:
-	afralist.pl -h
-que mostrará por pantalla el manual de ayuda del mismo.
+afralist.pl presente en la carpeta de ejecutables. Una vez ejecutado el comando debe escribir las instrucciones que desea ejecutar:
 
-	afralist.pl -r
-Ira preguntando por pantalla por qué tipo de filtro se quiere realizar la consulta. Es obligatorio al menos seleccionar un filtro, en caso de no hacerlo, vuelve a realizar desde el principio que filtro desea aplicar. En caso de incorporar -w como parámetro la consulta se persistirá en REPODIR con el nombre resultado.xxx con xxx la numeración en orden de la consulta a grabar realizada.
+	Menu de ayuda (-h): Mostrara en pantalla un menu de ayuda mas especifico del comando.
 
-	afralist.pl -s
-Solicita filtro sobre la gestion o sobre el rango de fechas sobre los que se desea realizar la estadística. El filtro es obligatorio, en caso de no seleccionar ninguno, se le solicitarán los filtros nuevamente hasta seleccionar al menos uno. La estadística agrupa por gestión y año, mostrando cantidad de resoluciones, cantidad de disposiciones y cantidad de convenios. En caso de incorporar -w como parámetro los resultados los persiste en la carpeta REPODIR con el nombre a elección.
+	Consultar (-r): Ira preguntando por pantalla por qué tipo de filtro se quiere realizar la consulta. Ademas usted puede agregarle la opcion guardar (-w), si escribe esta opcion el resultado de la operacion se almacenara en un archivo de subllamadas. En caso de no incorporar la opcion se mostrara el resultado por pantalla.
+
+	Estadisticas (-s): Puede realizar estadisticas sobre los archivos de llamadas sospechosas, seleccionando uno, alguno o todos los archivos de llamadas. Luego debe seleccionar en un menu cual estadistica es la que desea ver. Nuevamente si agrega la opcion guardar (-w), usted podra guardar la salida de la operacion en un archivo con nombre a eleccion, en caso de no invocar esa opcion, mostrara la salida por pantalla.
 
 
 
