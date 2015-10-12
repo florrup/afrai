@@ -234,7 +234,7 @@ sub generarRankingUmbrales{
 		}
 	}
 	foreach $h (sort{$hashSin1{$b} <=> $hashSin1{$a} } keys %hashSin1){		
-		push(@arreglo,"$hashSin1{$h} : $h\n");
+		push(@arreglo,"$hashSin1{$h}\t$h\n");
 	}
 @arreglo;
 }
@@ -246,7 +246,7 @@ sub rankingSinArchivo{
 	my @splitA = ();
 	foreach $a (@arreglo){
 		@splitA = split (";",$a);
-		push (@completo, "$splitA[1] : $splitA[0]\n");	
+		push (@completo, "$splitA[1]\t$splitA[0]\n");	
 	}
 	@completo;
 }
@@ -265,7 +265,7 @@ sub rankingAgentesArchivo{
 			@regGrep = grep {$_ =~ /^.*;.*;$splitA[0];.*;.*$/} @archReg;
 			$regGrep[0] =~ s/;/\t/g;
 			if($regGrep[0] =~ m/.*\t(.*\t.*\t.*)$/){
-				push (@completo, "$splitA[1] : $1\n");
+				push (@completo, "$splitA[1]\t$1\n");
 			}	
 		}
 	}
@@ -287,8 +287,8 @@ sub rankingCentralesArchivo{
 		foreach $a (@arreglo){
 			@splitA = split(";",$a);
 			@regGrep = grep {$_ =~ /^$splitA[0];.*$/} @archReg;
-			$regGrep[0] =~ s/;/\t/g;
-			push (@completo, "$splitA[1] : $regGrep[0]");		
+			$regGrep[0] =~ s/;/\t\t/g;
+			push (@completo, "$splitA[1]\t$regGrep[0]");		
 		}
 	}
 	else{
@@ -533,48 +533,56 @@ if(exists $opcionHash{"-S"}){
 			print "Ranking de oficinas por cantidad:\n";
 			@arreglo = &generarRanking (%Hoficinas);
 			@arregloAImprimir = &rankingSinArchivo(@arreglo);
+			unshift (@arregloAImprimir, "Cant\tOficina\n----------------\n");
 		}
 		if($opcion == 2){
 			print "Ranking de oficinas por tiempo de llamadas:\n";
 			@arreglo = &generarRanking (%HofiTiempo);
 			@arregloAImprimir = &rankingSinArchivo(@arreglo);
+			unshift (@arregloAImprimir, "Tiempo\tOficina\n----------------\n");
 		}
 		if($opcion == 3){
 			print "Ranking de centrales por cantidad:\n";
 			@arreglo = &generarRanking(%Hcentrales);
 			@arregloAImprimir = &rankingCentralesArchivo(@arreglo);
+			unshift (@arregloAImprimir, "Cant\tCod central\tNombre central\n------------------------------------\n");
 		}
 		if($opcion == 4){
 			print "Ranking de centrales por tiempo de llamada:\n";
 			@arreglo = &generarRanking(%HcentrTiempo);	
 			@arregloAImprimir = &rankingCentralesArchivo(@arreglo);
+			unshift (@arregloAImprimir, "Tiempo\tCod central\tNombre central\n-------------------------------------\n");
 		}
 		if($opcion == 5){
 			print "Ranking de agentes por cantidad:\n";
 			@arreglo = &generarRanking(%Hagentes);
 			@arregloAImprimir = &rankingAgentesArchivo(@arreglo);
+			unshift (@arregloAImprimir, "Cant\tAgente\t\tOficina\tEmail\n---------------------------------------------------\n");
 		}
 		if($opcion == 6){
 			print "Ranking de agentes por tiempo de llamadas:\n";
 			@arreglo = &generarRanking(%HagentTiempo);
 			@arregloAImprimir = &rankingAgentesArchivo(@arreglo);
+			unshift (@arregloAImprimir, "Tiempo\tAgente\t\tOficina\tEmail\n-------------------------------------------------------\n");
 		}
 		if($opcion == 7){
 			print "Ranking de umbrales por cantidad:\n";
 			@arreglo = &generarRanking (%Humbrales);
 			@arregloAImprimir = generarRankingUmbrales(@arreglo);
+			unshift (@arregloAImprimir, "Cant\tUmbral\n----------------\n");
 		}
 		if($opcion == 8){
 			print "Gracias, vuelva prontos\n";
 		}
-		if(exists $opcionHash{"-W"}&& $opcion != 8){
+		if(exists $opcionHash{"-W"}&& $opcion < 8 && $opcion > 0){
 			$nombreArch = &validarNombreArch;
 			&grabarEnArch($repodir."/".$nombreArch,@arregloAImprimir);
 			print "Se almaceno el resultado en el archivo \"$nombreArch\"\n";
 		}
-		if(!exists $opcionHash{"-W"}&& $opcion != 8){
+		if(!exists $opcionHash{"-W"}&& $opcion < 8 && $opcion > 0){
 			&imprimirArreglo(@arregloAImprimir);
 		}
+
 	}until($opcion == 8);
 		
 }
@@ -671,6 +679,5 @@ SALIR (-e):
 print "Finalizo su consulta\n";
 
 }until(exists $opcionHash{"-E"});
-
 
 
