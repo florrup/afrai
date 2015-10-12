@@ -5,13 +5,6 @@
 # ******************************************************************
 
 
-#Observaciones importantes
-# -Para que este script funciona hice una prueba seteando las variables de ambientes desde la carpeta ACEPDIR en la cual puse como pruebas,
-#  los archivos con fechas en el nombre
-# -Por alguna razon los archivos con fechas en el nombre tienen un campo que esta vacio en absolutamente todas las filas
-# 
-#
-
 GRALOG="gralog.sh"
 MOVER="mover.sh"
 AGENTES=$MAEDIR/"agentes.mae"
@@ -78,7 +71,7 @@ function procesarArchivo() {
   local archivo=$1
   # Verifico si el archivo ya fue procesado
   if [ -s $PROCDIR/proc/$archivo ]; then
-    MSJ="Se rechaza el archivo por estar DUPLICADO"
+    MSJ="Se rechaza el archivo "$archivo" por estar DUPLICADO"
     msjLog "$MSJ" "ERR"
     $MOVER "$ACEPDIR/$archivo" "$RECHDIR" "${0}"
     cantidadRechazados=$((cantidadRechazados+1))

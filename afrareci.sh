@@ -47,19 +47,38 @@ function esDeTexto (){
 
 # Valida si el archivo pasado por parametro tiene formato correcto
 function tieneFormatoCorrecto (){
-	formatoCorrecto=`echo $1 | grep "^[A-Z]\{3\}_[0-9]\{8\}"`
+
+	nombreConFormato=$1
+	nombreLong=${#nombreConFormato}
 	
-	if [[ ! -z $formatoCorrecto ]]
+	# Valida que la longitud del nombre del archivo sea correcta.
+	if [ $nombreLong -ne 12 ]
 	then
-		# Formato correcto: codigo_nroFecha
-		return 0
+		return 1
 	fi
-	# Formato incorrecto
-	return 1
+	
+	# Valida que el codigo tenga formato correcto: "XXX"
+	codigoNombre=`echo $nombreConFormato | cut -d"_" -f1`
+	codigoFormatoCorrecto=`echo $codigoNombre | grep "^[A-Z]\{3\}$"`
+	if [ -z $codigoFormatoCorrecto ]
+	then
+		return 1
+	fi
+	
+	# Valida que la fecha tenga formato correcto: "00000000" 
+	fechaNombre=`echo $nombreConFormato | cut -d"_" -f2`
+	fechaFormatoCorrecto=`echo $fechaNombre | grep "^[0-9]\{8\}$"`
+	if [ -z $fechaFormatoCorrecto ]
+	then
+		return 1
+	fi
+	
+	# Codigo con formato correcto
+	return 0
 }
 
 # Valida si el archivo pasado por parametro posee el codigo central correcto
-# y además existen en el archivo centrales.csv
+# y además existen en el archivo centrales
 function tieneCodigoCorrecto (){
 	
 	local centrales=${MAEDIR}/CdC.mae
