@@ -10,17 +10,18 @@
 		# Vallerino,Gonzalo
 
 ################################################################################################################################################
-				Descripcion del 
+				Descripcion del Programa
 ################################################################################################################################################
 		
-	        #El Departamento de Prevención de Fraudes de cierta empresa desea realizar un control sobre las
-		llamadas telefónicas para evitar el uso fraudulento de las comunicaciones de la empresa.
-		Para realizar dicho control recibe archivos de llamadas desde cada una de sus centrales telefónicas.
-		El control de llamadas consistirá, para el alcance de este TP, en comprobar si la llamada se
-		encuentra dentro del umbral de consumo determinado por la empresa.
-		Si supera el umbral, se considera que el consumo es sospechoso.
- 		El sistema AFRA-I se encargará entonces de realizar validaciones sobre registros y dicho control mencionado sobre las 			llamadas que bajo ciertas condiciones se consideran sospechosas y luego realizar un reporte de las que finalmente    
-                terminaron siendo clasificadas de esta manera.#
+        El Departamento de Prevención de Fraudes de cierta empresa desea realizar un control sobre las
+	llamadas telefónicas para evitar el uso fraudulento de las comunicaciones de la empresa.
+	Para realizar dicho control recibe archivos de llamadas desde cada una de sus centrales telefónicas.
+	El control de llamadas consistirá, para el alcance de este TP, en comprobar si la llamada se
+	encuentra dentro del umbral de consumo determinado por la empresa.
+	Si supera el umbral, se considera que el consumo es sospechoso.
+	El sistema AFRA-I se encargará entonces de realizar validaciones sobre registros y dicho control mencionado 
+	sobre las llamadas que bajo ciertas condiciones se consideran sospechosas y luego realizar un reporte de las 
+	que finalmente terminaron siendo clasificadas de esta manera.
 
 ################################################################################################################################################
 				Pasos a seguir para correr el Sistema Operativo
@@ -32,9 +33,9 @@
 				Requisitos de instalacion
 ################################################################################################################################################
 
-		#Contar con Perl versión 5 o superior.
+	Contar con Perl versión 5 o superior.
+	Contar con un espacio mínimo superior al especificado para almacenar el flujo de novedades.
 		
-
 ################################################################################################################################################
 				Pasos a seguir en la instalación y ejecución del programa AFRA-I
 ################################################################################################################################################
@@ -73,4 +74,22 @@
 
 		$ detener.sh afrareci
 
-	j. (Falta agregar "Cualquier otra indicación que considere necesaria")
+################################################################################################################################################
+			GENERAR CONSULTAS, INFORMES Y ESTADISTICAS	
+################################################################################################################################################
+
+Luego de haber procesado los archivos, se pueden generar consultas, informes y estadisticas usando el comando
+afralist.pl presente en la carpeta de ejecutables. Para ver detalladamente cómo usarlo, ejecutar el comando:
+	afralist.pl -h
+que mostrará por pantalla el manual de ayuda del mismo.
+
+	afralist.pl -r
+Ira preguntando por pantalla por qué tipo de filtro se quiere realizar la consulta. Es obligatorio al menos seleccionar un filtro, en caso de no hacerlo, vuelve a realizar desde el principio que filtro desea aplicar. En caso de incorporar -w como parámetro la consulta se persistirá en REPODIR con el nombre resultado.xxx con xxx la numeración en orden de la consulta a grabar realizada.
+
+	afralist.pl -s
+Solicita filtro sobre la gestion o sobre el rango de fechas sobre los que se desea realizar la estadística. El filtro es obligatorio, en caso de no seleccionar ninguno, se le solicitarán los filtros nuevamente hasta seleccionar al menos uno. La estadística agrupa por gestión y año, mostrando cantidad de resoluciones, cantidad de disposiciones y cantidad de convenios. En caso de incorporar -w como parámetro los resultados los persiste en la carpeta REPODIR con el nombre a elección.
+
+
+
+
+################################################################################################################################################

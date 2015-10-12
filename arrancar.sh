@@ -54,7 +54,7 @@ function msjLog() {
 	  local TIPO=$2
 	  # solo graba si se invoca por un comando que registre en su log
 	  if [ $COMANDOGRABA = "true" ]; then
-	    $GRALOG "/$comandoInvocador.sh" "$MENSAJE" "$TIPO"
+	    $GRALOG "$BINDIR/$comandoInvocador.sh" "$MENSAJE" "$TIPO"
 	  fi
 }
 
@@ -64,7 +64,7 @@ function grabaEnLog() {
 	if [ "$comandoInvocador" == "afrainst" ] || [ "$comandoInvocador" == "afrainic" ] || [ "$comandoInvocador" == "afrareci" ] || [ "$comandoInvocador" == "afraumbr" ] ; then
 	  COMANDOGRABA="true"
 	  MENSAJE="Se ha invocado al script arrancar.sh"
-	  $GRALOG "/$comandoInvocador.sh" "$MENSAJE" "INFO"
+	  $GRALOG "$BINDIR/$comandoInvocador.sh" "$MENSAJE" "INFO"
 	fi
 }
 

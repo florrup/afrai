@@ -10,7 +10,7 @@ function msjLog() {
   local MOUT=$1
   local TIPO=$2
   echo "${MOUT}"
-  $GRALOG "$afrainic" "$MOUT" "$TIPO"
+  $GRALOG "$BINDIR/afrainic.sh" "$MOUT" "$TIPO"
 }
 
 function existeArch() {

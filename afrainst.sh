@@ -191,8 +191,11 @@ verificarPerl(){
 	local datosPerl=`perl -v`
 	local version=$(echo "$datosPerl" | grep " perl [0-9]" | sed "s-.*\(perl\) \([0-9]*\).*-\2-")
 	if [ $version -ge 5 ];then
-		echo "Perl version: $datosPerl"
+		echo -e "Perl version: $datosPerl \n"
 		$GRALOG "$0" "$datosPerl" "INFO"
+		echo "Cumple con los requisitos del sistema. Por favor oprima ENTER para continuar"
+		read x
+		clear
 	else
 		local MENSAJE="Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior. Efectúe su instalación e inténtelo nuevamente. Proceso de Instalación Cancelado"
 		echo "Para ejecutar el sistema AFRA-I es necesario contar con Perl 5 o superior"
@@ -205,8 +208,6 @@ verificarPerl(){
 
 #PASO5
 definicionesInstalacion() {
-	read x
-	clear;
 	local estado=0
 	while [ $estado -eq 0 ]
 	do	
@@ -526,9 +527,8 @@ mostrarDefiniciones () {
 #PASO20
 instalacion () {
 
-variables=(${CONFDIR} ${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PROCDIR}/proc ${REPODIR} ${LOGDIR} ${RECHDIR} ${RECHDIR}/llamadas)
+variables=(${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PROCDIR}/proc ${REPODIR} ${LOGDIR} ${RECHDIR} ${RECHDIR}/llamadas)
 	echo "Creando Estructuras de directorio"
-	mkdir $GRUPO	
 	for index in ${variables[*]}
 	do
     		echo "Creando $index"
@@ -615,7 +615,9 @@ fin(){
 	if [ -f "$GRUPO/CONF/afrainst.log" ];then
 		rm "$GRUPO/CONF/afrainst.log"
 	fi
-	$MOVER $posicionActual/afrainst.log $GRUPO/CONF
+	if [ -d "$GRUPO/CONF" ];then
+		$MOVER $posicionActual/afrainst.log $GRUPO/CONF
+	fi
 	exit
 }
 
