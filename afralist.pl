@@ -390,8 +390,9 @@ if(exists $opcionHash{"-R"}){
 	print "Desea filtrar por tiempo de conversacion? (S/N): ";
 	$codigosunidos = ".*";
 
+	$filtroTiempo = 0;
 	if(&respSN eq 'S'){
-
+		$filtroTiempo = 1;
 		print "Ingrese tiempo minimo: ";
 		$Tmin = <STDIN>;
 		chomp($Tmin);
@@ -427,23 +428,26 @@ if(exists $opcionHash{"-R"}){
 	}
 
 	@b = ();
-	foreach $a (@a){
-		@arrTiempo = split (';', $a);
-		if($arrTiempo[5]>=$Tmin && $arrTiempo[5]<=$Tmax){
-			push(@b,$a);
+	if($filtroTiempo==1){
+		foreach $a (@a){
+			@arrTiempo = split (';', $a);
+			if($arrTiempo[5]>=$Tmin && $arrTiempo[5]<=$Tmax){
+				push(@b,$a);
+			}
 		}
+	@a = @b;
 	}
-	$cant = $#b + 1;
-
+	
+	$cant = $#a + 1;
 	if(exists $opcionHash{"-W"}){
 		$subllamada = "subllamada.".$subllamadaNro;
-		&grabarEnArch($repodir."/".$subllamada,@b);
+		&grabarEnArch($repodir."/".$subllamada,@a);
 		print "Se guardo el resultado en \"$subllamada\" y se obtuvieron $cant registros\n";
 		$subllamadaNro++;
 	}
 	if(!exists $opcionHash{"-W"}){
 		print "Se obtuvieron $cant registros en la consulta\n";
-		&imprimirArreglo(@b);
+		&imprimirArreglo(@a);
 	} 
 }
 
