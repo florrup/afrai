@@ -10,7 +10,7 @@
 		# Vallerino,Gonzalo
 
 ################################################################################################################################################
-				Descripcion del 
+				Descripcion del Sistema
 ################################################################################################################################################
 		
 	        #El Departamento de Prevención de Fraudes de cierta empresa desea realizar un control sobre las
@@ -25,7 +25,11 @@
 ################################################################################################################################################
 				Pasos a seguir para correr el Sistema Operativo
 ################################################################################################################################################
-
+ 		
+		#Ingresar en la pagina http://materias.fi.uba.ar/7508/Boot-usb/CDLinux.html en donde se indica las 	     			instrucciones para crear un pen-drive booteable y de esa forma arrancar el S.O ahi.
+		#Para arrancar la PC desde este dispositivo, ni bien arranca el BIOS se debe acceder al menú donde aparecen las opciones 			de booteo y seleccionar la opción de arrancar desde allí.
+		#Dentro del mismo dispositivo se debe incluir la carpeta afrai.tar.gz con la cual se podrá correr el sistema luego de 			seguir los pasos para la instalacion de AFRA-I
+		 Tener en cuenta que el teclado esta configurado en inglés.
 
 
 ################################################################################################################################################
