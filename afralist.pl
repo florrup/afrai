@@ -370,6 +370,7 @@ if(exists $opcionHash{"-R"}){
 	print "Desea filtrar por umbrales? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de umbrales (separados por espacios): ";
+		@umbrales = &respToken;
 		@umbralesBra = separarDigitos(@umbrales);
 	}
 
