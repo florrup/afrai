@@ -26,12 +26,16 @@
 ################################################################################################################################################
 				Pasos a seguir para correr el Sistema Operativo
 ################################################################################################################################################
- 		
-		#Ingresar en la pagina http://materias.fi.uba.ar/7508/Boot-usb/CDLinux.html en donde se indica las 	     			instrucciones para crear un pen-drive booteable y de esa forma arrancar el S.O ahi.
-		#Para arrancar la PC desde este dispositivo, ni bien arranca el BIOS se debe acceder al menú donde aparecen las opciones 			de booteo y seleccionar la opción de arrancar desde allí.
-		#Dentro del mismo dispositivo se debe incluir la carpeta afrai.tar.gz con la cual se podrá correr el sistema luego de 			seguir los pasos para la instalacion de AFRA-I
-		 Tener en cuenta que el teclado esta configurado en inglés.
-
+ 	
+	Ingresar en la página http://materias.fi.uba.ar/7508/Boot-usb/CDLinux.html, y seguir los pasos indicados en la misma para
+	la creación del pen-drive booteable.
+	Una vez que tengamos el pen-drive booteable lo conectamos y al prender la PC elegimos la opción de bootear desde el pen-drive 
+	(o en su defecto hacerlo desde la EFI).
+	Luego de inicializar el sistema desde el pen-drive, por pantalla nos dará lugar a elegir si queremos usar la versión de prueba
+	"try Ubuntu" o instalar Ubuntu "Install Ubuntu". Elegimos la versión de prueba.
+	Al realizar todos los pasos anteriores, vamos a tener el sistema andando y preparado para poder correr AFRAI, entre otras cosas.
+	Es recomendable, tener en el pen-drive (o en otro dispositivo) afrai.tar.gz con el cual se podrá iniciar la instalación de AFRAI,
+	descripta en el siguiente paso.
 
 ################################################################################################################################################
 				Requisitos de instalacion
