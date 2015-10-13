@@ -4,41 +4,38 @@
 			
 	      	# Andújar, Martín
 	      	# Centurión, Ramón
-		# Guerini, Francisco
-		# Nakasone, Nicolás
-		# Rupcic,Florencia
-		# Vallerino,Gonzalo
+			# Guerini, Francisco
+			# Nakasone, Nicolás
+			# Rupcic,Florencia
+			# Vallerino,Gonzalo
 
 ################################################################################################################################################
-				Descripcion del Programa
+				Descripción del Sistema
 ################################################################################################################################################
 		
-        El Departamento de Prevención de Fraudes de cierta empresa desea realizar un control sobre las
-	llamadas telefónicas para evitar el uso fraudulento de las comunicaciones de la empresa.
-	Para realizar dicho control recibe archivos de llamadas desde cada una de sus centrales telefónicas.
-	El control de llamadas consistirá, para el alcance de este TP, en comprobar si la llamada se
-	encuentra dentro del umbral de consumo determinado por la empresa.
-	Si supera el umbral, se considera que el consumo es sospechoso.
-	El sistema AFRA-I se encargará entonces de realizar validaciones sobre registros y dicho control mencionado 
-	sobre las llamadas que bajo ciertas condiciones se consideran sospechosas y luego realizar un reporte de las 
-	que finalmente terminaron siendo clasificadas de esta manera.
-
+    
+    El Sistema AFRAI realiza un control sobre las llamadas telefónicas para evitar el uso fraudulento de las comunicaciones de la empresa. 
+	Para realizar dicho control recibe archivos de llamadas desde cada una de sus centrales telefónicas. 
+	El control de llamadas se basa en comprobar si la llamada se encuentra dentro del umbral de consumo determinado por la empresa. 
+	Si supera el umbral, se considera que el consumo es sospechoso. 
+	El sistema AFRA-I se encargará entonces de realizar validaciones sobre registros y dicho control mencionado sobre las llamadas 
+	que bajo ciertas condiciones se consideran sospechosas y luego realizar un reporte de las que finalmente terminaron siendo 
+	clasificadas de esta manera.
+	
 ################################################################################################################################################
 				Pasos a seguir para correr el Sistema Operativo
 ################################################################################################################################################
  	
-	Ingresar en la página http://materias.fi.uba.ar/7508/Boot-usb/CDLinux.html, y seguir los pasos indicados en la misma para
-	la creación del pen-drive booteable.
-	Una vez que tengamos el pen-drive booteable lo conectamos y al prender la PC elegimos la opción de bootear desde el pen-drive 
+	Tomamos el pen-drive booteable lo conectamos y al prender la PC elegimos la opción de bootear desde el pen-drive 
 	(o en su defecto hacerlo desde la EFI).
 	Luego de inicializar el sistema desde el pen-drive, por pantalla nos dará lugar a elegir si queremos usar la versión de prueba
 	"try Ubuntu" o instalar Ubuntu "Install Ubuntu". Elegimos la versión de prueba.
 	Al realizar todos los pasos anteriores, vamos a tener el sistema andando y preparado para poder correr AFRAI, entre otras cosas.
-	Es recomendable, tener en el pen-drive (o en otro dispositivo) afrai.tar.gz con el cual se podrá iniciar la instalación de AFRAI,
-	descripta en el siguiente paso.
+	Es recomendable, tener en el pen-drive (o en otro dispositivo) afrai.tar.gz con el cual se podrá iniciar la instalación de AFRAI y su ejecución,
+	descripta en los siguientes pasos.
 
 ################################################################################################################################################
-				Requisitos de instalacion
+				Requisitos de instalación
 ################################################################################################################################################
 
 	Contar con Perl versión 5 o superior.
@@ -74,7 +71,7 @@
 		$ . ./afrainic.sh
 
 	   En este momento,se puede optar por ejecutar el demonio afrareci o no.
-	   Si se decide no ejecutarlo,puede hacer manualmente mediante el siguiente comando:
+	   Si se decide no ejecutarlo, puede hacerlo manualmente mediante el siguiente comando:
 
 		$ arrancar.sh afrareci
 
@@ -83,7 +80,7 @@
 		$ detener.sh afrareci
 
 ################################################################################################################################################
-			GENERAR CONSULTAS, INFORMES Y ESTADISTICAS	
+			GENERAR CONSULTAS, INFORMES Y ESTADÍSTICAS	
 ################################################################################################################################################
 
 Luego de haber procesado los archivos, se pueden generar consultas, informes y estadisticas usando el comando
@@ -95,7 +92,7 @@ afralist.pl presente en la carpeta de ejecutables. Una vez ejecutado el comando 
 
 	Estadisticas (-s): Puede realizar estadisticas sobre los archivos de llamadas sospechosas, seleccionando uno, alguno o todos los archivos de llamadas. Luego debe seleccionar en un menu cual estadistica es la que desea ver. Nuevamente si agrega la opcion guardar (-w), usted podra guardar la salida de la operacion en un archivo con nombre a eleccion, en caso de no invocar esa opcion, mostrara la salida por pantalla.
 
-
+	Salir (-e): Sale de la consulta.
 
 
 ################################################################################################################################################
