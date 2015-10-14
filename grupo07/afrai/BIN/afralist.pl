@@ -370,6 +370,7 @@ if(exists $opcionHash{"-R"}){
 	print "Desea filtrar por umbrales? (S/N): ";
 	if(&respSN eq 'S'){
 		print "Ingrese codigos de umbrales (separados por espacios): ";
+		@umbrales = &respToken;
 		@umbralesBra = separarDigitos(@umbrales);
 	}
 
@@ -568,7 +569,7 @@ if(exists $opcionHash{"-S"}){
 		if($opcion == 7){
 			print "Ranking de umbrales por cantidad:\n";
 			@arreglo = &generarRanking (%Humbrales);
-			@arregloAImprimir = generarRankingUmbrales(@arreglo);
+			@arregloAImprimir = &rankingSinArchivo(@arreglo);
 			unshift (@arregloAImprimir, "Cant\tUmbral\n----------------\n");
 		}
 		if($opcion == 8){

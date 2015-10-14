@@ -57,11 +57,3 @@ function getPid(){
     local ppid=` ps aux | grep "\(/bin/bash\)\ $BINDIR/$1.sh" | grep -v grep | awk '{print $2}' | head -n 1`
     echo $ppid
 }
-
-function isInteger(){
-  case $1 in
-    ''|*[!0-9]*) return 1;;
-    *) return 0 ;;
-  esac
-}
-

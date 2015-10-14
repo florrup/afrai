@@ -569,7 +569,7 @@ if(exists $opcionHash{"-S"}){
 		if($opcion == 7){
 			print "Ranking de umbrales por cantidad:\n";
 			@arreglo = &generarRanking (%Humbrales);
-			@arregloAImprimir = generarRankingUmbrales(@arreglo);
+			@arregloAImprimir = &rankingSinArchivo(@arreglo);
 			unshift (@arregloAImprimir, "Cant\tUmbral\n----------------\n");
 		}
 		if($opcion == 8){
