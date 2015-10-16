@@ -4,8 +4,6 @@ $procdir = $ENV{PROCDIR}; #direccion donde esten los archivos a consultar
 $maedir = $ENV{MAEDIR};
 $repodir = $ENV{REPODIR};
 
-$subllamadaNro = 0;
-
 # Lee el ingreso validando que sea S o N
 sub respSN {
 	my $resp;
@@ -441,11 +439,22 @@ if(exists $opcionHash{"-R"}){
 	
 	$cant = $#a + 1;
 	if(exists $opcionHash{"-W"}){
+		my $subllamadaNro = 0;
+		opendir(DIR, $repodir);
+
+		while ( my $fileSub = readdir(DIR) ) {
+			# es true si el nombre del archivo matchea la expresión
+			if ($fileSub =~ m/^subllamada.*/) {
+				$subllamadaNro += 1;
+			}
+		}
+		closedir(DIR);
+
 		$subllamada = "subllamada.".$subllamadaNro;
 		&grabarEnArch($repodir."/".$subllamada,@a);
 		print "Se guardo el resultado en \"$subllamada\" y se obtuvieron $cant registros\n";
-		$subllamadaNro++;
 	}
+
 	if(!exists $opcionHash{"-W"}){
 		print "Se obtuvieron $cant registros en la consulta\n";
 		&imprimirArreglo(@a);
