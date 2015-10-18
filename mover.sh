@@ -74,7 +74,7 @@ if [ -f "$FILEDEST" ]; then
   
   # Ya existe DUPLICADOS
   if [ ! -f "$DUPLI"/"$FILE" ]; then
-     mv $1 $DUPLI
+     mv "${1}" "${DUPLI}"
      echo "El archivo \"${FILE}\" ha sido movido a \"${DUPLI}\""
      exit 0
   else
@@ -95,7 +95,7 @@ if [ -f "$FILEDEST" ]; then
   fi
 
 else
-  mv $1 $DEST
+  mv "${1}" "${DEST}"
   MOUT="El archivo \"${FILE}\" ha sido movido al directorio \"${DEST}\""
   msjLog "$MOUT" "INFO"
   exit 0
