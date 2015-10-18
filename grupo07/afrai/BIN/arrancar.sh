@@ -63,7 +63,7 @@ function msjLog() {
 function grabaEnLog() {
 	if [ "$comandoInvocador" == "afrainst" ] || [ "$comandoInvocador" == "afrainic" ] || [ "$comandoInvocador" == "afrareci" ] || [ "$comandoInvocador" == "afraumbr" ] ; then
 	  COMANDOGRABA="true"
-	  MENSAJE="Se ha invocado al script arrancar.sh"
+	  MENSAJE="Se ha invocado al script arrancar.sh para arrancar $comandoAInvocar."
 	  $GRALOG "$BINDIR/$comandoInvocador.sh" "$MENSAJE" "INFO"
 	fi
 }
@@ -99,9 +99,13 @@ function arrancar(){
 }
 ####################   POR CONSOLA SOLO ARRANCA EL DEMONIO  #########################
 
-if [ $# -lt 1 ] ;then
-	echo "Modo de arranque incorrecto, por favor intente de la siguiente forma: \"arrancar.sh <comando a arrancar>\""
+if [ $# -lt 1 ];then
+	echo "Modo de arranque incorrecto, por favor intente de la siguiente forma: \"arrancar.sh afrareci\""
 	exit 1
 fi
 
+if [ $# == 1 ] && [ "$comandoAInvocar" != "afrareci" ];then
+	echo "Modo de arranque incorrecto, por favor intente de la siguiente forma: \"arrancar.sh afrareci\""
+	exit 1	
+fi
 arrancar

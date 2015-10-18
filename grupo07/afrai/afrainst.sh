@@ -13,6 +13,7 @@ AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
 MOVER="$GRUPO/afrai/BIN/mover.sh"
 GRALOG="$GRUPO/afrai/BIN/gralog.sh"
+caracteresInvalidos="\ / : * ? \" < > .|"
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -291,6 +292,9 @@ definirBinDir () {
 		local MENSAJE="Defina el directorio de ejecutables ($GRUPO/bin):" 
 		echo "$MENSAJE"
 		read BINDIR
+		if [ "$BINDIR" = "" ];then
+			BINDIR="bin"
+		fi
 		existeDir $BINDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $BINDIR" "INFO"
@@ -305,6 +309,9 @@ definirMaeDir () {
 		local MENSAJE="Defina el directorio para maestros y tablas ($GRUPO/mae):"
 		echo "$MENSAJE"
 		read MAEDIR
+		if [ "$MAEDIR" = "" ];then
+			MAEDIR="mae"
+		fi
 		existeDir $MAEDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $MAEDIR" "INFO"
@@ -319,6 +326,9 @@ definirNoveDir () {
 		local MENSAJE="Defina el directorio de recepción de archivos de llamadas ($GRUPO/novedades):"
 		echo "$MENSAJE"
 		read NOVEDIR
+		if [ "$NOVEDIR" = "" ];then
+			NOVEDIR="novedades"
+		fi
 		existeDir $NOVEDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $NOVEDIR" "INFO"
@@ -332,6 +342,9 @@ definirNoveDir () {
 		 local MENSAJE="Defina espacio mínimo libre para la recepción de archivos de llamadas en Mbytes (100) : "
                  echo "$MENSAJE"
                  read DATASIZE
+		 if [ "$DATASIZE" = "" ];then
+			DATASIZE=100
+		 fi
                  DATASIZE=`echo $DATASIZE | grep "^[0-9]*$"`
                  if [ ! -z $DATASIZE ];then
 			 $GRALOG "$0" "$MENSAJE $DATASIZE" "INFO"
@@ -370,6 +383,9 @@ definirAcepDir () {
 		local MENSAJE="Defina el directorio de grabación de los archivos de llamadas aceptadas ($GRUPO/aceptadas):"
 		echo "$MENSAJE"
 		read ACEPDIR
+		if [ "$ACEPDIR" = "" ];then
+			ACEPDIR="aceptadas"
+		fi
 		existeDir $ACEPDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $ACEPDIR" "INFO"
@@ -384,6 +400,9 @@ definirProcDir () {
 		local MENSAJE="Defina el directorio de grabación de los registros de llamadas sospechosas ($GRUPO/sospechosas):"
 		echo "$MENSAJE"
 		read PROCDIR
+		if [ "$PROCDIR" = "" ];then
+			PROCDIR="sospechosas"
+		fi
 		existeDir $PROCDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $PROCDIR" "INFO"
@@ -398,6 +417,9 @@ definirRepoDir () {
 		local MENSAJE="Defina el directorio de grabación de los reportes ($GRUPO/reportes):"
 		echo "$MENSAJE"
 		read REPODIR
+		if [ "$REPODIR" = "" ];then
+			REPODIR="reportes"
+		fi
 		existeDir $REPODIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $REPODIR" "INFO"
@@ -412,6 +434,9 @@ definirLogDir () {
 		local MENSAJE="Defina el directorio para los archivos de log ($GRUPO/log):"
 		echo "$MENSAJE"
 		read LOGDIR
+		if [ "$LOGDIR" = "" ];then
+			LOGDIR="log"
+		fi
 		existeDir $LOGDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $LOGDIR" "INFO"
@@ -425,6 +450,9 @@ definirLogExt () {
 		local MENSAJE="Defina nombre para la extensión de los archivos de log (log):"
 		echo "$MENSAJE"
 		read LOGEXT
+		if [ "$LOGEXT" = "" ];then
+			LOGEXT="log"
+		fi
 	        if [ ${#LOGEXT} -le 5 ];then
 			 $GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
 			 estado=0
@@ -441,6 +469,9 @@ definirLogSize () {
          while [ $estado == 1 ];do
 		echo "$MENSAJE"
 		read LOGSIZE
+		if [ "$LOGSIZE" = "" ];then
+			LOGSIZE=400
+		fi
                 LOGSIZE=`echo $LOGSIZE | grep "^[0-9]*$"`
                 if [ -z $LOGSIZE ];then
                         echo "No pose caracteres numéricos, intente nuevamente"
@@ -459,6 +490,9 @@ definirRechDir () {
 	do	
 		echo "$MENSAJE"
 		read RECHDIR
+		if [ "$RECHDIR" = "" ];then
+			RECHDIR="rechazadas"
+		fi
 		existeDir $RECHDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $RECHDIR" "INFO"
@@ -519,8 +553,6 @@ mostrarDefiniciones () {
 	else
 		clear
 		definicionesDir
-		#TODO QUE ES ESTO
-		#return "Si"
 	fi	
 }
 
