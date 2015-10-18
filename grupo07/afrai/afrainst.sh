@@ -14,6 +14,8 @@ DATASIZE=100;
 MOVER="$GRUPO/afrai/BIN/mover.sh"
 GRALOG="$GRUPO/afrai/BIN/gralog.sh"
 caracteresInvalidos="\ / : * ? \" < > .|"
+carpetas=()
+
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -279,9 +281,25 @@ existeDir () {
 	if [ -d "$direccion" ];then
 		echo "Directorio ya existe"
 		return 1
-	else
-		return 0
 	fi
+	
+	chequeoDeCarpeta "$direccion"
+	if [ "$?" == 1 ];then
+		return 1
+	fi
+	return 0
+}
+
+chequeoDeCarpeta(){
+	local carpeta="$1"
+	
+	for index in ${carpetas[*]}
+	do
+		if [ "$index" == "$carpeta" ];then
+			echo "Nombre de carpeta ya definida para otra carpeta"
+		return 1
+		fi
+	done
 }
 
 #PASO6
@@ -299,6 +317,8 @@ definirBinDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $BINDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$BINDIR
 }
 
 #PASO7
@@ -316,6 +336,8 @@ definirMaeDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $MAEDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$MAEDIR
 }
 
 #PASO8
@@ -333,6 +355,8 @@ definirNoveDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $NOVEDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$NOVEDIR
 }
 
 #PASO9
@@ -390,6 +414,8 @@ definirAcepDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $ACEPDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$ACEPDIR
 }
 
 #PASO12
@@ -407,6 +433,8 @@ definirProcDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $PROCDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$PROCDIR
 }
 
 #PASO13
@@ -424,6 +452,8 @@ definirRepoDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $REPODIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$REPODIR
 }
 
 #PASO14
@@ -441,6 +471,8 @@ definirLogDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $LOGDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$LOGDIR
 }
 
 #PASO15
@@ -497,6 +529,8 @@ definirRechDir () {
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $RECHDIR" "INFO"
 	done
+	local cantidad=${#carpetas[*]}
+	carpetas[$cantidad]=$RECHDIR
 }
 
 #PASO18Y19
