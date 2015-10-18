@@ -171,7 +171,13 @@ estadoAfrai(){
 		echo "Componentes faltantes:";	
 		mostrarFaltantes;
 		echo "¿Desea completar la instalación? (Si - No)"
+
 		read respuesta
+		while [[ "${respuesta^^}" != "SI" && "${respuesta^^}" != "NO" ]]
+		do
+			read respuesta
+		done
+
 		if [ ${respuesta^^} == "SI" ] 
 		then
 			echo "Instalando faltantes..."			
@@ -243,6 +249,7 @@ definicionesInstalacion() {
 
 
 definicionesDir() {
+	unset carpetas
 	definirBinDir
 	definirMaeDir
 	definirNoveDir
@@ -573,12 +580,24 @@ mostrarDefiniciones () {
 	$GRALOG "$0" "$MENSAJE" "INFO"
 	MENSAJE="¿Desea continuar con la instalación? (Si - No):"
 	echo -e "\n$MENSAJE"
+
 	read respuesta
+	while [[ "${respuesta^^}" != "SI" && "${respuesta^^}" != "NO" ]]
+	do
+		read respuesta
+	done
+
 	$GRALOG "$0" "$MENSAJE $respuesta" "INFO"
 	if [ "${respuesta^^}" = "SI" ];then
 		MENSAJE="Iniciando Instalación. ¿Está Ud. seguro? (Si - No):"
 		echo -e "\n$MENSAJE"
+
 		read respuesta2
+		while [[ "${respuesta2^^}" != "SI" && "${respuesta2^^}" != "NO" ]]
+		do
+			read respuesta2
+		done
+
 		$GRALOG "$0" "$MENSAJE $respuesta2" "INFO"
 		if [ "${respuesta2^^}" = "SI" ];then
 			instalacion;
@@ -590,7 +609,7 @@ mostrarDefiniciones () {
 	fi	
 }
 
-#PASO20
+#PASO2
 instalacion () {
 
 variables=(${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PROCDIR}/proc ${REPODIR} ${LOGDIR} ${RECHDIR} ${RECHDIR}/llamadas)
