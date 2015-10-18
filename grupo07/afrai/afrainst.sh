@@ -13,9 +13,21 @@ AFRACONFIG="$GRUPO/$CONFDIR/AFRAINST.conf";
 DATASIZE=100;
 MOVER="$GRUPO/afrai/BIN/mover.sh"
 GRALOG="$GRUPO/afrai/BIN/gralog.sh"
-caracteresInvalidos="\ / : * ? \" < > .|"
+caracteresInvalidos=( ':' '\*' '?' '<' '>' '\.' '|' )
 carpetas=()
 
+nombreInvalido () {
+	nombre=$1
+	resultado=0;
+	for caracterInvalido in ${caracteresInvalidos[*]}
+	do
+		if ( echo $nombre | grep -q "$caracterInvalido" )		
+		then 
+			resultado=1;
+		fi
+	done
+	return $resultado
+}
 
 existeArchivo () {
         if [ -f "$1" ];then
@@ -317,9 +329,21 @@ definirBinDir () {
 		local MENSAJE="Defina el directorio de ejecutables ($GRUPO/bin):" 
 		echo "$MENSAJE"
 		read BINDIR
+		
+		nombreInvalido $BINDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read BINDIR
+			nombreInvalido $BINDIR
+			respuesta=$?
+		done	
+
 		if [ "$BINDIR" = "" ];then
 			BINDIR="bin"
-		fi
+		fi	
+
 		existeDir $BINDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $BINDIR" "INFO"
@@ -336,9 +360,22 @@ definirMaeDir () {
 		local MENSAJE="Defina el directorio para maestros y tablas ($GRUPO/mae):"
 		echo "$MENSAJE"
 		read MAEDIR
+
+		nombreInvalido $MAEDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read MAEDIR
+			nombreInvalido $MAEDIR
+			respuesta=$?
+		done	
+
+
 		if [ "$MAEDIR" = "" ];then
 			MAEDIR="mae"
 		fi
+
 		existeDir $MAEDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $MAEDIR" "INFO"
@@ -355,9 +392,22 @@ definirNoveDir () {
 		local MENSAJE="Defina el directorio de recepción de archivos de llamadas ($GRUPO/novedades):"
 		echo "$MENSAJE"
 		read NOVEDIR
+
+		nombreInvalido $NOVEDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read NOVEDIR
+			nombreInvalido $NOVEDIR
+			respuesta=$?
+		done	
+
+
 		if [ "$NOVEDIR" = "" ];then
 			NOVEDIR="novedades"
 		fi
+
 		existeDir $NOVEDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $NOVEDIR" "INFO"
@@ -414,9 +464,22 @@ definirAcepDir () {
 		local MENSAJE="Defina el directorio de grabación de los archivos de llamadas aceptadas ($GRUPO/aceptadas):"
 		echo "$MENSAJE"
 		read ACEPDIR
+
+		nombreInvalido $ACEPDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read ACEPDIR
+			nombreInvalido $ACEPDIR
+			respuesta=$?
+		done	
+
+
 		if [ "$ACEPDIR" = "" ];then
 			ACEPDIR="aceptadas"
 		fi
+
 		existeDir $ACEPDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $ACEPDIR" "INFO"
@@ -433,9 +496,22 @@ definirProcDir () {
 		local MENSAJE="Defina el directorio de grabación de los registros de llamadas sospechosas ($GRUPO/sospechosas):"
 		echo "$MENSAJE"
 		read PROCDIR
+
+		nombreInvalido $PROCDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read PROCDIR
+			nombreInvalido $PROCDIR
+			respuesta=$?
+		done	
+
+
 		if [ "$PROCDIR" = "" ];then
 			PROCDIR="sospechosas"
 		fi
+
 		existeDir $PROCDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $PROCDIR" "INFO"
@@ -452,9 +528,22 @@ definirRepoDir () {
 		local MENSAJE="Defina el directorio de grabación de los reportes ($GRUPO/reportes):"
 		echo "$MENSAJE"
 		read REPODIR
+
+		nombreInvalido $REPODIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read REPODIR
+			nombreInvalido $REPODIR
+			respuesta=$?
+		done	
+
+
 		if [ "$REPODIR" = "" ];then
 			REPODIR="reportes"
 		fi
+
 		existeDir $REPODIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $REPODIR" "INFO"
@@ -471,9 +560,21 @@ definirLogDir () {
 		local MENSAJE="Defina el directorio para los archivos de log ($GRUPO/log):"
 		echo "$MENSAJE"
 		read LOGDIR
+
+		nombreInvalido $LOGDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read LOGDIR
+			nombreInvalido $LOGDIR
+			respuesta=$?
+		done	
+
 		if [ "$LOGDIR" = "" ];then
 			LOGDIR="log"
 		fi
+
 		existeDir $LOGDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $LOGDIR" "INFO"
@@ -489,15 +590,27 @@ definirLogExt () {
 		local MENSAJE="Defina nombre para la extensión de los archivos de log (log):"
 		echo "$MENSAJE"
 		read LOGEXT
+
+		nombreInvalido $LOGEXT
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read LOGEXT
+			nombreInvalido $LOGEXT
+			respuesta=$?
+		done	
+
 		if [ "$LOGEXT" = "" ];then
 			LOGEXT="log"
 		fi
+
 	        if [ ${#LOGEXT} -le 5 ];then
 			 $GRALOG "$0" "$MENSAJE $LOGEXT" "INFO"
 			 estado=0
-	         else
+	        else
 	                 echo "Debe ingresar una extensión con un máximo de 5 caracteres"
-	         fi
+	        fi
 	done
 }
 
@@ -529,9 +642,21 @@ definirRechDir () {
 	do	
 		echo "$MENSAJE"
 		read RECHDIR
+
+		nombreInvalido $RECHDIR
+		respuesta=$?
+		while [ $respuesta -eq 1 ]
+		do
+			echo "Usted ha ingresado un nombre con caracteres invalidos para un directorio"
+			read RECHDIR
+			nombreInvalido $RECHDIR
+			respuesta=$?
+		done	
+
 		if [ "$RECHDIR" = "" ];then
 			RECHDIR="rechazadas"
 		fi
+
 		existeDir $RECHDIR
 		estado=$?
 		$GRALOG "$0" "$MENSAJE $RECHDIR" "INFO"
@@ -617,7 +742,7 @@ variables=(${BINDIR} ${MAEDIR} ${NOVEDIR} ${ACEPDIR} ${PROCDIR} ${PROCDIR}/proc 
 	for index in ${variables[*]}
 	do
     		echo "Creando $index"
-		mkdir $GRUPO/$index
+		mkdir -p $GRUPO/$index
 
 	done
 	local MENSAJE="Actualizando la configuración del sistema"
