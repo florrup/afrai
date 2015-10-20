@@ -14,6 +14,16 @@ UMBRALES=$MAEDIR/"umbral.tab"
 
 tipoLlamada=""
 
+function esNumerico(){
+	local numero=`echo $1 | grep "^[0-9]*$"`
+	if [ -z "$numero" ];then
+		return 1
+	else
+		return 0
+	fi
+}
+
+
 function msjLog() {
   local MOUT=$1
   local TIPO=$2
@@ -37,7 +47,6 @@ function inicio() {
 
   for fileName in $inputFiles;
   do
-	echo "Procesar Archivo: $fileName 1"
     procesarArchivo $fileName
     if [ "$?" = 0 ]; then	# si no fue procesado, sigo
       validarPrimerRegistro $fileName
@@ -131,13 +140,13 @@ procesarRegistro() {
     #TODO   validarCamposRegistro "$f1" "$f2" "$f3" "$f4" "$f5" "$f6" "$f7" "$f8"
     validarCamposRegistro
     if [ "$?" = 1 ]; then
-      echo "SE RECHAZA EL REGISTRO - IR AL PUNTO SIGUIENTE"
+      echo "SE RECHAZA EL REGISTRO - CAMPOS INVALIDOS"
       rechazarRegistro
     else
       # id; fecha y hora; tiempo; origen area; origen numero; destino pais; destino area; destino numero
       determinarTipoDeLlamada
       if [ "$?" = 1 ]; then
-        echo "SE RECHAZA EL REGISTRO"
+        echo "SE RECHAZA EL REGISTRO TIPO DE LLAMADA INVALIDA"
 	motivo="No se ha podido determinar el tipo de llamada"
         rechazarRegistro
       else
@@ -325,7 +334,55 @@ validarCamposRegistro() {
   local DPAIS=$destinoPais
   local DAREA=$destinoArea
   local DNUM=$destinoNumero
-      
+  
+  RECHAZO="false"
+
+  esNumerico "$TIEMPO"
+  if [ "$?" == 1 ];then
+	RECHAZO="true"	
+	msj="El campo tiempo no es numerico"
+  fi
+
+  esNumerico "$OAREA"
+  if [ "$?" == 1 ];then
+	RECHAZO="true"	
+	msj="El campo Area de llamada A no es numerico"
+  fi
+
+  esNumerico "$ONUM"
+  if [ "$?" == 1 ];then
+	RECHAZO="true"	
+	msj="El campo Numero de llamada A no es numerico"
+  fi
+
+  if [ ! -z "$DPAIS" ];then 
+	  esNumerico "$DPAIS"
+	  if [ "$?" == 1 ];then
+		RECHAZO="true"	
+		msj="El campo Codigo Pais llamada B no es numerico"
+	  fi
+  fi 
+
+  if [ ! -z "$DAREA" ];then 
+	  esNumerico "$DAREA"
+	  if [ "$?" == 1 ];then
+		RECHAZO="true"	
+		msj="El campo Area llamada B no es numerico"
+	  fi
+  fi
+
+  esNumerico "$DNUM"
+  if [ "$?" == 1 ];then
+	RECHAZO="true"	
+	msj="El campo Numero llamada B no es numerico"
+  fi
+
+  if [ "$RECHAZO" == "true" ] ; then
+    echo "Se rechaza el registro $idAgente porque "$msj
+    motivo=$msj
+    return 1
+  fi
+  
   RECHAZO="false"
   idAgente "${AGENTES}" "${ID}"
   if [ "$?" = 1 ]; then
@@ -407,9 +464,7 @@ function determinarTipoDeLlamada() {
     return 1
   fi
 
-
-  echo $idAgente $tipoLlamada
-  #echo -e "\t\tNo se rechaza\n\n" 
+  echo -e "\t\tNo se rechaza  Id Agente: $idAgente - Tipo de llamada: $tipoLlamada\n\n" 
   return 0
 
 }
@@ -443,7 +498,6 @@ function verificarLlamadaSospechosa() {
   else
     codDestino="${DAREA}"
   fi
-  echo "$OAREA - $ONUM - $tipoLlamada - $codDestino"
   
   campoSeleccionado=$(grep "^.*;"${OAREA}";"${ONUM}";"${tipoLlamada}";"${codDestino}";.*Activo" $UMBRALES | head -n 1 )
   tope=$(echo $campoSeleccionado | cut -d' ' -f6 )
@@ -476,14 +530,12 @@ function grabarLlamadaSospechosa(){
   idDelcentral=$(echo $fileNameAProcesar | cut -d'_' -f1 )
   fechaDelArchivo=$(echo $fileNameAProcesar | cut -d'_' -f2 )
   
-  echo "IdCentral y fecha de Archivo $idDelcentral - $fechaDelArchivo"
-  
   #Busco agente en agentes.mae y luego la oficina
   local oficina=$(grep  "^.*;${IDAGENTE};" $AGENTES | cut -d';' -f4)
 
   local anioMesLlamada=$(echo $FECHAINICIO | sed "s/^.*\/\([0-9]\{2\}\)\/\([0-9]\{4\}\).*$/\2\1/")
 
-  echo "oficina $oficina - $anioMesLlamada - $fechaFinal"
+  
   local PROCARCH=$PROCDIR/$oficina"_"$anioMesLlamada
 
   #id Central;idAgente;idUmbral;tipoDeLlamada;inicioDeLlamada;tiempoDeConversacion;codigoDeAreaA,numeroDeLineaA,
@@ -512,8 +564,7 @@ function rechazarRegistro() {
 # 6. Fin de archivo
 
 function finDeArchivo() {
-	local archivo=$1
-	echo "Procesar Archivo: $archivo 2"
+  local archivo=$1
   $MOVER "$ACEPDIR/$archivo" "$PROCDIR"/proc "${0}"
 
   MSJ="Cantidad de llamadas: $cantRegistrosLeidos"

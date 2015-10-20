@@ -12,7 +12,7 @@ function grabarEnLog (){
 # Mueve el archivo pasado por parametro a la direccion parasada por paramtro
 function moverA (){
 	echo "Moviendo ${1} a ${2}..."
-	mover.sh $1 $2
+	mover.sh "$1" "$2"
 }
 
 # Arranca el proceso pasado por parametro
@@ -34,8 +34,8 @@ function existenArchivos (){
 # Valida si el archivo pasado por parametro es de texto
 function esDeTexto (){
 	local archivo=$NOVEDIR/${1}
-	local esTexto=`file --mime-type ${archivo} | grep "text/plain$" `
-
+	local esTexto=`file --mime-type "${archivo}" | grep "text/plain$" `
+	
 	if [[ ! -z $esTexto ]]
 	then
 		# Archivo es de Texto
@@ -142,12 +142,15 @@ function tieneFechaCorrecta (){
 	if [ -z $esNumerico ]
 	then
 		# Fecha no numerica
+		motivoRechazo="Fecha invalida: No numerica"
 		return 1
 	fi
 	
+	# Valida si la fecha es correcta
 	if ! fechaValida $fecha;
 	then
-		# Fecha fuera de rango
+		# Fecha incorrecta
+		motivoRechazo="Fecha invalida: Incorrecta"
 		return 1
 	fi
 
@@ -157,14 +160,16 @@ function tieneFechaCorrecta (){
 	# Valida si la fecha es mayor a un año
 	if [ $diferencia -gt 10000 ]
 	then
-		# Mayor a un ano
+		# Fecha fuera de rango: Mayor a un ano
+		motivoRechazo="Fecha invalida: Fuera de rango (Mayor a 1 año)"
 		return 1
 	fi
 	
 	# Valida si la fecha es mayor a la fecha actual
 	if [ $diferencia -lt 0 ]
 	then
-		# Mayor al dia de la fecha actual
+		# Fecha fuera de rango: Mayor al dia de la fecha actual
+		motivoRechazo="Fecha invalida: Fuera de rango (Mayor al dia actual)"
 		return 1
 	fi
 	
@@ -183,8 +188,6 @@ function tieneNombreCorrecto (){
 			# Archivo Valido
 			return 0
 		fi
-		# Archivo invalido -  Fecha Invalida
-		motivoRechazo="Fecha invalida"
 	else
 		# Archivo invalido - Codigo incorrecto o no encontrado
 		motivoRechazo="Central inexistente"
@@ -196,34 +199,37 @@ function tieneNombreCorrecto (){
 # Da los permisos para mover los archivos que se encuentran en NOVEDIR
 function darPermisoParaMover (){
 	archivoRutaCompleta=$NOVEDIR/$1
-	chmod +x $archivoRutaCompleta
+	chmod +x "$archivoRutaCompleta"
 }
 
 # Realiza las validaciones de los archivos en NOVEDIR
 function procesarArchivosNovedir (){
 	
+	SAVEIFS=$IFS
+	IFS=$(echo -en "\n\b")
+	
 	motivoRechazo=""
 	listadoArchivos=`ls -1 ${NOVEDIR}`	
 
-	for archivo in $listadoArchivos 
+	for archivo in $listadoArchivos
 	do
 		archivoCorrecto=false
-		darPermisoParaMover $archivo
+		darPermisoParaMover "$archivo"
 		
 		#Paso 3: Verifica que el archivo sea de texto.
-		if esDeTexto $archivo;
+		if esDeTexto "$archivo";
 		then
 			#Paso 4: Verifica el formato del archivo.
-			if tieneFormatoCorrecto $archivo;
+			if tieneFormatoCorrecto "$archivo";
 			then
 				#Paso 5: Valida el nombre del archivo.
-				if tieneNombreCorrecto $archivo;
+				if tieneNombreCorrecto "$archivo";
 				then
 					#Paso 6: 
 					# - Mover archivo a ACEPDIR.
 					# - Grabar log.
-					archivoRutaCompleta=$NOVEDIR/$archivo
-                    moverA $archivoRutaCompleta $ACEPDIR
+					archivoRutaCompleta=$NOVEDIR/"$archivo"
+                    moverA "$archivoRutaCompleta" $ACEPDIR
 					archivoCorrecto=true
 					grabarEnLog "ACEPTADO - ${archivoRutaCompleta}" "INFO"
 				fi
@@ -239,8 +245,8 @@ function procesarArchivosNovedir (){
 		# - Grabar log.
 		if ! $archivoCorrecto
 		then
-			archivoRutaCompleta=$NOVEDIR/$archivo
-			moverA $archivoRutaCompleta $RECHDIR
+			archivoRutaCompleta=$NOVEDIR/"$archivo"
+			moverA "$archivoRutaCompleta" $RECHDIR
 			grabarEnLog "RECHAZADO - ${motivoRechazo} - ${archivoRutaCompleta}" "INFO"
 		fi
 		echo ""
@@ -255,7 +261,7 @@ do
 	#Paso 1: Grabar en el log el numero de ciclo.
 	let ciclo++
 	grabarEnLog "AFRARECI ciclo nro. $ciclo" "INFO"
-
+	
 	#Paso 2: Chequear si hay archivos en el directorio NOVEDIR.	
 	if existenArchivos $NOVEDIR;
 	then

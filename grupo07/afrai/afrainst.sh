@@ -183,10 +183,10 @@ estadoAfrai(){
 		echo "Componentes faltantes:";	
 		mostrarFaltantes;
 		echo "¿Desea completar la instalación? (Si - No)"
-
 		read respuesta
 		while [[ "${respuesta^^}" != "SI" && "${respuesta^^}" != "NO" ]]
 		do
+			echo -e "Entrada incorrecta. ¿Desea completar la instalación? (Si - No)"
 			read respuesta
 		done
 
@@ -709,6 +709,7 @@ mostrarDefiniciones () {
 	read respuesta
 	while [[ "${respuesta^^}" != "SI" && "${respuesta^^}" != "NO" ]]
 	do
+		echo -e "\nEntrada incorrecta. $MENSAJE"
 		read respuesta
 	done
 
@@ -716,10 +717,10 @@ mostrarDefiniciones () {
 	if [ "${respuesta^^}" = "SI" ];then
 		MENSAJE="Iniciando Instalación. ¿Está Ud. seguro? (Si - No):"
 		echo -e "\n$MENSAJE"
-
 		read respuesta2
 		while [[ "${respuesta2^^}" != "SI" && "${respuesta2^^}" != "NO" ]]
 		do
+			echo -e "Entrada incorrecta. Iniciando Instalación. ¿Está Ud. seguro? (Si - No):"
 			read respuesta2
 		done
 
