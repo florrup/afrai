@@ -337,6 +337,11 @@ validarCamposRegistro() {
   
   RECHAZO="false"
 
+  if [[ ! -z $DAREA && ! -z $DPAIS ]];then
+  	RECHAZO="true"
+	msj="Si hay Codigo Destino de Pais no puede haber Codigo De Area B"
+  fi
+
   esNumerico "$TIEMPO"
   if [ "$?" == 1 ];then
 	RECHAZO="true"	
